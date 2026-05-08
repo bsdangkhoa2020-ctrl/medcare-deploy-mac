@@ -379,6 +379,7 @@ img{max-width:100%;height:auto;display:block;}
 </style>
 <!-- ============ SUPABASE SDK + CONFIG ============ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
   const SUPABASE_URL = 'https://tnehhratorbrxjwzqnds.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_LOy3f6W1wHHYsMIlr_zvxQ_gruUztNP';
@@ -3839,10 +3840,17 @@ function openRec(prefix, id){
   }
 
   // Download
-  html+='<div onclick="toast&&toast(\'Đang chuẩn bị PDF…\')" style="margin-top:26px;padding:18px;background:#3E2A3D;color:#F5EBE3;text-align:center;cursor:pointer;">';
-  html+='<div style="font-size:10px;letter-spacing:.28em;color:#C7A47B;text-transform:uppercase;font-weight:600;">Tải bản ghi</div>';
-  html+='<div style="font-family:\'Cormorant Garamond\',serif;font-weight:400;font-size:18px;margin-top:6px;">PDF đầy đủ</div>';
-  html+='</div>';
+  if(r.cat==='prescription'){
+    html+='<div onclick="downloadRxPDFFromRecord(\''+r.id+'\')" style="margin-top:26px;padding:18px;background:#3E2A3D;color:#F5EBE3;text-align:center;cursor:pointer;">';
+    html+='<div style="font-size:10px;letter-spacing:.28em;color:#C7A47B;text-transform:uppercase;font-weight:600;">📥 Tải đơn thuốc</div>';
+    html+='<div style="font-family:\'Cormorant Garamond\',serif;font-weight:400;font-size:18px;margin-top:6px;">PDF đầy đủ</div>';
+    html+='</div>';
+  } else {
+    html+='<div onclick="toast&&toast(\'Tính năng đang phát triển\')" style="margin-top:26px;padding:18px;background:#3E2A3D;color:#F5EBE3;text-align:center;cursor:pointer;opacity:.6;">';
+    html+='<div style="font-size:10px;letter-spacing:.28em;color:#C7A47B;text-transform:uppercase;font-weight:600;">Tải bản ghi</div>';
+    html+='<div style="font-family:\'Cormorant Garamond\',serif;font-weight:400;font-size:18px;margin-top:6px;">PDF đầy đủ</div>';
+    html+='</div>';
+  }
 
   html+='<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:#8A7787;letter-spacing:.1em;padding:30px 0 12px;">— Read only —</div>';
 
@@ -5884,7 +5892,7 @@ function renderPrescriptions(p) {
     html += '<div style="background:var(--wh);border-radius:16px;border:1px solid var(--bd);padding:14px;margin-bottom:10px;">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
     html += '<div style="font-size:14px;font-weight:800;">Đơn thuốc ' + rx.date + '</div>';
-    html += '<div style="display:flex;gap:5px;"><button onclick="openEditRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--bl);color:var(--bl);background:transparent;cursor:pointer;font-family:var(--f);font-weight:600;">Sửa</button><button onclick="printRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--bd2);background:transparent;cursor:pointer;font-family:var(--f);">In</button><button onclick="deleteRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid #FECACA;color:#B91C1C;background:transparent;cursor:pointer;font-family:var(--f);">Xoá</button></div>';
+    html += '<div style="display:flex;gap:5px;"><button onclick="openEditRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--bl);color:var(--bl);background:transparent;cursor:pointer;font-family:var(--f);font-weight:600;">Sửa</button><button onclick="printRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--bd2);background:transparent;cursor:pointer;font-family:var(--f);">In</button><button onclick="downloadRxPDF(currentPatientCode,' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid #3E2A3D;color:#3E2A3D;background:transparent;cursor:pointer;font-family:var(--f);font-weight:600;">📥 PDF</button><button onclick="deleteRx(' + i + ')" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid #FECACA;color:#B91C1C;background:transparent;cursor:pointer;font-family:var(--f);">Xoá</button></div>';
     html += '</div>';
     html += '<div style="font-size:12px;line-height:1.9;color:var(--t1);">';
     rx.drugs.forEach(function(d,j){ html += '<div>' + (j+1) + '. ' + d + '</div>'; });
@@ -5962,19 +5970,171 @@ function editPregnancyNote() {
   var newNote = prompt('Chỉnh sửa ghi chú:', p.pregnancy.note);
   if (newNote !== null) { p.pregnancy.note = newNote; renderPdTab(5); }
 }
+// ── PDF đơn thuốc — Phụ Sản 315 ─────────────────────────────
+// Build HTML đơn thuốc dạng A5, đen trắng, in/PDF được
+function buildRxHTML(patient, rx) {
+  var p = patient;
+  // PARA hiển thị nếu có
+  var paraStr = '';
+  if (p.para) { paraStr = p.para.full+''+p.para.preterm+''+p.para.abortion+''+p.para.alive; }
+  // Tuần thai nếu có LMP
+  var gaStr = '';
+  if (p.lmp && typeof calcGA === 'function') {
+    var g = calcGA(p.lmp);
+    if (g && g.wk) gaStr = g.wk + ' tuần ' + g.d + ' ngày';
+  }
+  // Format ngày dd/mm/yyyy
+  var dateStr = rx.date;
+  if (rx.date && rx.date.indexOf('-') > -1) {
+    var parts = rx.date.split('-');
+    if (parts.length === 3) dateStr = parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+
+  var html = ''
+    + '<div style="font-family:Arial,sans-serif;color:#000;background:#fff;padding:20mm 15mm;width:210mm;box-sizing:border-box;font-size:12pt;line-height:1.5;">'
+    // Header phòng khám
+    + '<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:14px;">'
+    +   '<div style="font-size:18pt;font-weight:900;letter-spacing:1px;">PHỤ SẢN 315</div>'
+    +   '<div style="font-size:10pt;margin-top:4px;">167-169 Bình Phú, Phường 11, Quận 6, TP.HCM</div>'
+    + '</div>'
+    // Tiêu đề
+    + '<div style="text-align:center;font-size:16pt;font-weight:900;letter-spacing:3px;margin:14px 0 10px;">ĐƠN THUỐC</div>'
+    // Thông tin BN
+    + '<table style="width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:10px;">'
+    +   '<tr>'
+    +     '<td style="padding:4px 0;width:60%;"><b>Họ tên:</b> ' + (p.name||'') + '</td>'
+    +     '<td style="padding:4px 0;"><b>Mã BN:</b> ' + (p.code||'') + '</td>'
+    +   '</tr>'
+    +   '<tr>'
+    +     '<td style="padding:4px 0;"><b>Tuổi:</b> ' + (p.age||'') + (p.sex?'  &nbsp;&nbsp;<b>Giới:</b> '+p.sex:'') + '</td>'
+    +     '<td style="padding:4px 0;"><b>Ngày kê:</b> ' + dateStr + '</td>'
+    +   '</tr>'
+    + (paraStr ? '<tr><td colspan="2" style="padding:4px 0;"><b>PARA:</b> '+paraStr+(gaStr?'  &nbsp;&nbsp;<b>Tuần thai:</b> '+gaStr:'')+'</td></tr>' : (gaStr?'<tr><td colspan="2" style="padding:4px 0;"><b>Tuần thai:</b> '+gaStr+'</td></tr>':''))
+    + (p.dx ? '<tr><td colspan="2" style="padding:4px 0;"><b>Chẩn đoán:</b> '+p.dx+'</td></tr>' : '')
+    + '</table>'
+    // Đường kẻ
+    + '<div style="border-top:1px solid #000;margin:10px 0;"></div>'
+    // Danh sách thuốc
+    + '<div style="font-size:11pt;line-height:2;">';
+  rx.drugs.forEach(function(d,j){
+    html += '<div style="margin-bottom:6px;"><b>' + (j+1) + '.</b> ' + d + '</div>';
+  });
+  html += '</div>';
+  // Ghi chú BS
+  if (rx.note) {
+    html += '<div style="margin-top:14px;padding:8px;border:1px dashed #000;font-size:10pt;font-style:italic;"><b>Lời dặn:</b> ' + rx.note + '</div>';
+  }
+  // Chữ ký
+  html += ''
+    + '<div style="margin-top:30px;display:flex;justify-content:flex-end;">'
+    +   '<div style="text-align:center;width:60mm;">'
+    +     '<div style="font-size:10pt;font-style:italic;">TP.HCM, ngày ' + dateStr + '</div>'
+    +     '<div style="font-size:11pt;font-weight:700;margin-top:4px;">BÁC SĨ KÊ ĐƠN</div>'
+    +     '<div style="height:50px;"></div>'
+    +     '<div style="font-size:11pt;font-weight:900;border-top:1px solid #000;padding-top:4px;">BS.CKI HOÀNG THANH TUẤN</div>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+  return html;
+}
+
+// Tải PDF đơn thuốc
+function downloadRxPDF(patientCode, rxIndex) {
+  var p = patientsDB[patientCode];
+  if (!p) { toast('Không tìm thấy bệnh nhân'); return; }
+  var rx = p.prescriptions[rxIndex];
+  if (!rx) { toast('Không tìm thấy đơn thuốc'); return; }
+  if (typeof html2pdf === 'undefined') { toast('Đang tải thư viện PDF, thử lại sau 3 giây'); return; }
+
+  toast('Đang tạo PDF…');
+  var wrap = document.createElement('div');
+  wrap.style.position = 'fixed';
+  wrap.style.left = '-9999px';
+  wrap.innerHTML = buildRxHTML(p, rx);
+  document.body.appendChild(wrap);
+
+  var fileName = 'Toa_' + (p.code||'BN') + '_' + (rx.date||'') + '.pdf';
+  var opt = {
+    margin: 0,
+    filename: fileName,
+    image: { type:'jpeg', quality:0.98 },
+    html2canvas: { scale:2, useCORS:true, backgroundColor:'#ffffff' },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+  };
+  html2pdf().set(opt).from(wrap.firstChild).save().then(function(){
+    document.body.removeChild(wrap);
+    toast('✅ Đã tải PDF');
+  }).catch(function(err){
+    document.body.removeChild(wrap);
+    toast('Lỗi tạo PDF: ' + (err.message||''));
+  });
+}
+
+// Convert record BN-side (OB_RECORDS) → format PDF
+function downloadRxPDFFromRecord(recordId) {
+  var rec = OB_RECORDS.find(function(x){return x.id===recordId;});
+  if (!rec || rec.cat !== 'prescription') { toast('Không phải đơn thuốc'); return; }
+  if (typeof html2pdf === 'undefined') { toast('Đang tải thư viện PDF, thử lại sau'); return; }
+
+  // Convert detail.items[] → drugs[] (string array)
+  var drugs = [];
+  if (rec.detail && rec.detail.items) {
+    rec.detail.items.forEach(function(it){
+      var line = it.name;
+      if (it.dose) line += ' — ' + it.dose;
+      if (it.qty) line += ' (SL: ' + it.qty + ')';
+      drugs.push(line);
+    });
+  }
+  // Patient info — lấy từ OB persona (BN-001 Hoa) hoặc currentUser nếu có
+  var patientInfo = window.currentBNProfile || {
+    name: 'Nguyễn Thị Hoa',
+    code: 'BN-001',
+    age: 28,
+    sex: 'Nữ',
+    lmp: '2025-10-22'
+  };
+  var rxData = {
+    date: rec.date,
+    drugs: drugs,
+    note: (rec.detail && rec.detail.note) ? rec.detail.note : ''
+  };
+
+  toast('Đang tạo PDF…');
+  var wrap = document.createElement('div');
+  wrap.style.position = 'fixed';
+  wrap.style.left = '-9999px';
+  wrap.innerHTML = buildRxHTML(patientInfo, rxData);
+  document.body.appendChild(wrap);
+
+  var fileName = 'Toa_' + (patientInfo.code||'BN') + '_' + (rxData.date||'') + '.pdf';
+  var opt = {
+    margin: 0,
+    filename: fileName,
+    image: { type:'jpeg', quality:0.98 },
+    html2canvas: { scale:2, useCORS:true, backgroundColor:'#ffffff' },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+  };
+  html2pdf().set(opt).from(wrap.firstChild).save().then(function(){
+    document.body.removeChild(wrap);
+    toast('✅ Đã tải PDF');
+  }).catch(function(err){
+    document.body.removeChild(wrap);
+    toast('Lỗi tạo PDF: ' + (err.message||''));
+  });
+}
+
+// printRx cũ — giữ backward compat, nhưng nâng cấp dùng layout mới
 function printRx(i) {
   var p = patientsDB[currentPatientCode];
   var rx = p.prescriptions[i];
-  var win = window.open('','_blank','width=600,height=500');
-  win.document.write('<html><body style="font-family:Arial;padding:24px;">');
-  win.document.write('<h2>ĐƠN THUỐC</h2>');
-  win.document.write('<p><strong>Bệnh nhân:</strong> ' + p.name + ' — ' + p.code + '</p>');
-  win.document.write('<p><strong>Ngày:</strong> ' + rx.date + '</p><hr>');
-  rx.drugs.forEach(function(d,j){ win.document.write('<p>' + (j+1) + '. ' + d + '</p>'); });
-  win.document.write('<hr><p><em>' + rx.note + '</em></p>');
-  win.document.write('<p style="margin-top:40px;text-align:right;">BS. CK1 Hoàng Thanh Tuấn</p>');
+  if (!rx) { toast('Không tìm thấy đơn thuốc'); return; }
+  var win = window.open('','_blank','width=800,height=900');
+  win.document.write('<html><head><title>Đơn thuốc - '+p.name+'</title></head><body style="margin:0;padding:0;">');
+  win.document.write(buildRxHTML(p, rx));
+  win.document.write('<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt>');
   win.document.write('</body></html>');
-  win.print();
+  win.document.close();
 }
 
 // ── Modals ────────────────────────────────────────────────
@@ -6472,49 +6632,66 @@ doLogout = async function() {
 // AI CHAT — NÂNG CẤP TOÀN DIỆN
 // ══════════════════════════════════════════════════════════
 
-const SYS = `Bạn là trợ lý AI y khoa của BS. CK1 Hoàng Thanh Tuấn — chuyên Sản Phụ Khoa, Bệnh viện Hùng Vương TP.HCM.
+// ══════════════════════════════════════════════════════════
+// AI CHAT — GEMINI API (NÂNG CẤP TỪ window.claude.complete)
+// ══════════════════════════════════════════════════════════
 
-NGUYÊN TẮC TRẢ LỜI:
-1. Trả lời NGẮN GỌN, TRỰC TIẾP, CHÍNH XÁC — không dài dòng
-2. Dùng số liệu cụ thể khi có (mg/dL, mmHg, tuần thai, liều lượng...)
-3. Cấu trúc rõ ràng: câu trả lời chính → giải thích ngắn → khuyến nghị nếu cần
-4. Dùng emoji y tế phù hợp (🔴 nguy hiểm / 🟡 cần chú ý / 🟢 bình thường)
-5. KHÔNG lặp lại câu hỏi, KHÔNG xã giao thừa, đi thẳng vào nội dung
-6. Trả lời bằng tiếng Việt, thuật ngữ y khoa kèm giải thích lay
+// ⚠️ DEMO ONLY — Key sẽ lộ trên GitHub Pages public
+// Production: chuyển sang Supabase Edge Function
+const GEMINI_API_KEY = "AIzaSyCP9p3SzvjGjC-IwPRWcZY6ur0bk9g2lBA";
+const GEMINI_MODEL = "gemini-2.5-flash"; // verified OK với key, free tier 15 RPM
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent";
+const IS_DEMO_DATA = true; // ⚠️ false khi dùng BN thật → bắt buộc anonymize
 
-KIẾN THỨC CHUYÊN SÂU:
+// ── PERSONA 1: Cô Hương (dành cho BN) ─────────────────
+const SYS_BN = `Bạn là Cô Hương — trợ lý AI của BS.CKI Hoàng Thanh Tuấn (Phụ Sản 315, 167-169 Bình Phú, Q.6, TP.HCM).
 
-[SẢN KHOA]
-- Tuần thai & mốc phát triển: tuần 6 (tim đập), 12 (Double test), 16-20 (SA hình thái), 24 (viability), 28 (T3 bắt đầu), 32 (SA tăng trưởng), 36-38 (chuẩn bị sinh)
-- Chỉ số SA: BPD (đường kính lưỡng đỉnh), FL (xương đùi), AC (chu vi bụng), EFW (cân nặng ước tính), AFI (chỉ số nước ối bình thường 8-18cm)
-- Xét nghiệm: Double test (tuần 11-13+6), OGTT 75g (tuần 24-28, cắt: đói <5.1, 1h <10.0, 2h <8.5 mmol/L), GBS (tuần 35-37), CBC (Hb bình thường ≥11g/dL thai kỳ)
-- Sàng lọc: NT <3mm bình thường, beta-hCG và PAPP-A tính theo MoM
-- Dấu hiệu preeclampsia: HA ≥140/90 + protein niệu ≥300mg/24h sau 20 tuần
-- Cử động thai: ≥10 lần/2 giờ từ tuần 28 → nếu ít cần đánh giá CTG
-- Sinh lý thai: nhau bám mặt sau/trước/bên đều bình thường; nhau tiền đạo nguy hiểm
-- Thuốc thai kỳ: an toàn (category A/B): sắt, acid folic, canxi, vitamin D, paracetamol
+VAI TRÒ: Hỗ trợ BN mang thai. Giọng ấm áp, gần gũi, xưng "cô" gọi BN bằng tên.
 
-[PHỤ KHOA]
-- Chu kỳ kinh: bình thường 21-35 ngày, mất máu 20-80ml/chu kỳ
-- Pap smear: NILM = bình thường; ASCUS, LSIL, HSIL = cần theo dõi/colposcopy
-- HPV: type 16,18 nguy cơ cao nhất; type 6,11 gây mụn cóc sinh dục
-- U xơ tử cung (fibroid): triệu chứng phụ thuộc vị trí và kích thước; <3cm thường theo dõi
-- Nang buồng trứng: nang chức năng <5cm thường tự tiêu sau 1-3 chu kỳ
-- Viêm phụ khoa: phân biệt vi khuẩn (Gardnerella — mùi cá), Candida (trắng đặc), Trichomonas (vàng xanh)
+NGUYÊN TẮC:
+1. Trả lời NGẮN GỌN (3-5 câu), tiếng Việt, có emoji y tế (🟢🟡🔴) khi cần
+2. Trấn an trước → đưa thông tin → khuyến nghị
+3. KHÔNG kê đơn, KHÔNG chẩn đoán xác định
+4. Câu hỏi về thuốc/triệu chứng cụ thể → "Cô khuyên con liên hệ BS Tuấn trực tiếp qua Zalo/hotline phòng khám"
+5. Cấp cứu (ra máu, đau dữ dội, vỡ ối, không cử động thai) → trả JSON: {"emergency":true,"message":"...","reason":"..."}
+6. Nhắc lịch khám sắp tới + tuần thai hiện tại nếu phù hợp
 
-[PHÂN TÍCH KẾT QUẢ]
-Khi được cung cấp kết quả XN/SA, phân tích theo format:
-📋 **Tóm tắt**: [bình thường / cần chú ý / bất thường]
-📊 **Chi tiết**: giải thích từng chỉ số
-💊 **Khuyến nghị**: hành động cần thiết
+KIẾN THỨC SẢN KHOA:
+- Mốc thai: tuần 12 (Double test), 20 (SA hình thái), 24-28 (OGTT 75g), 35-37 (GBS)
+- Cử động thai: ≥10 lần/2h từ tuần 28
+- Cảnh báo tiền sản giật: HA≥140/90 + phù + đau đầu sau tuần 20
+- Thuốc an toàn (cat A/B): sắt, acid folic, canxi, vitamin D, paracetamol`;
 
-[KHẨN CẤP — trả về JSON emergency]
-Khi phát hiện: ra máu nhiều, đau dữ dội, thai không đạp, vỡ ối, co giật, khó thở, preeclampsia, sốt >39°C khi mang thai → trả lời JSON:
-{"emergency":true,"message":"Nội dung tư vấn khẩn","reason":"Lý do khẩn cấp"}
+// ── PERSONA 2: Trợ lý BS (dành cho BS Tuấn) ────────────
+const SYS_BS = `Bạn là trợ lý AI chuyên môn của BS.CKI Hoàng Thanh Tuấn — chuyên Sản Phụ Khoa, BV Hùng Vương TP.HCM (10+ năm kinh nghiệm).
 
-[GIỚI HẠN]
-- Không thay thế chẩn đoán trực tiếp — luôn đề nghị thăm khám khi cần quyết định điều trị
-- Không kê đơn thuốc mới — chỉ giải thích đơn BS đã kê`;
+VAI TRÒ: Hỗ trợ BS Tuấn ra quyết định lâm sàng nhanh. Giọng đồng nghiệp ngang hàng, xưng "tôi" gọi BS là "anh" hoặc "BS".
+
+NGUYÊN TẮC:
+1. NGẮN GỌN, đi thẳng vào chuyên môn — không giải thích lay
+2. Dùng thuật ngữ y khoa chuẩn (PARA, GA, EFW, NT, OGTT, NST, BPP, CTG...)
+3. Trích nguồn khi có (ACOG, RCOG, Bộ Y tế, Cochrane)
+4. Hiểu cả viết tắt y khoa lẫn tiếng Việt
+5. Khi không chắc → nói "tôi không chắc, anh check lại guideline X"
+
+KHẢ NĂNG:
+- Tóm tắt bệnh án (khi BS hỏi "tóm tắt" / "BN này thế nào")
+- Draft tin nhắn dặn dò BN (khi BS hỏi "soạn tin nhắn..." / "draft message...")
+- Gợi ý câu hỏi cần hỏi BN lần khám tới
+- Phân tích chỉ số XN/SA bất thường
+- Suggest differential diagnosis
+- KHÔNG thay BS quyết định cuối — chỉ là second opinion
+
+FORMAT TÓM TẮT BỆNH ÁN:
+👤 [Tên · Mã · Tuổi · PARA]
+🤰 [GA · EDD · Tam cá nguyệt]
+📋 [Tiền sử nổi bật]
+🔬 [XN/SA gần nhất + flag bất thường]
+💊 [Đơn thuốc đang dùng]
+⚠️ [Risk factors / điểm cần lưu ý]`;
+
+// Backward compat — code cũ vẫn dùng biến SYS
+const SYS = SYS_BN;
 
 // ── Format bot message (markdown-lite) ───────────────
 function formatBotMsg(text) {
@@ -6594,17 +6771,115 @@ function hideEmergency() {
   if (b) b.style.display = 'none';
 }
 
-// ── Build context from curUser ────────────────────────
+// ── Build context đầy đủ từ bệnh án ─────────────────
+// Dùng cho cả BN (currentBNProfile/curUser) và BS (currentPatientCode)
 function buildUserContext() {
-  if (!curUser) return '';
-  if (curUser.role === 'ob' && curUser.lmp) {
-    const g = calcGA(curUser.lmp);
-    return `\n[BỐI CẢNH: Bệnh nhân sản khoa, thai ${g.wk} tuần ${g.d} ngày, ngày dự sinh ${g.edd}]`;
+  // Detect role: BS đang xem BN nào → dùng patientsDB; BN tự xem mình → dùng curUser
+  var isBS = (curUser && curUser.role === 'admin') || (typeof currentPatientCode !== 'undefined' && currentPatientCode && typeof patientsDB !== 'undefined' && patientsDB[currentPatientCode]);
+  var p = null;
+
+  if (isBS && typeof currentPatientCode !== 'undefined' && currentPatientCode) {
+    // BS đang xem 1 BN cụ thể trong patientsDB
+    p = patientsDB[currentPatientCode];
+  } else if (curUser && curUser.role === 'ob') {
+    // BN tự đăng nhập — dùng curUser + map sang patientsDB nếu match code
+    if (curUser.code && typeof patientsDB !== 'undefined' && patientsDB[curUser.code]) {
+      p = patientsDB[curUser.code];
+    } else {
+      // Fallback: chỉ có thông tin curUser
+      var g = curUser.lmp ? calcGA(curUser.lmp) : null;
+      var ctx = '\n\n[BỐI CẢNH BN]\nTên: ' + (curUser.name || 'BN') + '\nMã: ' + (curUser.code || '') + '\nVai trò: BN sản khoa';
+      if (g) ctx += '\nTuần thai: ' + g.wk + ' tuần ' + g.d + ' ngày, EDD ' + g.edd;
+      return ctx;
+    }
   }
-  if (curUser.role === 'gy') {
-    return '\n[BỐI CẢNH: Bệnh nhân muốn tư vấn phụ khoa, nhưng tính năng này đang được phát triển. Trả lời rằng khu vực Phụ khoa đang được hoàn thiện và sẽ sớm đưa vào hoạt động.]';
+
+  if (!p) return '\n\n[BỐI CẢNH] Chưa chọn BN cụ thể.';
+
+  // ── Build full context ──
+  var lines = [];
+  lines.push('\n\n[HỒ SƠ BỆNH NHÂN ' + (IS_DEMO_DATA ? '(DEMO)' : '') + ']');
+  lines.push('Họ tên: ' + (p.name || ''));
+  lines.push('Mã BN: ' + (p.code || ''));
+  if (p.age) lines.push('Tuổi: ' + p.age);
+  if (p.sex) lines.push('Giới: ' + p.sex);
+  if (p.phone) lines.push('SĐT: ' + p.phone);
+  if (p.history) lines.push('Tiền sử: ' + p.history);
+
+  // PARA
+  if (p.para) {
+    lines.push('PARA: ' + p.para.full + '-' + p.para.preterm + '-' + p.para.abortion + '-' + p.para.alive +
+      ' (đủ tháng-non tháng-sảy-sống)');
   }
-  return '';
+
+  // Thai kỳ
+  if (p.lmp && typeof calcGA === 'function') {
+    var g = calcGA(p.lmp);
+    if (g && g.wk) {
+      lines.push('LMP: ' + p.lmp);
+      lines.push('Tuần thai: ' + g.wk + ' tuần ' + g.d + ' ngày');
+      lines.push('EDD: ' + g.edd);
+    }
+  }
+  if (p.pregnancy) {
+    if (p.pregnancy.gainWeight) lines.push('Tăng cân: ' + p.pregnancy.gainWeight);
+    if (p.pregnancy.bp) lines.push('HA: ' + p.pregnancy.bp);
+    if (p.pregnancy.note) lines.push('Ghi chú thai kỳ: ' + p.pregnancy.note);
+  }
+  if (p.dx) lines.push('Chẩn đoán: ' + p.dx);
+
+  // Visits (3 gần nhất)
+  if (p.visits && p.visits.length) {
+    lines.push('\n[LẦN KHÁM GẦN ĐÂY]');
+    p.visits.slice(0, 3).forEach(function(v, i) {
+      lines.push((i+1) + '. ' + (v.date||'') + ' · ' + (v.type||'') +
+        (v.bp ? ' · HA ' + v.bp : '') +
+        (v.weight ? ' · CN ' + v.weight + 'kg' : '') +
+        (v.ga ? ' · GA ' + v.ga : '') +
+        (v.note ? ' — ' + v.note : ''));
+    });
+  }
+
+  // Exams (XN)
+  if (p.exams && p.exams.length) {
+    lines.push('\n[XÉT NGHIỆM]');
+    p.exams.slice(0, 5).forEach(function(e, i) {
+      lines.push((i+1) + '. ' + (e.date||'') + ' · ' + (e.name||'') +
+        (e.result ? ' — ' + e.result : '') +
+        (e.note ? ' (' + e.note + ')' : ''));
+    });
+  }
+
+  // Ultrasounds
+  if (p.ultrasounds && p.ultrasounds.length) {
+    lines.push('\n[SIÊU ÂM]');
+    p.ultrasounds.slice(0, 3).forEach(function(u, i) {
+      lines.push((i+1) + '. ' + (u.date||'') + ' · ' + (u.name||'') +
+        (u.note ? ' — ' + u.note : ''));
+    });
+  }
+
+  // Prescriptions
+  if (p.prescriptions && p.prescriptions.length) {
+    lines.push('\n[ĐƠN THUỐC]');
+    p.prescriptions.slice(0, 3).forEach(function(rx, i) {
+      lines.push((i+1) + '. ' + (rx.date||''));
+      if (rx.drugs) rx.drugs.forEach(function(d, j) {
+        lines.push('   - ' + d);
+      });
+      if (rx.note) lines.push('   Lời dặn: ' + rx.note);
+    });
+  }
+
+  return lines.join('\n');
+}
+
+// ── Detect role để chọn persona phù hợp ──────────────
+function getActivePersona() {
+  // BS: login admin HOẶC đang ở screen quản lý BN
+  if (curUser && curUser.role === 'admin') return 'BS';
+  // Mặc định BN
+  return 'BN';
 }
 
 // ── Send message ──────────────────────────────────────
@@ -6627,20 +6902,86 @@ async function sendMsg() {
   showTyping();
 
   try {
-    const sysWithCtx = SYS + buildUserContext();
-    // Use built-in Claude helper (no API key needed)
-    const msgs = [
-      { role: 'user', content: '[Hệ thống]\n' + sysWithCtx + '\n\n[Tin nhắn người dùng]\n' + chatHist[chatHist.length-1].content }
-    ];
-    // Include short prior context so Cô Hương nhớ hội thoại
-    const prior = chatHist.slice(0, -1).slice(-6);
-    const messages = prior.concat([{ role: 'user', content: chatHist[chatHist.length-1].content }]);
-    const raw = await window.claude.complete({
-      messages: [
-        { role: 'user', content: 'Hệ thống / persona:\n' + sysWithCtx + '\n\n— Đây là tin nhắn từ người dùng, hãy trả lời như Cô Hương.' },
-        ...messages
+    // Chọn persona theo role (BS hoặc BN)
+    const activePersona = getActivePersona();
+    const baseSys = (activePersona === 'BS') ? SYS_BS : SYS_BN;
+    const sysWithCtx = baseSys + buildUserContext();
+
+    // Check API key trước khi call
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'PASTE_YOUR_KEY_HERE') {
+      rmTyping();
+      addMsg('⚠️ Chưa cấu hình Gemini API key. BS vui lòng dán key vào file index.html (tìm chuỗi "PASTE_YOUR_KEY_HERE").', 'bot');
+      sending = false;
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+
+    // Build Gemini messages từ chatHist (giữ 6 lượt gần nhất để tiết kiệm token)
+    const prior = chatHist.slice(-7); // gồm cả tin user vừa gửi
+    const contents = prior.map(function(m) {
+      return {
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      };
+    });
+
+    // Gọi Gemini API với auto-retry cho lỗi tạm thời (503/500/429)
+    const requestBody = JSON.stringify({
+      system_instruction: { parts: [{ text: sysWithCtx }] },
+      contents: contents,
+      generationConfig: {
+        temperature: activePersona === 'BS' ? 0.3 : 0.5, // BS cần chính xác hơn
+        maxOutputTokens: 800
+      },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
       ]
     });
+
+    const RETRY_CODES = [500, 502, 503, 504, 429]; // lỗi tạm thời, đáng retry
+    const MAX_RETRIES = 3;
+    const BACKOFF = [0, 1500, 3000]; // ms: lần 1 ngay, lần 2 sau 1.5s, lần 3 sau 3s
+    let resp = null;
+    let lastErrText = '';
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (BACKOFF[attempt] > 0) {
+        // Update typing indicator để BN biết đang retry
+        const tEl = document.querySelector('#trow .bbl');
+        if (tEl) tEl.innerHTML = '<div class="tdots"><span></span><span></span><span></span></div><div style="font-size:10px;color:#8A7787;margin-top:4px;">Đang thử lại lần ' + (attempt+1) + '...</div>';
+        await new Promise(r => setTimeout(r, BACKOFF[attempt]));
+      }
+      try {
+        resp = await fetch(GEMINI_URL + '?key=' + GEMINI_API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody
+        });
+        if (resp.ok) break; // ✅ thành công
+        // Đọc error để check có retry không
+        lastErrText = await resp.text();
+        if (RETRY_CODES.indexOf(resp.status) === -1) break; // lỗi không đáng retry (400/403...) → stop ngay
+        // Lỗi đáng retry → loop tiếp
+        console.warn('Gemini retry', attempt+1, 'status', resp.status);
+      } catch (netErr) {
+        // Lỗi network → retry
+        lastErrText = 'Network: ' + (netErr.message || '');
+        console.warn('Gemini network retry', attempt+1, netErr);
+      }
+    }
+
+    if (!resp || !resp.ok) {
+      throw new Error('Gemini API ' + (resp ? resp.status : 'NETWORK') + ': ' + lastErrText.substring(0, 200));
+    }
+
+    const data = await resp.json();
+    const raw = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+                 data.candidates[0].content.parts && data.candidates[0].content.parts[0])
+                 ? data.candidates[0].content.parts[0].text
+                 : '⚠️ AI không trả lời. ' + (data.promptFeedback ? 'Lý do: ' + JSON.stringify(data.promptFeedback) : '');
     rmTyping();
 
     // Check for emergency JSON
@@ -6660,7 +7001,13 @@ async function sendMsg() {
 
   } catch(e) {
     rmTyping();
-    addMsg('⚠️ Kết nối bị gián đoạn. Vui lòng thử lại.', 'bot');
+    var errMsg = '⚠️ Lỗi kết nối Gemini: ' + (e.message || 'không rõ');
+    if (e.message && e.message.indexOf('400') > -1) errMsg = '⚠️ API key sai hoặc request không hợp lệ. Kiểm tra lại key.';
+    else if (e.message && e.message.indexOf('429') > -1) errMsg = '⚠️ Vượt quota free tier (15 req/phút). Đợi 1 phút thử lại.';
+    else if (e.message && e.message.indexOf('403') > -1) errMsg = '⚠️ Key bị từ chối. Kiểm tra Gemini API đã enable chưa.';
+    else if (e.message && (e.message.indexOf('503') > -1 || e.message.indexOf('500') > -1 || e.message.indexOf('502') > -1)) errMsg = '⚠️ Gemini server đang quá tải (đã thử lại 3 lần). Vui lòng đợi 1-2 phút rồi thử lại.';
+    addMsg(errMsg, 'bot');
+    console.error('Gemini error:', e);
   }
 
   sending = false;
