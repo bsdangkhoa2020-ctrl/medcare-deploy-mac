@@ -3881,7 +3881,7 @@ function updateAIFab(){
   if(!fab) return;
   var c=document.querySelector('.screen.active');
   var sid=c?c.id:'';
-  var hidden=['s-login','s-signup','s-onboard','s-chat','s-admin','s-patient-detail','s-result-view','s-rx-view'];
+  var hidden=['s-login','s-signup','s-onboard','s-chat','s-patient-detail','s-result-view','s-rx-view'];
   var show=hidden.indexOf(sid)===-1;
   if(show) fab.classList.add('show'); else fab.classList.remove('show');
 }
