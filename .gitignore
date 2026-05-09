@@ -1,2 +1,6 @@
+# File backup
+index.html.backup-*
 index.html.before-split-*
+
+# macOS
 .DS_Store
