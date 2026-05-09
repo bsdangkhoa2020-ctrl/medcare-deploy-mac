@@ -5652,6 +5652,71 @@ var patientsDB = {
     ],
     pregnancy: { edd:'15/08/2025', gainWeight:'+12kg', bp:'110/70', note:'Thai kỳ tiến triển bình thường. Cần theo dõi đường huyết. Hẹn tuần 32.' }
   },
+  'BN-002': {
+    name: 'Trần Thị Mỹ Duyên', code: 'BN-002', spec: 'ob', ava: 'MD',
+    info: { dob:'21/07/1992', phone:'0938 445 778', blood:'A+', allergy:'Không' },
+    para: { full:1, preterm:0, abortion:0, alive:1 },
+    history: 'G2P1 · Lần 1 sinh thường năm 2020, bé trai 3.6kg. Lần này thai kỳ thứ 2.',
+    internalHistory: 'Tiền sử ĐTĐ thai kỳ ở lần mang thai trước (kiểm soát bằng chế độ ăn). Mẹ ruột bị ĐTĐ type 2.',
+    surgicalHistory: '',
+    lastPeriod: '02/09/2025',
+    chronic: 'ĐTĐ thai kỳ (lần thai này) · Theo dõi thai to',
+    lmp: '2025-09-02',
+    visits: [
+      { date:'08/05/2026', type:'Khám thai lần 7 · Tuần 35', bp:'118/76', weight:'78', ga:'35', note:'Đường huyết đói 5.8 mmol/L, sau ăn 2h 8.2 mmol/L (cao). EFW ước 3200g — thai to so với tuổi thai (>P90). Tăng cân 14kg. Khuyên ăn chia nhỏ 6 bữa, hạn chế tinh bột nhanh, đi bộ sau ăn 30 phút. Nếu đường huyết không cải thiện sau 1 tuần → cân nhắc Insulin.', result:'watch' },
+      { date:'24/04/2026', type:'Khám thai lần 6 · Tuần 33', bp:'120/78', weight:'77', ga:'33', note:'EFW 2900g — vượt P90. Đường huyết đói 5.5, sau ăn 7.8. Dặn theo dõi đường huyết tại nhà 4 lần/ngày, ghi nhật ký.', result:'watch' },
+      { date:'09/04/2026', type:'Khám thai lần 5 · Tuần 31', bp:'115/72', weight:'75', ga:'31', note:'OGTT bất thường: đói 5.4, 1h 11.2, 2h 9.8 mmol/L → chẩn đoán ĐTĐ thai kỳ (theo IADPSG). Bắt đầu chế độ ăn kiểm soát. Hẹn khám dinh dưỡng.', result:'watch' },
+      { date:'12/03/2026', type:'Khám thai lần 4 · Tuần 27', bp:'112/70', weight:'72', ga:'27', note:'SA hình thái bình thường. Chỉ định OGTT tuần 28. Bổ sung canxi.', result:'ok' }
+    ],
+    exams: [
+      { date:'08/05/2026', name:'Đường huyết đói + sau ăn 2h', result:'watch', file:null, detail:'Đói 5.8 — Sau ăn 8.2 mmol/L (mục tiêu <5.3 và <6.7)' },
+      { date:'08/05/2026', name:'HbA1c', result:'watch', file:null, detail:'5.9% (giới hạn cao)' },
+      { date:'09/04/2026', name:'OGTT 75g', result:'watch', file:null, detail:'Đói 5.4 / 1h 11.2 / 2h 9.8 mmol/L — ĐTĐ thai kỳ' },
+      { date:'12/03/2026', name:'CBC + sinh hoá', result:'ok', file:null }
+    ],
+    ultrasounds: [
+      { date:'08/05/2026', name:'SA tăng trưởng — Tuần 35', note:'BPD 89mm · FL 70mm · AC 320mm · CN ước 3200g (>P90) · AFI 18cm (giới hạn cao) · Nhau bám đáy', file:null },
+      { date:'24/04/2026', name:'SA tăng trưởng — Tuần 33', note:'BPD 86mm · FL 68mm · AC 305mm · CN ước 2900g (>P90)', file:null },
+      { date:'12/03/2026', name:'SA hình thái — Tuần 27', note:'Không dị tật. Giới tính: Nam. Nhau bám đáy.', file:null }
+    ],
+    prescriptions: [
+      { date:'08/05/2026', drugs:['Calcium + Vit D3 — 1v/ngày','Sắt fumarate 200mg — 1v/ngày','Acid folic 5mg — 1v/ngày'], note:'CHẾ ĐỘ ĂN: chia 6 bữa nhỏ, giảm cơm/bún/bánh mì trắng, tăng rau xanh + protein nạc. ĐO ĐƯỜNG HUYẾT: 4 lần/ngày (đói + sau 3 bữa 2h). Mục tiêu: đói <5.3, sau ăn <6.7. ĐI BỘ: 30 phút sau bữa chính. Tái khám 1 tuần. Nếu đường huyết không đạt mục tiêu → khởi đầu Insulin.' },
+      { date:'09/04/2026', drugs:['Acid folic 5mg — 1v/ngày','Calcium 1000mg — 1v/ngày'], note:'Chế độ ăn ĐTĐ thai kỳ. Khám dinh dưỡng. Theo dõi đường huyết 4 lần/ngày trong 2 tuần.' }
+    ],
+    pregnancy: { edd:'09/06/2026', gainWeight:'+14kg', bp:'118/76', note:'ĐTĐ thai kỳ chưa kiểm soát tốt · Thai to (>P90) · Cân nhắc khả năng sinh khó, sang chấn vai. Dự kiến đánh giá lại tuần 38 để quyết định mode sinh (sinh thường vs mổ). Nếu EFW >4000g tuần 38-39 → cân nhắc mổ chủ động.' }
+  },
+  'BN-003': {
+    name: 'Lê Thị Thanh Huyền', code: 'BN-003', spec: 'ob', ava: 'TH',
+    info: { dob:'18/11/1988', phone:'0912 667 889', blood:'O-', allergy:'Penicillin (nổi mề đay)' },
+    para: { full:2, preterm:0, abortion:1, alive:2 },
+    history: 'G4P2 · Lần 1 mổ lấy thai 2015 (thai ngược), lần 2 mổ lại 2019 (sẹo cũ), 1 lần sảy thai tự nhiên năm 2022 (8 tuần). Lần này thai kỳ thứ 4.',
+    internalHistory: 'Không bệnh lý nội khoa. Nhóm máu O Rh(-) — đã tiêm Anti-D ở lần thai trước.',
+    surgicalHistory: '2 lần mổ lấy thai (sẹo ngang đoạn dưới TC).',
+    lastPeriod: '10/10/2025',
+    chronic: 'Nhau tiền đạo trung tâm · Sẹo mổ cũ x2 · Rh(-)',
+    lmp: '2025-10-10',
+    visits: [
+      { date:'07/05/2026', type:'Khám cấp cứu · Tuần 30', bp:'105/65', weight:'66', ga:'30', note:'BN đến vì RA MÁU ÂM ĐẠO ĐỎ TƯƠI lần 2, lượng vừa (~80ml), không đau bụng, không cơn co. Tim thai 142 lần/phút bình thường. SA cấp: nhau tiền đạo trung tâm hoàn toàn, không bóc tách. CHỈ ĐỊNH NHẬP VIỆN theo dõi. Truyền dịch, dự trù máu Rh(-). Tiêm Betamethasone 12mg trưởng thành phổi.', result:'urgent' },
+      { date:'20/04/2026', type:'Khám thai lần 5 · Tuần 27', bp:'110/68', weight:'65', ga:'27', note:'Ra máu lần 1 (~30ml, tự cầm). SA: nhau tiền đạo trung tâm, mép nhau che kín lỗ trong CTC. Dặn KIÊNG HOÀN TOÀN sinh hoạt vợ chồng, hạn chế đi lại, không khám âm đạo. Hẹn 2 tuần.', result:'urgent' },
+      { date:'15/03/2026', type:'Khám thai lần 4 · Tuần 22', bp:'108/68', weight:'63', ga:'22', note:'SA hình thái: phát hiện nhau bám thấp che lỗ trong CTC — nhau tiền đạo trung tâm. Tư vấn nguy cơ. Theo dõi sát.', result:'watch' },
+      { date:'10/02/2026', type:'Khám thai lần 3 · Tuần 17', bp:'112/72', weight:'62', ga:'17', note:'SA: thai phát triển bình thường. Chưa rõ vị trí nhau, hẹn SA hình thái tuần 22.', result:'ok' }
+    ],
+    exams: [
+      { date:'07/05/2026', name:'CBC + đông máu cấp', result:'watch', file:null, detail:'Hb 10.2 g/dL (giảm nhẹ) · TC 230 G/L · PT/aPTT bình thường' },
+      { date:'07/05/2026', name:'Nhóm máu, Rh, Coombs gián tiếp', result:'ok', file:null, detail:'O Rh(-) · Coombs (-)' },
+      { date:'20/04/2026', name:'CBC', result:'ok', file:null, detail:'Hb 11.5 g/dL' },
+      { date:'10/02/2026', name:'Triple test', result:'ok', file:null, detail:'Nguy cơ thấp T13/18/21' }
+    ],
+    ultrasounds: [
+      { date:'07/05/2026', name:'SA cấp cứu — Tuần 30', note:'Nhau tiền đạo trung tâm hoàn toàn · Không bóc tách · Tim thai 142 l/p · CN ước 1480g (P50) · AFI 12cm · Không dấu hiệu accreta trên SA thường', file:null },
+      { date:'15/03/2026', name:'SA hình thái — Tuần 22', note:'Không dị tật · Nhau bám mặt trước che lỗ trong CTC (nhau tiền đạo trung tâm) · Giới tính: Nữ', file:null }
+    ],
+    prescriptions: [
+      { date:'07/05/2026', drugs:['Betamethasone 12mg — TB x 2 liều cách 24h (trưởng thành phổi)','Dydrogesterone 10mg — 1v x 3 lần/ngày','MgSO4 dự phòng nếu cần','Sắt fumarate 200mg — 1v/ngày'], note:'NHẬP VIỆN theo dõi. Nghỉ ngơi tuyệt đối, không quan hệ, không khám âm đạo. Dự trù 2 đơn vị máu O Rh(-). Theo dõi: tim thai liên tục, lượng máu mất, dấu hiệu chuyển dạ. Mổ cấp cứu nếu: chảy máu nhiều >500ml, suy thai, chuyển dạ. Mổ chủ động dự kiến tuần 36-37.' },
+      { date:'20/04/2026', drugs:['Dydrogesterone 10mg — 1v x 2/ngày','Sắt fumarate 200mg — 1v/ngày'], note:'Kiêng hoàn toàn. Đi lại nhẹ nhàng. Đến viện NGAY nếu: ra máu lại, đau bụng, có cơn co, không thấy thai cử động.' }
+    ],
+    pregnancy: { edd:'17/07/2026', gainWeight:'+5kg', bp:'105/65', note:'Nhau tiền đạo trung tâm · Sẹo mổ cũ x2 · Đã ra máu 2 lần · Nguy cơ accreta cần loại trừ (MRI nếu có điều kiện). Mổ chủ động tuần 36-37 sau khi tiêm trưởng thành phổi đủ. Dự trù máu Rh(-) trước mổ.' }
+  },
   'BN-004': {
     name: 'Phạm Thị Lan Anh', code: 'BN-004', spec: 'ob', ava: 'LA',
     info: { dob:'12/02/1990', phone:'0908 112 233', blood:'A+', allergy:'Không' },
