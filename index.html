@@ -6595,18 +6595,13 @@ doLogout = async function() {
 // ══════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════
-// AI CHAT — GEMINI API (NÂNG CẤP TỪ window.claude.complete)
+// AI CHAT — GỌI QUA SUPABASE EDGE FUNCTION (KHÔNG LỘ KEY)
 // ══════════════════════════════════════════════════════════
 
-// ⚠️ DEMO ONLY — Key sẽ lộ trên GitHub Pages public
-// Production: chuyển sang Supabase Edge Function
-const GEMINI_API_KEY = "AIzaSyCP9p3SzvjGjC-IwPRWcZY6ur0bk9g2lBA";
-const GEMINI_MODEL = "gemini-2.5-flash"; // verified OK với key, free tier 15 RPM
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent";
+const GEMINI_MODEL = "gemini-2.5-flash"; // free tier 15 RPM
 
 // 🔒 Edge Function URL (giấu API key) — Phase A
 const GEMINI_PROXY_URL = "https://tnehhratorbrxjwzqnds.supabase.co/functions/v1/gemini-proxy";
-const USE_EDGE_FUNCTION = true; // false = fallback gọi Gemini trực tiếp (không an toàn)
 // Anon key dạng JWT để Edge Function verify (an toàn để public theo design Supabase)
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuZWhocmF0b3Jicnhqd3pxbmRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzEyNzgsImV4cCI6MjA5MzgwNzI3OH0._GuqldBYMjXXb1HNvy_9kC-lILoK6zxlZF-ERzBIoic';
 
@@ -6876,15 +6871,6 @@ async function sendMsg() {
     const baseSys = (activePersona === 'BS') ? SYS_BS : SYS_BN;
     const sysWithCtx = baseSys + buildUserContext();
 
-    // Check API key trước khi call
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'PASTE_YOUR_KEY_HERE') {
-      rmTyping();
-      addMsg('⚠️ Chưa cấu hình Gemini API key. BS vui lòng dán key vào file index.html (tìm chuỗi "PASTE_YOUR_KEY_HERE").', 'bot');
-      sending = false;
-      document.getElementById('sendBtn').disabled = false;
-      return;
-    }
-
     // Build Gemini messages từ chatHist (giữ 6 lượt gần nhất để tiết kiệm token)
     const prior = chatHist.slice(-7); // gồm cả tin user vừa gửi
     const contents = prior.map(function(m) {
@@ -6894,22 +6880,7 @@ async function sendMsg() {
       };
     });
 
-    // Gọi Gemini API với auto-retry cho lỗi tạm thời (503/500/429)
-    const requestBody = JSON.stringify({
-      system_instruction: { parts: [{ text: sysWithCtx }] },
-      contents: contents,
-      generationConfig: {
-        temperature: activePersona === 'BS' ? 0.3 : 0.5, // BS cần chính xác hơn
-        maxOutputTokens: 800
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
-      ]
-    });
-
+    // Gọi Edge Function với auto-retry cho lỗi tạm thời (503/500/429)
     const RETRY_CODES = [500, 502, 503, 504, 429]; // lỗi tạm thời, đáng retry
     const MAX_RETRIES = 3;
     const BACKOFF = [0, 1500, 3000]; // ms: lần 1 ngay, lần 2 sau 1.5s, lần 3 sau 3s
@@ -6924,31 +6895,32 @@ async function sendMsg() {
         await new Promise(r => setTimeout(r, BACKOFF[attempt]));
       }
       try {
-        if (USE_EDGE_FUNCTION) {
-          // 🔒 Gọi qua Supabase Edge Function (giấu API key)
-          const sess = window.sb ? (await window.sb.auth.getSession()).data.session : null;
-          const accessToken = sess ? sess.access_token : SUPABASE_ANON_KEY;
-          resp = await fetch(GEMINI_PROXY_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken,
-              'apikey': SUPABASE_ANON_KEY
+        // 🔒 Gọi qua Supabase Edge Function (giấu API key)
+        const sess = window.sb ? (await window.sb.auth.getSession()).data.session : null;
+        const accessToken = sess ? sess.access_token : SUPABASE_ANON_KEY;
+        resp = await fetch(GEMINI_PROXY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accessToken,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            contents: contents,
+            systemInstruction: sysWithCtx,
+            model: GEMINI_MODEL,
+            generationConfig: {
+              temperature: activePersona === 'BS' ? 0.3 : 0.5, // BS cần chính xác hơn
+              maxOutputTokens: 800
             },
-            body: JSON.stringify({
-              contents: contents,
-              systemInstruction: sysWithCtx,
-              model: GEMINI_MODEL
-            })
-          });
-        } else {
-          // ⚠️ Fallback: gọi Gemini trực tiếp (key lộ - chỉ cho dev local)
-          resp = await fetch(GEMINI_URL + '?key=' + GEMINI_API_KEY, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: requestBody
-          });
-        }
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+            ]
+          })
+        });
         if (resp.ok) break; // ✅ thành công
         // Đọc error để check có retry không
         lastErrText = await resp.text();
