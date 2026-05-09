@@ -6607,6 +6607,8 @@ const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + 
 // 🔒 Edge Function URL (giấu API key) — Phase A
 const GEMINI_PROXY_URL = "https://tnehhratorbrxjwzqnds.supabase.co/functions/v1/gemini-proxy";
 const USE_EDGE_FUNCTION = true; // false = fallback gọi Gemini trực tiếp (không an toàn)
+// Anon key dạng JWT để Edge Function verify (an toàn để public theo design Supabase)
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuZWhocmF0b3Jicnhqd3pxbmRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzEyNzgsImV4cCI6MjA5MzgwNzI3OH0._GuqldBYMjXXb1HNvy_9kC-lILoK6zxlZF-ERzBIoic';
 
 const IS_DEMO_DATA = true; // ⚠️ false khi dùng BN thật → bắt buộc anonymize
 
@@ -6925,13 +6927,13 @@ async function sendMsg() {
         if (USE_EDGE_FUNCTION) {
           // 🔒 Gọi qua Supabase Edge Function (giấu API key)
           const sess = window.sb ? (await window.sb.auth.getSession()).data.session : null;
-          const accessToken = sess ? sess.access_token : SUPABASE_PUBLISHABLE_KEY;
+          const accessToken = sess ? sess.access_token : SUPABASE_ANON_KEY;
           resp = await fetch(GEMINI_PROXY_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + accessToken,
-              'apikey': SUPABASE_PUBLISHABLE_KEY
+              'apikey': SUPABASE_ANON_KEY
             },
             body: JSON.stringify({
               contents: contents,
