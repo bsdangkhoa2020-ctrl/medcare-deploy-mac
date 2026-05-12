@@ -1,14 +1,12 @@
 name: Keep Supabase Alive
 
 # Mục đích: Ping Supabase mỗi ngày để project không bị pause sau 7 ngày
-# v2: Đổi endpoint sang /auth/v1/health (không bị RLS chặn)
+# v3: Thêm apikey header (publishable key, public OK)
 
 on:
   schedule:
     # '0 2 * * *' = 02:00 UTC mỗi ngày = 09:00 VN (UTC+7)
     - cron: '0 2 * * *'
-
-  # Cho phép chạy thủ công từ GitHub Actions tab (để test)
   workflow_dispatch:
 
 jobs:
@@ -17,30 +15,30 @@ jobs:
     timeout-minutes: 2
 
     steps:
-      - name: Ping Supabase Health Endpoint
+      - name: Ping Supabase Auth Settings
         run: |
-          # /auth/v1/health là public endpoint, không cần auth, không bị RLS chặn
-          # Endpoint này trả về 200 OK nếu Supabase Auth service đang chạy
+          # /auth/v1/settings là public endpoint, trả về config public của Auth
+          # Cần apikey header — publishable key OK vì thiết kế để public
           SUPABASE_URL="https://tnehhratorbrxjwzqnds.supabase.co"
+          SUPABASE_KEY="sb_publishable_LOy3f6W1wHHYsMIlr_zvxQ_gruUztNP"
 
-          echo "Pinging Supabase Health at $(date -u)..."
+          echo "Pinging Supabase at $(date -u)..."
 
           response=$(curl -sS -w "\nHTTP_CODE:%{http_code}" \
-            "$SUPABASE_URL/auth/v1/health")
+            -H "apikey: $SUPABASE_KEY" \
+            "$SUPABASE_URL/auth/v1/settings")
 
           http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
-          body=$(echo "$response" | sed '/HTTP_CODE:/d')
+          body=$(echo "$response" | sed '/HTTP_CODE:/d' | head -c 200)
 
           echo "HTTP Status: $http_code"
-          echo "Response: $body"
+          echo "Response (first 200 chars): $body"
 
-          # Health endpoint trả 200 nếu OK
           if [ "$http_code" = "200" ]; then
             echo "✅ Supabase is alive and responding"
             exit 0
           else
             echo "❌ Supabase ping failed with HTTP $http_code"
-            echo "Có thể project đã bị pause hoặc network lỗi"
             exit 1
           fi
 
