@@ -1,0 +1,110 @@
+name: Backup Supabase Database
+
+# Mục đích: Backup database Supabase mỗi ngày lên repo medcare-backups
+# Giữ 30 ngày backup gần nhất
+
+on:
+  schedule:
+    # '30 2 * * *' = 02:30 UTC = 09:30 VN (chạy sau keep-alive 30 phút)
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          # pg_dump version 17 để khớp với Supabase Postgres
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump database
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Build connection string từ Supabase pooler
+          # Project ID: tnehhratorbrxjwzqnds
+          PROJECT_ID="tnehhratorbrxjwzqnds"
+          DB_HOST="aws-0-ap-southeast-1.pooler.supabase.com"
+          DB_PORT="5432"
+          DB_USER="postgres.${PROJECT_ID}"
+          DB_NAME="postgres"
+
+          # Lấy password từ service_role JWT (Supabase dùng project DB password riêng)
+          # Note: cần lấy DB password từ Dashboard, không phải service_role key
+          # Tạm thời dùng REST API export thay vì pg_dump trực tiếp
+
+          BACKUP_DATE=$(date -u +"%Y-%m-%d_%H%M%S")
+          BACKUP_FILE="backup-${BACKUP_DATE}.json"
+
+          echo "Creating backup: $BACKUP_FILE"
+
+          # Export từng bảng qua REST API với service_role (bypass RLS)
+          SUPABASE_URL="https://tnehhratorbrxjwzqnds.supabase.co"
+
+          mkdir -p backup_data
+
+          for TABLE in profiles invite_codes consents patients appointments visits prescriptions patient_logs audit_log; do
+            echo "Exporting table: $TABLE"
+            curl -sS \
+              -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Accept: application/json" \
+              "$SUPABASE_URL/rest/v1/$TABLE?select=*" \
+              > "backup_data/${TABLE}.json"
+
+            row_count=$(cat "backup_data/${TABLE}.json" | python3 -c "import sys, json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "?")
+            echo "  → ${row_count} rows"
+          done
+
+          # Tạo manifest file
+          cat > backup_data/_manifest.json << EOF
+          {
+            "backup_date": "$BACKUP_DATE",
+            "supabase_url": "$SUPABASE_URL",
+            "tables": ["profiles", "invite_codes", "consents", "patients", "appointments", "visits", "prescriptions", "patient_logs", "audit_log"],
+            "version": "1.0"
+          }
+          EOF
+
+          # Đóng gói thành tar.gz
+          tar -czf "${BACKUP_FILE%.json}.tar.gz" backup_data/
+          ls -lh "${BACKUP_FILE%.json}.tar.gz"
+          echo "BACKUP_FILE=${BACKUP_FILE%.json}.tar.gz" >> $GITHUB_ENV
+
+      - name: Push to backup repo
+        env:
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+        run: |
+          # Clone repo backup
+          git clone "https://x-access-token:${BACKUP_REPO_TOKEN}@github.com/bsdangkhoa2020-ctrl/medcare-backups.git" backup-repo
+          cd backup-repo
+
+          # Tạo folder theo năm-tháng
+          YEAR_MONTH=$(date -u +"%Y-%m")
+          mkdir -p "backups/${YEAR_MONTH}"
+
+          # Copy file backup vô
+          cp "../${BACKUP_FILE}" "backups/${YEAR_MONTH}/"
+
+          # Cleanup: xóa backup cũ hơn 30 ngày
+          find backups/ -name "backup-*.tar.gz" -type f -mtime +30 -delete
+
+          # Commit & push
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Backup $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || echo "Nothing to commit"
+          git push
+
+          echo "✅ Backup pushed to medcare-backups"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf backup_data backup-repo *.tar.gz
