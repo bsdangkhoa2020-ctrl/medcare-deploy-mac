@@ -1,13 +1,11 @@
 name: Keep Supabase Alive
 
 # Mục đích: Ping Supabase mỗi ngày để project không bị pause sau 7 ngày
-# Tài liệu: https://supabase.com/docs/guides/platform/going-into-prod
+# v2: Đổi endpoint sang /auth/v1/health (không bị RLS chặn)
 
 on:
   schedule:
-    # Cron syntax: phút giờ ngày tháng thứ
     # '0 2 * * *' = 02:00 UTC mỗi ngày = 09:00 VN (UTC+7)
-    # Chạy vào sáng để nếu lỗi, BS có thời gian fix trước khi BN dùng
     - cron: '0 2 * * *'
 
   # Cho phép chạy thủ công từ GitHub Actions tab (để test)
@@ -19,23 +17,16 @@ jobs:
     timeout-minutes: 2
 
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping Supabase Health Endpoint
         run: |
-          # URL Supabase project + endpoint health check
-          # Dùng REST API public — chỉ check kết nối, không cần auth
-          # Publishable key OK để public (Supabase thiết kế để vậy)
-
+          # /auth/v1/health là public endpoint, không cần auth, không bị RLS chặn
+          # Endpoint này trả về 200 OK nếu Supabase Auth service đang chạy
           SUPABASE_URL="https://tnehhratorbrxjwzqnds.supabase.co"
-          SUPABASE_KEY="sb_publishable_LOy3f6W1wHHYsMIlr_zvxQ_gruUztNP"
 
-          echo "Pinging Supabase at $(date -u)..."
+          echo "Pinging Supabase Health at $(date -u)..."
 
-          # Gọi REST API để query 1 row từ bảng profiles
-          # → Supabase coi như "có hoạt động" → reset timer 7 days
           response=$(curl -sS -w "\nHTTP_CODE:%{http_code}" \
-            -H "apikey: $SUPABASE_KEY" \
-            -H "Authorization: Bearer $SUPABASE_KEY" \
-            "$SUPABASE_URL/rest/v1/profiles?limit=1&select=id")
+            "$SUPABASE_URL/auth/v1/health")
 
           http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
           body=$(echo "$response" | sed '/HTTP_CODE:/d')
@@ -43,7 +34,7 @@ jobs:
           echo "HTTP Status: $http_code"
           echo "Response: $body"
 
-          # Check kết quả
+          # Health endpoint trả 200 nếu OK
           if [ "$http_code" = "200" ]; then
             echo "✅ Supabase is alive and responding"
             exit 0
@@ -57,4 +48,3 @@ jobs:
         if: failure()
         run: |
           echo "⚠️ Keep-alive failed! BS Tuấn cần check Supabase Dashboard."
-          # Tương lai: gửi email/Slack/Zalo notification
