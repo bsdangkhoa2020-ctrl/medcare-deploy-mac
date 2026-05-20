@@ -1,0 +1,33 @@
+{
+  "name": "BS. CK1 Hoàng Thanh Tuấn",
+  "short_name": "BS. Tuấn",
+  "description": "Ứng dụng theo dõi sản phụ khoa — BS. CK1 Hoàng Thanh Tuấn",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5EBE3",
+  "theme_color": "#3E2A3D",
+  "orientation": "portrait",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical"],
+  "screenshots": []
+}
