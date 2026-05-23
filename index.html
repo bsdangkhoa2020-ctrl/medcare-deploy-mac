@@ -2126,17 +2126,6 @@ const db = {
   async deleteSchedule(id) {
     return sb.from('doctor_schedule').delete().eq('id', id);
   },
-    const { data: existing } = await sb.from('doctor_schedule').select('id')
-      .eq('date', row.date).eq('location', row.location).eq('shift_name', row.shift_name).single();
-    if (existing) {
-      return sb.from('doctor_schedule').delete().eq('id', existing.id);
-    } else {
-      return sb.from('doctor_schedule').insert(row);
-    }
-  },
-  async deleteSchedule(id) {
-    return sb.from('doctor_schedule').delete().eq('id', id);
-  },
 
   // ── INVITE CODES ──
   async verifyInviteCode(code) {
