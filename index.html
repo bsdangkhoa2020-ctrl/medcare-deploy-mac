@@ -2115,7 +2115,7 @@ const db = {
     return sb.from('doctor_schedule').select('*').order('week_offset');
   },
   async upsertSchedule(rows) {
-    return sb.from('doctor_schedule').upsert(rows, { onConflict: 'week_offset,day_key' });
+    return sb.from('doctor_schedule').upsert(rows, { onConflict: 'week_offset,day_key,location' });
   },
 
   // ── INVITE CODES ──
@@ -3199,7 +3199,7 @@ function admSwitchTab(tab) {
 // TAB 1: BỆNH NHÂN
 // ────────────────────────────────────────
 async function admLoadPatients() {
-  const { data, error } = await db.getPatients();
+  const { data, error } = await db.getAllPatients();
   if (error) { console.error(error); return; }
   adm.patients = data || [];
   admRenderPatients();
@@ -3225,7 +3225,7 @@ function admRenderPatients() {
   const list = document.getElementById('adm-pt-list');
   const countEl = document.getElementById('adm-pt-count-label');
   let pts = adm.patients;
-  if (adm.ptFilter !== 'all') pts = pts.filter(p => p.patient_type === adm.ptFilter);
+  if (adm.ptFilter !== 'all') pts = pts.filter(p => p.specialty === adm.ptFilter);
   if (adm.ptSearch) pts = pts.filter(p =>
     (p.name||'').toLowerCase().includes(adm.ptSearch) ||
     (p.bn_code||'').toLowerCase().includes(adm.ptSearch)
@@ -3238,7 +3238,7 @@ function admRenderPatients() {
     return;
   }
   list.innerHTML = pts.map((p, idx) => {
-    const isOB = p.patient_type === 'ob';
+    const isOB = p.specialty === 'ob';
     const shortName = (p.name||'BN').split(' ').pop();
     const avatarClass = isOB ? 'adm-init' : 'adm-init adm-init-gy';
     const badge = isOB
@@ -3277,7 +3277,7 @@ async function admLoadTodayAppts() {
       <div style="font-family:'Lora',serif;font-size:20px;color:#B57A1F;font-weight:400;min-width:48px;">${(a.datetime||'').slice(11,16)}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${a.patients?.name || a.patient_name || 'Khách vãng lai'}</div>
-        <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:2px;">${typeLabel[a.appointment_type]||a.appointment_type||''}</div>
+        <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:2px;">${typeLabel[a.appt_type]||a.appt_type||''}</div>
       </div>
       <div class="adm-dot-ok"></div>
     </div>`).join('')}`;
@@ -3470,7 +3470,7 @@ async function admLoadAppts() {
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:14px">${ptName}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${typeLabel[a.appointment_type]||a.appointment_type||''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${typeLabel[a.appt_type]||a.appt_type||''}</div>
         ${a.notes?`<div style="font-size:11px;color:var(--muted)">${a.notes}</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -3514,7 +3514,7 @@ async function admApptEdit(id) {
   document.getElementById('adm-appt-phone').value = a.phone || '';
   document.getElementById('adm-appt-date').value = (a.datetime||'').slice(0,10);
   document.getElementById('adm-appt-time').value = (a.datetime||'').slice(11,16);
-  document.getElementById('adm-appt-type').value = a.appointment_type || 'kham_thai';
+  document.getElementById('adm-appt-type').value = a.appt_type || 'kham_thai';
   document.getElementById('adm-appt-note').value = a.notes || '';
   admPopulateApptPatientList();
   document.getElementById('adm-appt-modal').style.display = 'flex';
@@ -3537,7 +3537,7 @@ async function admApptSave() {
     patient_name:     name,
     phone:            document.getElementById('adm-appt-phone').value.trim(),
     datetime:         `${date}T${time}:00`,
-    appointment_type: document.getElementById('adm-appt-type').value,
+    appt_type: document.getElementById('adm-appt-type').value,
     notes:            document.getElementById('adm-appt-note').value.trim(),
     status:           'confirmed'
   };
