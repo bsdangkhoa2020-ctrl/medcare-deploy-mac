@@ -5534,7 +5534,7 @@ function initGyAppts() {
 }
 
 function gySetNav(screenId, el) {
-  document.querySelectorAll('#s-gy-home .ni').forEach(n => n.classList.remove('on'));
+  document.querySelectorAll('.gy-nav .ni, #s-gy-home .ni, #s-gy-records .ni, #s-gy-appts .ni, #s-gy-journey .ni').forEach(n => n.classList.remove('on'));
   if (el) el.classList.add('on');
   goTo(screenId);
 }
@@ -5626,7 +5626,13 @@ function initGyHome() {
   if (nameEl && curUser?.name) nameEl.textContent = curUser.name.split(' ').pop();
 
   const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
-  if (!cycle) return;
+  if (!cycle) {
+    _setEl('gy-cycle-month', 'Chu kỳ của chị');
+    _setEl('gy-cycle-label', 'Chưa có thông tin chu kỳ');
+    _setEl('gy-day-big', '—');
+    _setEl('gy-ovulation-countdown', 'Vui lòng cập nhật ngày kinh cuối trong hồ sơ');
+    return;
+  }
 
   const { day, cycleLen, phase, ovulDay, daysToOvul } = cycle;
   const monthName = new Date().toLocaleDateString('vi-VN',{month:'long'});
@@ -5668,7 +5674,7 @@ function initGyHome() {
   if (gyWsLink && WORKSHOP_CURRENT.youtube !== '#') gyWsLink.href = WORKSHOP_CURRENT.youtube;
 
   // Tạp chí — theo phase chu kỳ GY
-  const journal = GY_JOURNAL.find(j => j.phase === phase.label) || GY_JOURNAL[1];
+  const journal = GY_JOURNAL.find(j => j.phase === phase.label) || GY_JOURNAL[0];
   _setEl('gy-journal-eyebrow', journal.eyebrow);
   const jTitleEl = document.getElementById('gy-journal-title');
   if (jTitleEl) jTitleEl.innerHTML = journal.title;
@@ -5683,7 +5689,7 @@ function initGyHome() {
   // Lịch BS (3 ngày tới)
   const schedEl = document.getElementById('gy-doc-schedule');
   if (schedEl) {
-    const SESS = [['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['S+T'],['S+T']];
+    const SESS = [['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['S 8h–11h · T 17h–20h'],['S 8h–11h · T 17h–20h']];
     const rows = [];
     for (let i = 0; i < 7 && rows.length < 3; i++) {
       const d = new Date(); d.setDate(d.getDate() + i);
