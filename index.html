@@ -2775,9 +2775,9 @@ function obUpdateGA() {
   const weekLabelEl = document.getElementById('ob-milestone-week-label');
   if (weekLabelEl) {
     if (nearest === ga.weeks) {
-      weekLabelEl.textContent = `tuần ${ga.weeks}`;
+      weekLabelEl.textContent = `Tuần ${ga.weeks}`;
     } else {
-      weekLabelEl.textContent = `mốc tuần ${nearest}`;
+      weekLabelEl.textContent = `Tuần ${ga.weeks} · Mốc tuần ${nearest}`;
     }
   }
 
