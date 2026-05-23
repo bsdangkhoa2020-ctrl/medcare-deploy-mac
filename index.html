@@ -3513,7 +3513,12 @@ async function initObAppts() {
     ['S 8h–11h','T 17h–20h'],['S 8h–11h','T 17h–20h']
   ];
 
-  window._apptWeekOffset = window._apptWeekOffset || 0;
+  // Reset về tuần này mỗi lần vào trang
+  window._apptWeekOffset = 0;
+
+  // TODO P7: load lịch BS từ Supabase table 'doctor_schedule'
+  // Khi có data: window._bsScheduleData = await db.getDoctorSchedule();
+  // renderBsSchedule sẽ ưu tiên data thật, fallback về SESSIONS_DEFAULT
 
   window.renderBsSchedule = function(offset) {
     window._apptWeekOffset = offset;
@@ -3538,9 +3543,10 @@ async function initObAppts() {
     let cells = '';
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday); d.setDate(monday.getDate() + i);
-      const dow = d.getDay(); // 0=CN, 6=T7
+      const dow = d.getDay();
       const idx = [1,2,3,4,5,6,0].indexOf(dow);
-      const sessions = SESSIONS_DEFAULT[idx] || [];
+      // Ưu tiên lịch BS thật (P7), fallback về hardcode
+      const sessions = (window._bsScheduleData?.[d.toISOString().split('T')[0]]) || SESSIONS_DEFAULT[idx] || [];
       const isToday = d.toDateString() === today.toDateString();
       const hasSang = sessions.some(s => s.startsWith('S'));
       const hasToi  = sessions.some(s => s.startsWith('T'));
