@@ -724,15 +724,13 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4" id="ob-appt-time">—</div>
     </div>
 
-    <!-- Lịch BS — 7 ngày -->
+    <!-- Lịch BS — dạng list gọn -->
     <div onclick="goTo('s-ob-doctor')" style="background:var(--gold-lt);border:0.5px solid var(--gold-md);border-radius:var(--r-lg);padding:14px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dk);font-weight:600">Lịch BS Tuấn</div>
-        <div style="font-size:9px;color:var(--gold-dk);font-weight:600;letter-spacing:.06em">Tuần này →</div>
+        <div style="font-size:9px;color:var(--gold-dk);font-weight:600;letter-spacing:.06em">Xem →</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px" id="ob-doc-week-grid">
-        <!-- Render by JS -->
-      </div>
+      <div id="ob-doc-week-grid"></div>
     </div>
   </div>
 
@@ -2853,31 +2851,37 @@ function _renderMockDocSchedule() {
   if (!grid) return;
   const DAY_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
   const SESSIONS = [
-    ['Chiều'],           // T2
-    ['Chiều'],           // T3
-    ['Chiều'],           // T4
-    ['Chiều'],           // T5
-    ['Chiều'],           // T6
-    ['Sáng','Chiều'],   // T7
-    ['Sáng','Chiều'],   // CN
+    ['Chiều'],          // T2
+    ['Chiều'],          // T3
+    ['Chiều'],          // T4
+    ['Chiều'],          // T5
+    ['Chiều'],          // T6
+    ['Sáng','Chiều'],  // T7
+    ['Sáng','Chiều'],  // CN
   ];
   const todayDow = new Date().getDay(); // 0=CN
 
-  grid.innerHTML = DAY_LABELS.map((d, i) => {
-    const dow   = [1,2,3,4,5,6,0][i];
-    const today = dow === todayDow;
-    const s     = SESSIONS[i];
-    const hasMorn = s.includes('Sáng');
-    const bg    = today ? 'var(--gold)' : 'rgba(184,129,74,.28)';
-    const txtColor = today ? 'var(--ink)' : 'rgba(184,129,74,.95)';
-    return `<div style="text-align:center">
-      <div style="font-size:8px;color:rgba(184,129,74,.6);font-weight:600;margin-bottom:4px">${d}</div>
-      <div style="border-radius:4px;background:${bg};${today?'border:.5px solid rgba(184,129,74,.7)':''};padding:4px 2px;min-height:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
-        ${hasMorn ? `<span style="font-size:7px;font-weight:700;color:${txtColor};line-height:1.3;letter-spacing:.02em">Sáng</span>` : ''}
-        <span style="font-size:7px;font-weight:700;color:${txtColor};line-height:1.3;letter-spacing:.02em">Chiều</span>
+  // Chỉ hiện hôm nay + 2 ngày kế tiếp có lịch
+  const upcoming = [];
+  for (let offset = 0; offset < 7 && upcoming.length < 3; offset++) {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    const dow = d.getDay();
+    const idx = [1,2,3,4,5,6,0].indexOf(dow);
+    if (idx === -1) continue;
+    upcoming.push({ label: DAY_LABELS[idx], sessions: SESSIONS[idx], isToday: offset === 0, date: d });
+  }
+
+  grid.innerHTML = upcoming.map(({ label, sessions, isToday, date }) => {
+    const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid rgba(184,129,74,.15)">
+      <div style="display:flex;align-items:center;gap:6px">
+        ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gold-dk);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
+        <span style="font-size:11px;font-weight:${isToday?'700':'500'};color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.8)'}">${label} ${dateStr}</span>
       </div>
+      <span style="font-size:10px;color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.7)'};font-weight:600">${sessions.join(' & ')}</span>
     </div>`;
-  }).join('');
+  }).join('') + `<div style="font-size:9px;color:rgba(184,129,74,.5);margin-top:6px;text-align:center;letter-spacing:.08em">Phụ Sản 315 · Q.6</div>`;
 }
 
 // ── OB BOTTOM NAV ──
