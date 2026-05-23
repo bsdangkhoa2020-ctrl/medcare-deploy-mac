@@ -5012,6 +5012,48 @@ function gySetNav(screenId, el) {
 
 function openGyCheckin() { showToast('Check-in phụ khoa — sẽ có trong P6.5'); }
 
+const GY_PHASE_INFO = {
+  'kinh': {
+    title: 'Hành kinh (D1–D5)',
+    body: 'Là những ngày có kinh nguyệt. Niêm mạc tử cung bong ra và được đào thải ra ngoài. Đây là ngày D1 của chu kỳ mới. Thường kéo dài 3–7 ngày.'
+  },
+  'nang': {
+    title: 'Nang noãn (D6–D13)',
+    body: 'Cơ thể tiết hormone FSH kích thích buồng trứng phát triển nang noãn. Đây là giai đoạn "sung sức" nhất — nhiều chị cảm thấy năng động, da sáng hơn. Nang noãn sẽ phát triển đến khi phóng noãn (rụng trứng).'
+  },
+  'rt': {
+    title: 'Rụng trứng (khoảng D14)',
+    body: 'Nang noãn vỡ ra và phóng trứng vào ống dẫn trứng. Đây là ngày khả năng thụ thai cao nhất trong chu kỳ. Một số chị cảm thấy đau nhói nhẹ một bên bụng dưới — gọi là đau rụng trứng, hoàn toàn bình thường.'
+  },
+  'hoangthe': {
+    title: 'Hoàng thể (D15–D28)',
+    body: 'Sau khi phóng noãn, nang noãn vỡ trở thành "hoàng thể" và tiết progesterone. Hormone này chuẩn bị tử cung đón trứng đã thụ tinh. Nếu không có thai, hoàng thể thoái hóa → progesterone giảm → có kinh. Một số chị cảm thấy ngực căng, bụng hơi chướng — đây là PMS bình thường.'
+  }
+};
+
+function showGyPhaseInfo(key) {
+  const info = GY_PHASE_INFO[key];
+  if (!info) return;
+  // Tạo modal bottom sheet
+  let el = document.getElementById('gy-phase-modal');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'gy-phase-modal';
+    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:999;background:rgba(42,16,21,.5)';
+    el.onclick = function(e) { if(e.target===this) this.style.display='none'; };
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:24px 24px 48px">
+      <div style="width:36px;height:4px;background:var(--gy-md);border-radius:2px;margin:0 auto 20px"></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-dk);margin-bottom:8px">Giai đoạn chu kỳ</div>
+      <div style="font-family:var(--serif);font-size:22px;color:var(--gy-ink);font-weight:400;margin-bottom:14px">${info.title}</div>
+      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--gy-ink);line-height:1.75;border-left:2px solid var(--gy-primary);padding-left:14px">${info.body}</div>
+      <button onclick="document.getElementById('gy-phase-modal').style.display='none'" style="margin-top:20px;width:100%;padding:13px;background:var(--gy-dark-bg);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer">Đã hiểu</button>
+    </div>`;
+  el.style.display = 'block';
+}
+
 function initGyHome() {
   const nameEl = document.getElementById('gy-name');
   if (nameEl && curUser?.name) nameEl.textContent = curUser.name.split(' ').pop();
@@ -5035,13 +5077,13 @@ function initGyHome() {
   const chipsEl = document.getElementById('gy-phase-chips');
   if (chipsEl) {
     const CHIPS = [
-      { label:'Kinh',       active: day>=1&&day<=5,    flex:5,  activeBorder:'#C03030', activeColor:'#C03030' },
-      { label:'Nang noãn ●',active: day>=6&&day<=13,   flex:8,  activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)' },
-      { label:'R.T',        active: day===ovulDay,      flex:1,  activeBorder:'#F5A030', activeColor:'#F5A030' },
-      { label:'Hoàng thể',  active: day>ovulDay,        flex:14, activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)' },
+      { label:'Kinh',       active: day>=1&&day<=5,    flex:5,  activeBorder:'#C03030', activeColor:'#C03030', key:'kinh' },
+      { label:'Nang noãn ●',active: day>=6&&day<=13,   flex:8,  activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)', key:'nang' },
+      { label:'R.T',        active: day===ovulDay,      flex:1,  activeBorder:'#F5A030', activeColor:'#F5A030', key:'rt' },
+      { label:'Hoàng thể',  active: day>ovulDay,        flex:14, activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)', key:'hoangthe' },
     ];
     chipsEl.innerHTML = CHIPS.map(c => `
-      <div style="flex:${c.flex};background:var(--gy-lt);border:${c.active?'1.5px':'0.5px'} solid ${c.active?c.activeBorder:'var(--gy-md)'};border-radius:4px;padding:5px 0;text-align:center;font-size:9px;font-weight:${c.active?'700':'400'};color:${c.active?c.activeColor:'var(--gy-muted)'}">
+      <div onclick="showGyPhaseInfo('${c.key}')" style="flex:${c.flex};background:var(--gy-lt);border:${c.active?'1.5px':'0.5px'} solid ${c.active?c.activeBorder:'var(--gy-md)'};border-radius:4px;padding:5px 0;text-align:center;font-size:9px;font-weight:${c.active?'700':'400'};color:${c.active?c.activeColor:'var(--gy-muted)'};cursor:pointer;-webkit-tap-highlight-color:transparent">
         ${c.label}
       </div>`).join('');
   }
