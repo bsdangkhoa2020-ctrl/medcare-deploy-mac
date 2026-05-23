@@ -1426,18 +1426,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="width:28px;height:28px;border-radius:50%;background:var(--gy-lt);border:.5px solid var(--gy-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px">💛</div>
       <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-ink)" id="gy-note-title">Chị nên biết</div>
     </div>
-    <div style="background:var(--surface);border:.5px solid var(--gy-md);border-radius:var(--r-lg);overflow:hidden">
-      <!-- Chị nên biết -->
-      <div style="padding:16px 16px 14px;border-bottom:.5px solid var(--gy-md)">
-        <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--gy-ink);line-height:1.75;border-left:2px solid var(--gy-primary);padding-left:12px" id="gy-mom-note">—</div>
-      </div>
-      <!-- BS khuyên dùng -->
-      <div style="padding:12px 16px 8px">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gy-dk);margin-bottom:10px" id="gy-supp-phase">BS. Tuấn khuyên dùng</div>
-        <div id="gy-supp-products" style="display:flex;flex-direction:column;gap:10px"></div>
-      </div>
-      <div style="padding:10px 16px 14px;font-size:11px;color:var(--gy-dk);font-weight:700">Xem chi tiết →</div>
-    </div>
+    <div style="background:var(--gy-lt);padding:14px 14px 6px;border-radius:var(--r-lg)" id="gy-supplement-list"></div>
   </div>
 
   <!-- ═══ BÀI VIẾT SỨC KHOẺ ═══ -->
@@ -4976,25 +4965,29 @@ goTo = function(id) {
 // ── GY DATA ──
 const GY_PHASES = [
   { days:[1,5],  label:'Hành kinh',   note:'Cơ thể đang trong giai đoạn hành kinh. Nghỉ ngơi nhiều, tránh vận động mạnh, uống đủ nước và bổ sung sắt nếu kinh nhiều.', color:'#C03030',
+    insight:'Trong kỳ kinh, cơ thể mất sắt đáng kể. BS. Tuấn khuyên bổ sung sắt hữu cơ và magie để giảm đau bụng kinh và phục hồi nhanh hơn.',
     products:[
-      { name:'Sắt hữu cơ Chela-Ferr', dose:'1 viên/ngày sau ăn', desc:'Bù sắt mất qua kinh nguyệt', icon:'🩸' },
-      { name:'Magie B6', dose:'1 viên/ngày', desc:'Giảm đau bụng kinh, thư giãn cơ', icon:'💊' },
+      { name:'Sắt hữu cơ Chela-Ferr', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Sắt chelate hấp thu gấp 3 lần sắt thường. Ít buồn nôn, an toàn cho dạ dày.', img:'' },
+      { name:'Magie B6', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Giảm đau bụng kinh, thư giãn cơ, cải thiện tâm trạng trong kỳ kinh.', img:'' },
     ]},
   { days:[6,13], label:'Nang noãn',   note:'Cơ thể đang chuẩn bị phóng noãn. Ngủ đủ giấc, giảm stress và bổ sung dinh dưỡng giúp noãn phát triển tốt hơn.', color:'#B8814A',
+    insight:'Giai đoạn nang noãn là "cửa sổ vàng" để hỗ trợ chất lượng trứng. BS. Tuấn khuyên bổ sung CoQ10 và Vitamin E để noãn phát triển khỏe mạnh nhất.',
     products:[
-      { name:'CoQ10 200mg', dose:'1 viên/ngày', desc:'Hỗ trợ chất lượng nang noãn', icon:'✨' },
-      { name:'Vitamin E 400IU', dose:'1 viên/ngày sau ăn', desc:'Chống oxy hóa, bảo vệ tế bào trứng', icon:'🌿' },
-      { name:'Omega-3 DHA', dose:'1 viên/ngày', desc:'Hỗ trợ phát triển nang noãn', icon:'🐟' },
+      { name:'CoQ10 200mg', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Hỗ trợ năng lượng tế bào trứng, tăng chất lượng nang noãn.', img:'' },
+      { name:'Vitamin E 400IU', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Chống oxy hóa, bảo vệ tế bào trứng khỏi tổn thương.', img:'' },
+      { name:'Omega-3 DHA', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Hỗ trợ cân bằng hormone và phát triển nang noãn.', img:'' },
     ]},
   { days:[14,14],label:'Rụng trứng',  note:'Hôm nay là ngày rụng trứng ước tính. Đây là thời điểm quan trọng nhất trong chu kỳ sinh sản.', color:'#F5C462',
+    insight:'Hôm nay là ngày quan trọng nhất trong chu kỳ. BS. Tuấn khuyên tiếp tục CoQ10 và bổ sung thêm Vitamin C để hỗ trợ quá trình phóng noãn.',
     products:[
-      { name:'CoQ10 200mg', dose:'1 viên/ngày', desc:'Hỗ trợ quá trình phóng noãn', icon:'✨' },
-      { name:'Vitamin C 500mg', dose:'1 viên/ngày', desc:'Hỗ trợ hệ miễn dịch và rụng trứng', icon:'🍋' },
+      { name:'CoQ10 200mg', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Hỗ trợ quá trình phóng noãn diễn ra thuận lợi.', img:'' },
+      { name:'Vitamin C 500mg', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Hỗ trợ hệ miễn dịch và quá trình rụng trứng.', img:'' },
     ]},
   { days:[15,28],label:'Hoàng thể',   note:'Giai đoạn hoàng thể — cơ thể tiết progesterone. Một số chị có thể cảm thấy ngực căng, bụng chướng — đây là bình thường.', color:'#907060',
+    insight:'Trong giai đoạn hoàng thể, progesterone tăng cao có thể gây PMS. BS. Tuấn khuyên bổ sung B6 và Magie để giảm triệu chứng khó chịu trước kỳ kinh.',
     products:[
-      { name:'Vitamin B6 50mg', dose:'1 viên/ngày', desc:'Giảm triệu chứng PMS, cân bằng hormone', icon:'💛' },
-      { name:'Magie B6', dose:'1 viên/ngày tối', desc:'Giảm phù, giảm đau ngực trước kỳ', icon:'💊' },
+      { name:'Vitamin B6 50mg', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Giảm triệu chứng PMS, cân bằng tâm trạng, giảm phù nề.', img:'' },
+      { name:'Magie B6', badge:'BS TUẤN KHUYÊN DÙNG', benefit:'Giảm đau ngực, bụng chướng trước kỳ kinh. Giúp ngủ ngon hơn.', img:'' },
     ]},
 ];
 
@@ -5026,7 +5019,45 @@ function gySetNav(screenId, el) {
   goTo(screenId);
 }
 
-function openGyCheckin() { showToast('Check-in phụ khoa — sẽ có trong P6.5'); }
+function gyRenderSupplement(phase) {
+  const listEl = document.getElementById('gy-supplement-list');
+  if (!listEl || !phase) return;
+  listEl.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:rgba(201,96,128,.15);border:.5px solid var(--gy-md);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--gy-dk)" stroke-width="1.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--gy-ink)">BS. Hoàng Thanh Tuấn</div>
+    </div>
+    <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-ink);line-height:1.65;padding:10px 12px;background:rgba(255,255,255,.8);border-left:2px solid var(--gy-primary);margin-bottom:14px">"${phase.insight}"</div>
+    <!-- Chị nên biết -->
+    <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-ink);line-height:1.65;padding:10px 12px;background:rgba(255,255,255,.6);border-left:2px solid var(--gy-md);margin-bottom:14px" id="gy-mom-note">—</div>
+    ${phase.products.map((p, i) => `
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;${i < phase.products.length-1 ? 'border-bottom:.5px solid var(--gy-md)' : ''}">
+      <div style="width:72px;height:72px;border-radius:10px;background:#fff;border:.5px solid var(--gy-md);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:3px;overflow:hidden">
+        ${p.img
+          ? `<img src="${p.img}" style="width:100%;height:100%;object-fit:contain">`
+          : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gy-primary)" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg><div style="font-size:8px;color:var(--gy-muted)">ảnh thuốc</div>`
+        }
+      </div>
+      <div style="flex:1;padding-top:2px;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--gy-ink);margin-bottom:5px">${p.name}</div>
+        <div style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:.5px solid var(--gy-md);border-radius:4px;padding:2px 9px;margin-bottom:7px">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--gy-dk)" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--gy-dk);text-transform:uppercase">${p.badge}</span>
+        </div>
+        <div style="font-size:12px;color:var(--gy-ink);line-height:1.55">${p.benefit}</div>
+      </div>
+    </div>`).join('')}
+    <a href="tel:0938559098" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--gy-dk);padding:12px;border-radius:8px;text-decoration:none;margin-top:12px;-webkit-tap-highlight-color:transparent">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.06em">Hỏi BS. Tuấn về sản phẩm này</span>
+    </a>
+    <div style="text-align:center;padding:8px 0 2px;font-size:10px;color:var(--gy-muted);font-style:italic">Tham khảo ý kiến bác sĩ trước khi sử dụng</div>
+  `;
+  const noteEl = document.getElementById('gy-mom-note');
+  if (noteEl) noteEl.textContent = phase.note;
+}
 
 const GY_PHASE_INFO = {
   'kinh': {
@@ -5106,24 +5137,7 @@ function initGyHome() {
 
   // Chị nên biết + BS khuyên dùng
   _setEl('gy-note-title', `Chị nên biết · D${day}`);
-  _setEl('gy-mom-note', phase.note);
-  _setEl('gy-supp-phase', `BS. Tuấn khuyên dùng · ${phase.label}`);
-
-  // Render sản phẩm có ảnh placeholder
-  const prodEl = document.getElementById('gy-supp-products');
-  if (prodEl && phase.products) {
-    prodEl.innerHTML = phase.products.map(p => `
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:52px;height:52px;border-radius:10px;background:var(--gy-lt);border:.5px solid var(--gy-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">
-          ${p.icon}
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--gy-ink)">${p.name}</div>
-          <div style="font-size:11px;color:var(--gy-muted);margin-top:1px">${p.desc}</div>
-          <div style="font-size:10px;font-weight:700;color:var(--gy-dk);margin-top:2px">${p.dose}</div>
-        </div>
-      </div>`).join(`<div style="height:.5px;background:var(--gy-md)"></div>`);
-  }
+  gyRenderSupplement(phase);
 
   // Bài viết
   const journal = GY_JOURNAL.find(j => j.phase === phase.label) || GY_JOURNAL[1];
