@@ -3277,7 +3277,11 @@ function _renderMilestoneTab(kind) {
 
 function _renderVisits(visits) {
   if (!visits.length) return '<div class="empty"><p>Chưa có lần khám nào</p></div>';
-  return visits.map((v,i) => `
+  const header = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-lt);border:.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px">📋</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)">Lịch sử các lần khám</div>
+  </div>`;
+  return header + visits.map((v,i) => `
     <div onclick="recShowVisitDetail(${i})" style="display:flex;gap:0;margin-bottom:12px;cursor:pointer">
       <!-- Timeline dot -->
       <div style="display:flex;flex-direction:column;align-items:center;margin-right:14px;flex-shrink:0">
