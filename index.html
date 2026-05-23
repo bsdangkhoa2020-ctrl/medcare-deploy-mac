@@ -3506,34 +3506,73 @@ async function initObAppts() {
     }
   }
 
-  // ── Lịch BS tuần này (placeholder — sẽ load từ Supabase khi P7 xong) ──
+  // ── Lịch BS grid 7 ngày + chuyển tuần ──
   const bsSched = document.getElementById('appt-bs-schedule');
-  const DOW_LABELS = ['CN','T2','T3','T4','T5','T6','T7'];
   const SESSIONS_DEFAULT = [
     ['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],
     ['S 8h–11h','T 17h–20h'],['S 8h–11h','T 17h–20h']
   ];
-  if (bsSched) {
-    const today = new Date().getDay();
-    const rows = [];
-    for (let offset = 0; offset < 7; offset++) {
-      const d = new Date(); d.setDate(d.getDate() + offset);
-      const dow = d.getDay();
+
+  window._apptWeekOffset = window._apptWeekOffset || 0;
+
+  window.renderBsSchedule = function(offset) {
+    window._apptWeekOffset = offset;
+    const bsEl = document.getElementById('appt-bs-schedule');
+    if (!bsEl) return;
+
+    // Tính ngày đầu tuần (T2)
+    const today = new Date();
+    const todayDow = today.getDay(); // 0=CN
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (todayDow === 0 ? 6 : todayDow - 1) + offset * 7);
+
+    // Label tuần
+    const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const weekLabel = offset === 0 ? 'Tuần này'
+      : offset === 1 ? 'Tuần tới'
+      : `${monday.getDate()}/${monday.getMonth()+1} – ${sunday.getDate()}/${sunday.getMonth()+1}`;
+
+    // Build 7 ngày
+    const DOW_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
+    let cells = '';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      const dow = d.getDay(); // 0=CN, 6=T7
       const idx = [1,2,3,4,5,6,0].indexOf(dow);
-      if (idx === -1) continue;
-      const isToday = offset === 0;
-      const dateStr = `${['CN','T2','T3','T4','T5','T6','T7'][[0,1,2,3,4,5,6].indexOf(dow)]} ${d.getDate()}/${d.getMonth()+1}`;
-      rows.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:.5px solid var(--border);${isToday?'background:var(--gold-lt)':''}">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:6px;height:6px;border-radius:50%;background:${isToday?'var(--gold-dk)':'var(--border)'};flex-shrink:0"></div>
-          <span style="font-size:12px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--gold-dk)':'var(--ink)'}">${dateStr}</span>
+      const sessions = SESSIONS_DEFAULT[idx] || [];
+      const isToday = d.toDateString() === today.toDateString();
+      const hasSang = sessions.some(s => s.startsWith('S'));
+      const hasToi  = sessions.some(s => s.startsWith('T'));
+      cells += `<div style="flex:1;text-align:center;padding:8px 2px;${i<6?'border-right:.5px solid var(--border)':''}${isToday?';background:var(--gold-lt)':''}">
+        <div style="font-size:9px;font-weight:700;color:${isToday?'var(--gold-dk)':'var(--muted)'};margin-bottom:3px">${DOW_LABELS[i]}</div>
+        <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--gold-dk)':'var(--ink)'};line-height:1.1">${d.getDate()}</div>
+        <div style="margin-top:4px;display:flex;flex-direction:column;gap:2px;align-items:center">
+          ${hasSang ? `<div style="font-size:8px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">S</div>` : ''}
+          ${hasToi  ? `<div style="font-size:8px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">T</div>` : ''}
         </div>
-        <span style="font-size:11px;color:${isToday?'var(--gold-dk)':'var(--muted)'};font-weight:600">${SESSIONS_DEFAULT[idx].join(' · ')}</span>
-      </div>`);
+      </div>`;
     }
-    bsSched.innerHTML = rows.join('').replace(/border-bottom[^;]+;(?=<\/div>\s*$)/, '') +
-      `<div style="padding:7px 16px;font-size:10px;color:var(--muted);text-align:center">PK Phụ Sản 315 · 167-169 Bình Phú, Q.6</div>`;
-  }
+
+    bsEl.innerHTML = `
+      <!-- Header tuần -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:.5px solid var(--border)">
+        <button onclick="renderBsSchedule(${offset-1})" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div style="font-size:11px;font-weight:700;color:var(--ink)">${weekLabel}</div>
+        <button onclick="renderBsSchedule(${offset+1})" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <!-- Grid 7 ngày -->
+      <div style="display:flex;border-bottom:.5px solid var(--border)">${cells}</div>
+      <!-- Chú thích -->
+      <div style="padding:7px 14px;font-size:10px;color:var(--muted);text-align:center">S: 8h–11h &nbsp;·&nbsp; T: 17h–20h &nbsp;·&nbsp; PK Phụ Sản 315</div>
+    `;
+  };
+
+  if (bsSched) renderBsSchedule(0);
 
   // ── Lịch hẹn từ Supabase / Mock ──
   const uEl = document.getElementById('appts-upcoming-list');
