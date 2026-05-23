@@ -975,6 +975,101 @@ input[type=date], input[type=time], input[type=datetime-local] {
   </div>
 </div>
 
+<!-- ── GY CHECK-IN MODAL ── -->
+<div id="gy-checkin-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(42,16,21,.6)" onclick="if(event.target===this)closeGyCheckin()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:0 0 40px;max-height:92vh;overflow-y:auto">
+    <!-- Handle -->
+    <div style="padding:14px 0 0;text-align:center">
+      <div style="width:36px;height:4px;background:var(--gy-md);border-radius:2px;margin:0 auto"></div>
+    </div>
+    <!-- Header -->
+    <div style="padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-muted)" id="gy-ci-date-label">Hôm nay</div>
+        <div style="font-family:var(--serif);font-size:22px;color:var(--gy-ink);font-weight:300;margin-top:2px">Check-in <em style="color:var(--gy-dk)">buổi tối</em></div>
+      </div>
+      <div id="gy-ci-streak-badge" style="background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--gy-dk)">0 ngày 🔥</div>
+    </div>
+
+    <!-- Tâm trạng hôm nay -->
+    <div style="padding:20px 24px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--gy-ink);margin-bottom:12px">Tâm trạng hôm nay</div>
+      <div style="display:flex;justify-content:space-between;gap:6px" id="gy-ci-mood">
+        <div onclick="gySelectMood(1,this)" data-val="1" style="flex:1;text-align:center;padding:10px 4px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:24px">😢</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Rất tệ</div>
+        </div>
+        <div onclick="gySelectMood(2,this)" data-val="2" style="flex:1;text-align:center;padding:10px 4px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:24px">😕</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Không vui</div>
+        </div>
+        <div onclick="gySelectMood(3,this)" data-val="3" style="flex:1;text-align:center;padding:10px 4px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:24px">😐</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Bình thường</div>
+        </div>
+        <div onclick="gySelectMood(4,this)" data-val="4" style="flex:1;text-align:center;padding:10px 4px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:24px">🙂</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Vui</div>
+        </div>
+        <div onclick="gySelectMood(5,this)" data-val="5" style="flex:1;text-align:center;padding:10px 4px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:24px">😄</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Rất vui</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Năng lượng -->
+    <div style="padding:18px 24px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--gy-ink);margin-bottom:10px">Năng lượng hôm nay</div>
+      <div style="display:flex;gap:8px" id="gy-ci-energy">
+        <div onclick="gySelectEnergy(1,this)" data-val="1" style="flex:1;text-align:center;padding:10px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:20px">🔋</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Thấp</div>
+        </div>
+        <div onclick="gySelectEnergy(2,this)" data-val="2" style="flex:1;text-align:center;padding:10px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:20px">⚡</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Bình thường</div>
+        </div>
+        <div onclick="gySelectEnergy(3,this)" data-val="3" style="flex:1;text-align:center;padding:10px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div style="font-size:20px">🚀</div><div style="font-size:10px;color:var(--gy-muted);margin-top:4px">Cao</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Triệu chứng thể chất -->
+    <div style="padding:18px 24px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--gy-ink);margin-bottom:10px">Triệu chứng hôm nay <span style="font-weight:400;color:var(--gy-muted)">(chọn nếu có)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="gy-ci-symptoms">
+        <div onclick="gyToggleSymptom('pain',this)" data-key="pain" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">🤕</span><span style="font-size:12px;color:var(--gy-ink)">Đau bụng</span>
+        </div>
+        <div onclick="gyToggleSymptom('breast',this)" data-key="breast" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">💔</span><span style="font-size:12px;color:var(--gy-ink)">Ngực căng</span>
+        </div>
+        <div onclick="gyToggleSymptom('bloat',this)" data-key="bloat" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">🫀</span><span style="font-size:12px;color:var(--gy-ink)">Bụng chướng</span>
+        </div>
+        <div onclick="gyToggleSymptom('headache',this)" data-key="headache" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">🤯</span><span style="font-size:12px;color:var(--gy-ink)">Đau đầu</span>
+        </div>
+        <div onclick="gyToggleSymptom('fatigue',this)" data-key="fatigue" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">😴</span><span style="font-size:12px;color:var(--gy-ink)">Mệt mỏi</span>
+        </div>
+        <div onclick="gyToggleSymptom('spot',this)" data-key="spot" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gy-md);cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:18px">🩸</span><span style="font-size:12px;color:var(--gy-ink)">Ra máu bất thường</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ghi chú -->
+    <div style="padding:18px 24px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--gy-ink);margin-bottom:8px">Ghi chú thêm</div>
+      <textarea id="gy-ci-note" placeholder="Hôm nay có gì muốn ghi lại không..." rows="3"
+        style="width:100%;padding:10px 12px;border:.5px solid var(--gy-md);border-radius:10px;font-family:var(--serif);font-size:13px;color:var(--gy-ink);resize:none;outline:none;background:#fff;-webkit-appearance:none"></textarea>
+    </div>
+
+    <!-- Nút lưu -->
+    <div style="padding:16px 24px 0">
+      <button onclick="saveGyCheckin()" style="width:100%;padding:14px;background:var(--gy-dk);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.06em">
+        Lưu check-in hôm nay
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL CHI TIẾT LẦN KHÁM ── -->
 <div id="visit-detail-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(28,21,16,.6)" onclick="if(event.target===this)this.style.display='none'">
   <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:28px 24px 40px;max-height:85vh;overflow-y:auto">
@@ -5294,6 +5389,108 @@ function gyEduRenderTopic(id, bodyEl) {
     </div>`;
   bodyEl.scrollTop = 0;
 }
+// ── P6.5 GY CHECK-IN ──
+let _gyCheckinState = { mood: 3, energy: 2, symptoms: new Set(), note: '' };
+
+function openGyCheckin() {
+  _gyCheckinState = { mood: 3, energy: 2, symptoms: new Set(), note: '' };
+  const modal = document.getElementById('gy-checkin-modal');
+  if (!modal) return;
+  const now = new Date();
+  const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
+  _setEl('gy-ci-date-label', `${now.toLocaleDateString('vi-VN',{weekday:'long'})} · D${cycle?.day || '?'}`);
+  const streak = parseInt(localStorage.getItem('gy_streak') || '0');
+  _setEl('gy-ci-streak-badge', `${streak} ngày 🔥`);
+  document.querySelectorAll('#gy-ci-mood div[data-val],#gy-ci-energy div[data-val],#gy-ci-symptoms div[data-key]').forEach(el => {
+    el.style.borderColor = 'var(--gy-md)'; el.style.background = '#fff';
+  });
+  const noteEl = document.getElementById('gy-ci-note');
+  if (noteEl) noteEl.value = '';
+  gySelectMood(3, document.querySelector('#gy-ci-mood div[data-val="3"]'));
+  gySelectEnergy(2, document.querySelector('#gy-ci-energy div[data-val="2"]'));
+  modal.style.display = 'block';
+}
+
+function closeGyCheckin() {
+  const m = document.getElementById('gy-checkin-modal');
+  if (m) m.style.display = 'none';
+}
+
+function gySelectMood(val, el) {
+  _gyCheckinState.mood = val;
+  document.querySelectorAll('#gy-ci-mood div[data-val]').forEach(e => {
+    e.style.borderColor = 'var(--gy-md)'; e.style.background = '#fff';
+  });
+  if (el) { el.style.borderColor = 'var(--gy-dk)'; el.style.background = 'var(--gy-lt)'; }
+}
+
+function gySelectEnergy(val, el) {
+  _gyCheckinState.energy = val;
+  document.querySelectorAll('#gy-ci-energy div[data-val]').forEach(e => {
+    e.style.borderColor = 'var(--gy-md)'; e.style.background = '#fff';
+  });
+  if (el) { el.style.borderColor = 'var(--gy-dk)'; el.style.background = 'var(--gy-lt)'; }
+}
+
+function gyToggleSymptom(key, el) {
+  if (_gyCheckinState.symptoms.has(key)) {
+    _gyCheckinState.symptoms.delete(key);
+    if (el) { el.style.borderColor = 'var(--gy-md)'; el.style.background = '#fff'; }
+  } else {
+    _gyCheckinState.symptoms.add(key);
+    if (el) { el.style.borderColor = 'var(--gy-dk)'; el.style.background = 'var(--gy-lt)'; }
+  }
+}
+
+async function saveGyCheckin() {
+  const noteEl = document.getElementById('gy-ci-note');
+  _gyCheckinState.note = noteEl?.value || '';
+  const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
+  const s = _gyCheckinState;
+  const payload = {
+    bn_code: curUser?.bn_code,
+    checkin_date: new Date().toISOString().split('T')[0],
+    cycle_day: cycle?.day || null,
+    pain_level: s.symptoms.has('pain') ? 1 : 0,
+    breast_tension: s.symptoms.has('breast'),
+    bloating: s.symptoms.has('bloat'),
+    headache: s.symptoms.has('headache'),
+    fatigue: s.symptoms.has('fatigue'),
+    spotting: s.symptoms.has('spot'),
+    mood: s.mood,
+    energy_level: s.energy,
+    note: s.note || null,
+  };
+  try {
+    if (curUser?._supabase) {
+      await db._sb.from('gy_checkins').upsert(payload, { onConflict: 'bn_code,checkin_date' });
+    }
+    const streak = parseInt(localStorage.getItem('gy_streak') || '0') + 1;
+    localStorage.setItem('gy_streak', streak);
+    localStorage.setItem('gy_last_checkin', payload.checkin_date);
+    closeGyCheckin();
+    showToast('✓ Check-in hôm nay đã lưu!');
+    _setEl('gy-checkin-streak', `${streak} ngày liên tiếp`);
+  } catch(e) {
+    showToast('Lỗi lưu check-in, thử lại sau');
+  }
+}
+
+// ── P6.7 LOAD CHECK-IN DATA CHO BÁO CÁO ──
+async function loadGyCheckinReport() {
+  // Mock data 30 ngày gần nhất cho demo
+  const GY_MOCK_CHECKINS = [
+    { cycle_day:1,  mood:2, energy:1, pain_level:1, breast_tension:false, bloating:true,  fatigue:true  },
+    { cycle_day:2,  mood:2, energy:1, pain_level:1, breast_tension:false, bloating:false, fatigue:true  },
+    { cycle_day:3,  mood:3, energy:2, pain_level:0, breast_tension:false, bloating:false, fatigue:false },
+    { cycle_day:5,  mood:3, energy:2, pain_level:0, breast_tension:false, bloating:false, fatigue:false },
+    { cycle_day:7,  mood:4, energy:3, pain_level:0, breast_tension:false, bloating:false, fatigue:false },
+    { cycle_day:8,  mood:4, energy:3, pain_level:0, breast_tension:false, bloating:false, fatigue:false },
+    { cycle_day:9,  mood:4, energy:2, pain_level:0, breast_tension:false, bloating:false, fatigue:false },
+  ];
+  return GY_MOCK_CHECKINS;
+}
+
 const GY_MOCK_VISITS = [
   { date:'2026-05-10', type:'Khám phụ khoa định kỳ', note:'Siêu âm tử cung buồng trứng bình thường. Cổ tử cung sạch.', doctor:'BS. Hoàng Thanh Tuấn' },
   { date:'2026-03-15', type:'Khám phụ khoa', note:'Viêm âm đạo nhẹ — điều trị kháng nấm 7 ngày.', doctor:'BS. Hoàng Thanh Tuấn' },
@@ -5446,53 +5643,114 @@ function gyRecTab(tab, el) {
     const day = cycle?.day || 0;
     const cycleLen = cycle?.cycleLen || 28;
     const ovulDay = cycle?.ovulDay || cycleLen - 14;
+    const streak = parseInt(localStorage.getItem('gy_streak') || '0');
+
+    // Load check-in data (mock)
+    loadGyCheckinReport().then(checkins => {
+      const totalDays = checkins.length;
+      const avgMood = totalDays ? (checkins.reduce((s,c)=>s+c.mood,0)/totalDays).toFixed(1) : '—';
+      const avgEnergy = totalDays ? (checkins.reduce((s,c)=>s+c.energy_level,0)/totalDays).toFixed(1) : '—';
+      const moodLabel = ['','Rất tệ','Không vui','Bình thường','Vui','Rất vui'];
+      const energyLabel = ['','Thấp','Bình thường','Cao'];
+      // Đếm triệu chứng nổi bật
+      const symCount = {
+        pain:    checkins.filter(c=>c.pain_level>0).length,
+        breast:  checkins.filter(c=>c.breast_tension).length,
+        bloat:   checkins.filter(c=>c.bloating).length,
+        fatigue: checkins.filter(c=>c.fatigue).length,
+      };
+      const topSym = Object.entries(symCount).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+      const reportEl = document.getElementById('gy-report-content');
+      if (!reportEl) return;
+      reportEl.innerHTML = `
+        <!-- Số liệu tổng -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:12px;background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);overflow:hidden">
+          <div style="text-align:center;padding:12px 0;border-right:.5px solid var(--gy-md)">
+            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${streak}</div>
+            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Ngày streak</div>
+          </div>
+          <div style="text-align:center;padding:12px 0;border-right:.5px solid var(--gy-md)">
+            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${totalDays}</div>
+            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Ngày check-in</div>
+          </div>
+          <div style="text-align:center;padding:12px 0">
+            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${day}</div>
+            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Ngày D hôm nay</div>
+          </div>
+        </div>
+
+        <!-- Tâm trạng & năng lượng TB -->
+        <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:10px">Trung bình tháng này</div>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1;background:var(--gy-lt);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:22px">${['','😢','😕','😐','🙂','😄'][Math.round(avgMood)] || '😐'}</div>
+              <div style="font-size:11px;font-weight:700;color:var(--gy-dk);margin-top:4px">${avgMood}/5</div>
+              <div style="font-size:10px;color:var(--gy-muted)">Tâm trạng</div>
+            </div>
+            <div style="flex:1;background:var(--gy-lt);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:22px">${['','🔋','⚡','🚀'][Math.round(avgEnergy)] || '⚡'}</div>
+              <div style="font-size:11px;font-weight:700;color:var(--gy-dk);margin-top:4px">${avgEnergy}/3</div>
+              <div style="font-size:10px;color:var(--gy-muted)">Năng lượng</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Triệu chứng nổi bật -->
+        <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:10px">Triệu chứng nổi bật</div>
+          ${topSym.length ? topSym.map(([key, count]) => {
+            const labels = {pain:'Đau bụng',breast:'Ngực căng',bloat:'Bụng chướng',fatigue:'Mệt mỏi'};
+            const pct = Math.round(count/totalDays*100);
+            return `<div style="margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <div style="font-size:12px;color:var(--gy-ink)">${labels[key]}</div>
+                <div style="font-size:11px;color:var(--gy-muted)">${count}/${totalDays} ngày (${pct}%)</div>
+              </div>
+              <div style="height:5px;background:var(--gy-md);border-radius:3px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:var(--gy-dk);border-radius:3px"></div>
+              </div>
+            </div>`;
+          }).join('') : `<div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-muted);text-align:center;padding:8px 0">Không có triệu chứng đáng kể 🌸</div>`}
+        </div>
+
+        <!-- Phân bố chu kỳ -->
+        <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:8px">Chu kỳ tháng này · ${cycleLen} ngày</div>
+          <div style="display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;margin-bottom:6px">
+            <div style="flex:5;background:#C03030"></div>
+            <div style="flex:${ovulDay-6};background:var(--gy-dk)"></div>
+            <div style="flex:1;background:#F5C462"></div>
+            <div style="flex:${cycleLen-ovulDay-1};background:var(--gy-primary)"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#C03030"></div><span style="font-size:10px;color:var(--gy-muted)">Kinh 5n</span></div>
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gy-dk)"></div><span style="font-size:10px;color:var(--gy-muted)">Nang noãn ${ovulDay-6}n</span></div>
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#F5C462"></div><span style="font-size:10px;color:var(--gy-muted)">Rụng trứng</span></div>
+            <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gy-primary)"></div><span style="font-size:10px;color:var(--gy-muted)">Hoàng thể ${cycleLen-ovulDay-1}n</span></div>
+          </div>
+        </div>
+
+        <!-- Nhận xét BS -->
+        <div style="background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--gy-dk);margin-bottom:4px">💡 Nhận xét của BS. Tuấn</div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-ink);line-height:1.6">
+            ${totalDays === 0
+              ? 'Chưa có dữ liệu check-in. Hãy check-in mỗi tối để xem báo cáo chu kỳ của mình.'
+              : `Chu kỳ ${cycleLen} ngày nằm trong giới hạn bình thường. ${topSym.length ? `Triệu chứng nổi bật: ${topSym.map(([k])=>({pain:'đau bụng',breast:'ngực căng',bloat:'bụng chướng',fatigue:'mệt mỏi'})[k]).join(', ')}. ` : ''}Tâm trạng trung bình ${avgMood}/5 — ${Number(avgMood)>=4?'tốt, tiếp tục duy trì!':Number(avgMood)>=3?'ổn định.':'hãy chú ý nghỉ ngơi thêm.'}`}
+          </div>
+        </div>`;
+    });
+
+    // Hiện placeholder trước khi data load
     cont.innerHTML = `
       <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">📊 Báo cáo chu kỳ tháng này</div>
-      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:16px;margin-bottom:12px">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:14px">
-          <div style="text-align:center;padding:8px 0;border-right:.5px solid var(--gy-md)">
-            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${day}</div>
-            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Ngày D</div>
-          </div>
-          <div style="text-align:center;padding:8px 0;border-right:.5px solid var(--gy-md)">
-            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${cycleLen}</div>
-            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Ngày/chu kỳ</div>
-          </div>
-          <div style="text-align:center;padding:8px 0">
-            <div style="font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gy-dk);line-height:1">${cycle ? cycleLen - 14 : 14}</div>
-            <div style="font-size:9px;color:var(--gy-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Rụng trứng D</div>
-          </div>
-        </div>
-        <div style="font-size:10px;font-weight:700;color:var(--gy-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Phân bố chu kỳ</div>
-        <div style="display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;margin-bottom:8px">
-          <div style="flex:5;background:#C03030"></div>
-          <div style="flex:${ovulDay-6};background:var(--gy-dk)"></div>
-          <div style="flex:1;background:#F5C462"></div>
-          <div style="flex:${cycleLen-ovulDay-1};background:var(--gy-primary)"></div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#C03030"></div><span style="font-size:10px;color:var(--gy-muted)">Hành kinh 5n</span></div>
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gy-dk)"></div><span style="font-size:10px;color:var(--gy-muted)">Nang noãn ${ovulDay-6}n</span></div>
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#F5C462"></div><span style="font-size:10px;color:var(--gy-muted)">Rụng trứng</span></div>
-          <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gy-primary)"></div><span style="font-size:10px;color:var(--gy-muted)">Hoàng thể ${cycleLen-ovulDay-1}n</span></div>
-        </div>
-      </div>
-      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--gy-ink);margin-bottom:8px">Triệu chứng nổi bật</div>
-        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-muted);text-align:center;padding:8px 0">Chưa có dữ liệu check-in · Bắt đầu check-in tối để xem báo cáo</div>
-      </div>
-      <div style="background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--gy-dk);margin-bottom:4px">💡 Nhận xét của BS. Tuấn</div>
-        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-ink);line-height:1.6">Chu kỳ ${cycleLen} ngày nằm trong giới hạn bình thường (21–35 ngày). Tiếp tục check-in tối để theo dõi triệu chứng chu kỳ.</div>
+      <div id="gy-report-content">
+        <div style="text-align:center;padding:20px"><div style="font-family:var(--serif);font-style:italic;color:var(--gy-muted)">Đang tải...</div></div>
       </div>`;
     return;
   }
-}
-
-function initGyRecords() {
-  const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
-  _setEl('gy-rec-name', curUser?.name || '—');
-  _setEl('gy-rec-day-big', cycle?.day || '—');
   _setEl('gy-rec-phase', cycle ? `${cycle.phase.label} · Chu kỳ tháng ${new Date().getMonth()+1}` : '—');
   _setEl('gy-rec-cycle', `${cycle?.cycleLen || curUser?.cycle_len || 28} ngày`);
   gyRecTab('visit', document.querySelector('#s-gy-records .chip'));
