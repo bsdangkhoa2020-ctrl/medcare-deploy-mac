@@ -2676,6 +2676,18 @@ function goTo(id) {
     return;
   }
 
+  // Guard: OB screens chỉ dành cho OB patient (admin bypass)
+  if (OB_SCREENS.includes(id) && curUser && curUser.role !== 'admin' && curUser.patient_type !== 'ob') {
+    console.warn('[NAV] Chặn GY patient vào OB screen:', id);
+    return;
+  }
+
+  // Guard: GY screens chỉ dành cho GY patient (admin bypass)
+  if (GY_SCREENS.includes(id) && curUser && curUser.role !== 'admin' && curUser.patient_type !== 'gy') {
+    console.warn('[NAV] Chặn OB patient vào GY screen:', id);
+    return;
+  }
+
   // Lưu màn hình hiện tại vào history (trừ khi đang back)
   const current = document.querySelector('.screen.active');
   if (current && !_isBackNav) {
@@ -2763,6 +2775,7 @@ function _resolveUser(sbUser, profile) {
 // Route sau khi login thành công
 async function _routeAfterLogin(user) {
   curUser = user;
+  _history = []; // Reset history khi đăng nhập mới
   if (user.role === 'admin') {
     goTo('s-admin');
     setTimeout(initAdmin, 100);
@@ -2853,13 +2866,20 @@ function _lmpFromWeek(weeks) {
 function quickLogin(type) {
   const user = QUICK_ACCOUNTS[type];
   if (!user) return;
+  // Reset session state để tránh lẫn lộn giữa các account
+  _history = [];
+  if (typeof adm !== 'undefined') {
+    adm.patients = []; adm.articles = []; adm.tab = 'patients';
+  }
   curUser = { ...user };
   _enterAppQuick(curUser);
 }
 
 function _enterAppQuick(user) {
   if (user.role === 'admin') {
-    goTo('s-admin'); return;
+    goTo('s-admin');
+    setTimeout(initAdmin, 100);
+    return;
   }
   _enterApp(user);
 }
