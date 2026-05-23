@@ -782,10 +782,26 @@ input[type=date], input[type=time], input[type=datetime-local] {
   <!-- Modal sửa 1 ngày -->
   <div id="adm-sch-day-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:flex-end;">
     <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;">
-      <div class="adm-lora" id="adm-sch-day-title" style="font-size:17px;font-weight:400;margin-bottom:14px;color:#1F1A0F;"></div>
-      <div id="adm-sch-day-btns" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;"></div>
-      <button onclick="document.getElementById('adm-sch-day-modal').style.display='none'"
-        style="width:100%;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Đóng</button>
+      <!-- Badge + tiêu đề -->
+      <div style="margin-bottom:14px;">
+        <span id="adm-sch-day-badge" style="font-size:9px;background:#E8A93C;color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;"></span>
+        <div class="adm-lora" id="adm-sch-day-title" style="font-size:17px;font-weight:400;margin-top:8px;color:#1F1A0F;"></div>
+      </div>
+      <!-- Preset nhanh -->
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">Chọn mẫu nhanh:</div>
+      <div id="adm-sch-day-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+      <!-- Text input tự do -->
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:6px;">Nhập tự do / Ghi chú:</div>
+      <input id="adm-sch-day-input" type="text" placeholder="Ví dụ: HC, A, Hội chẩn, Nghỉ phép..."
+        style="width:100%;padding:10px 14px;border:1px solid #F0E7D2;border-radius:12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;outline:none;box-sizing:border-box;margin-bottom:4px;">
+      <div style="font-size:10px;color:#B0A490;font-style:italic;margin-bottom:16px;">BS có thể ghi đè bất kỳ nội dung nào cho ngày này.</div>
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('adm-sch-day-modal').style.display='none'"
+          style="flex:1;padding:12px;border-radius:12px;border:1px solid #1F1A0F;background:transparent;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;">Huỷ bỏ</button>
+        <button onclick="admSchDayConfirm()"
+          style="flex:1;padding:12px;border-radius:12px;border:none;background:#E8A93C;color:#fff;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu ca</button>
+      </div>
     </div>
   </div>
 
@@ -795,7 +811,8 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div class="adm-lora" id="adm-sch-week-title" style="font-size:17px;font-weight:400;margin-bottom:6px;color:#1F1A0F;"></div>
       <div style="font-size:11px;color:#B0A490;margin-bottom:14px;">Áp dụng nhanh cho cả tuần:</div>
       <div id="adm-sch-week-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
-      <div id="adm-sch-week-days" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">Chi tiết từng ngày:</div>
+      <div id="adm-sch-week-days" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:300px;overflow-y:auto;"></div>
       <div style="display:flex;gap:8px;">
         <button onclick="document.getElementById('adm-sch-week-modal').style.display='none'"
           style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
@@ -3491,49 +3508,83 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
 }
 
 // ── Sửa 1 ngày ──
+let _editDay = null, _editType = null;
+
 function admSchDayEdit(ds, type) {
-  const caMap = type==='hv' ? HV_CA_TIMES : PK_CA_TIMES;
+  _editDay = ds; _editType = type;
+  const shifts = type==='hv' ? _hvShifts : _pkShifts;
+  const presets = type==='hv' ? ['OFF','HC','A','C'] : ['Nghỉ','Sáng','Tối','Sáng + Tối'];
+  const presetLabels = {
+    'OFF':'OFF (Nghỉ)','HC':'HC (Hành chính)','A':'A (Ca sáng)','C':'C (Ca đêm)',
+    'Nghỉ':'Nghỉ','Sáng':'Sáng','Tối':'Tối','Sáng + Tối':'Sáng + Tối'
+  };
   const d = new Date(ds+'T00:00:00');
-  const dow = ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
+  const dowIdx = d.getDay()===0?6:d.getDay()-1;
+  const dow = SCH_DOW[dowIdx];
+  const locName = type==='hv'?'BV Hùng Vương (Công)':'PK Sản Phụ 315 (Tư)';
+  const curVal = shifts[ds] || (type==='hv'?'OFF':'Nghỉ');
+
+  const badgeEl = document.getElementById('adm-sch-day-badge');
+  if (badgeEl) badgeEl.textContent = locName;
   const titleEl = document.getElementById('adm-sch-day-title');
-  if (titleEl) titleEl.textContent = `${dow} ${d.getDate()}/${d.getMonth()+1}`;
-  const btns = document.getElementById('adm-sch-day-btns');
-  if (btns) btns.innerHTML = Object.entries(caMap).map(([key, ca]) => `
-    <button onclick="admSchDaySave('${ds}','${type}','${key}')"
-      style="padding:12px 8px;border-radius:12px;border:1px solid ${ca.color}44;
-      background:${ca.bg};cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
-      display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <span style="font-size:13px;font-weight:600;color:${ca.color};">${ca.label}</span>
-      <span style="font-size:10px;color:#B0A490;">${ca.sub}</span>
+  if (titleEl) titleEl.textContent = `Chỉnh sửa ca · ${dow} ${d.getDate()}/${d.getMonth()+1}`;
+  const input = document.getElementById('adm-sch-day-input');
+  if (input) { input.value = curVal; input.placeholder = type==='hv'?'Ví dụ: HC, A, C, Hội chẩn...':'Ví dụ: Sáng, Tối, Sáng + Tối, Nghỉ phép...'; }
+
+  const presetsEl = document.getElementById('adm-sch-day-presets');
+  if (presetsEl) presetsEl.innerHTML = presets.map(p => `
+    <button onclick="admSchDayPickPreset('${p}')"
+      style="padding:7px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;
+      border:1px solid ${curVal===p?'#E8A93C':'#F0E7D2'};
+      background:${curVal===p?'#FFF8E7':'#fff'};
+      color:${curVal===p?'#1F1A0F':'#7A6F5C'};
+      font-family:'IBM Plex Sans',sans-serif;transition:all .1s;">
+      ${presetLabels[p]||p}
     </button>`).join('');
+
   document.getElementById('adm-sch-day-modal').style.display = 'flex';
 }
 
-async function admSchDaySave(ds, type, shiftKey) {
+function admSchDayPickPreset(p) {
+  const input = document.getElementById('adm-sch-day-input');
+  if (input) input.value = p;
+  // Update preset button styles
+  const presetsEl = document.getElementById('adm-sch-day-presets');
+  if (presetsEl) presetsEl.querySelectorAll('button').forEach(btn => {
+    const isActive = btn.textContent.trim().startsWith(p.split(' ')[0]);
+    btn.style.borderColor = isActive ? '#E8A93C' : '#F0E7D2';
+    btn.style.background  = isActive ? '#FFF8E7' : '#fff';
+    btn.style.color       = isActive ? '#1F1A0F' : '#7A6F5C';
+  });
+}
+
+async function admSchDayConfirm() {
+  const input = document.getElementById('adm-sch-day-input');
+  const val = (input?.value||'').trim() || (_editType==='hv'?'OFF':'Nghỉ');
   document.getElementById('adm-sch-day-modal').style.display = 'none';
+  await _admSaveShift(_editDay, _editType, val);
+  await admRenderSchedule();
+}
+
+async function _admSaveShift(ds, type, shiftKey) {
+  const loc  = type==='hv' ? 'hung_vuong' : 'pk315';
+  const spec = type==='hv' ? 'gy' : 'ob';
   const isOff = shiftKey==='OFF'||shiftKey==='Nghỉ';
   if (isOff) {
-    // Xoá ca ngày đó
-    await sb.from('doctor_schedule').delete()
-      .eq('date', ds).eq('location', type==='hv'?'hung_vuong':'pk315');
-  } else {
-    const caMap = type==='hv' ? HV_CA_TIMES : PK_CA_TIMES;
-    const loc = type==='hv' ? 'hung_vuong' : 'pk315';
-    const spec = type==='hv' ? 'gy' : 'ob';
-    // Dùng giờ từ config, hoặc lưu shift_name đơn giản
-    const timeMap = {
-      'A':{'s':'06:00','e':'14:00'},'HC':{'s':'07:15','e':'16:30'},'C':{'s':'09:00','e':'17:00'},
-      'Sáng':{'s':'08:00','e':'11:00'},'Tối':{'s':'17:00','e':'20:00'},
-      'Sáng+Tối':{'s':'08:00','e':'20:00'},
-    };
-    const t = timeMap[shiftKey] || {s:'07:00',e:'17:00'};
-    await sb.from('doctor_schedule').upsert({
-      date:ds, location:loc, shift_name:shiftKey,
-      start_time:t.s, end_time:t.e, specialty:spec,
-      created_by: curUser?.id||null
-    }, {onConflict:'date,location,shift_name'});
+    await sb.from('doctor_schedule').delete().eq('date',ds).eq('location',loc);
+    return;
   }
-  await admRenderSchedule();
+  const timeMap = {
+    'A':{'s':'06:00','e':'14:00'},'HC':{'s':'07:15','e':'16:30'},'C':{'s':'09:00','e':'17:00'},
+    'Sáng':{'s':'08:00','e':'11:00'},'Tối':{'s':'17:00','e':'20:00'},
+    'Sáng + Tối':{'s':'08:00','e':'20:00'},'Sáng+Tối':{'s':'08:00','e':'20:00'},
+  };
+  const t = timeMap[shiftKey] || {s:'07:00',e:'17:00'};
+  await sb.from('doctor_schedule').upsert({
+    date:ds, location:loc, shift_name:shiftKey,
+    start_time:t.s, end_time:t.e, specialty:spec,
+    created_by: curUser?.id||null
+  }, {onConflict:'date,location,shift_name'});
 }
 
 // ── Sửa cả tuần ──
@@ -3577,49 +3628,52 @@ function _admApplyPreset(preset) {
 }
 
 function _admRenderWeekDays() {
-  const caMap = _schWeekType==='hv' ? HV_CA_TIMES : PK_CA_TIMES;
+  const presets = _schWeekType==='hv' ? ['OFF','HC','A','C'] : ['Nghỉ','Sáng','Tối','Sáng + Tối'];
   const dates = _weekDates(_schWeekOffset);
   const daysEl = document.getElementById('adm-sch-week-days');
   if (!daysEl) return;
-  const dow = ['CN','T2','T3','T4','T5','T6','T7'];
-  daysEl.innerHTML = dates.map(d => {
+  const today = new Date().toISOString().slice(0,10);
+  const dowMap = ['CN','T2','T3','T4','T5','T6','T7'];
+  daysEl.innerHTML = dates.map((d,i) => {
     const ds = d.toISOString().slice(0,10);
-    const cur = _schWeekEdits[ds] || 'OFF';
-    const dayName = `${dow[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
-    const opts = Object.entries(caMap).map(([k,ca]) =>
-      `<option value="${k}" ${k===cur?'selected':''}>${ca.label}${ca.sub?' · '+ca.sub:''}</option>`
-    ).join('');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#FAFAF8;border-radius:10px;">
-      <div style="font-size:12px;font-weight:500;color:#1F1A0F;min-width:60px;">${dayName}</div>
-      <select onchange="_schWeekEdits['${ds}']=this.value"
-        style="flex:1;padding:7px 10px;border:1px solid #F0E7D2;border-radius:8px;font-size:13px;background:#fff;font-family:'IBM Plex Sans',sans-serif;">
-        ${opts}
-      </select>
+    const cur = _schWeekEdits[ds] || (_schWeekType==='hv'?'OFF':'Nghỉ');
+    const isPast = ds < today;
+    const isToday = ds === today;
+    const dayLabel = `${SCH_DOW[i]} ${d.getDate()}/${d.getMonth()+1}`;
+    const presetBtns = presets.map(p => `
+      <button onclick="_admWeekSetDay('${ds}','${p}')"
+        style="padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;
+        border:1px solid ${cur===p?'#E8A93C':'#EDE7D8'};
+        background:${cur===p?'#E8A93C':' #fff'};
+        color:${cur===p?'#fff':'#7A6F5C'};
+        font-family:'IBM Plex Sans',sans-serif;">${p}</button>`).join('');
+    return `<div style="padding:10px 12px;background:#FAFAF8;border-radius:10px;border:1px solid ${isToday?'#E8A93C44':'#F0E7D2'};">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
+          background:${isToday?'#E8A93C':'#FFF8E7'};color:${isToday?'#fff':'#7A6F5C'};">${dayLabel}</span>
+        ${isPast?'<span style="font-size:9px;color:#C0B8B0;">🔒 Đã qua</span>':''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${presetBtns}</div>
+      <input type="text" value="${cur}" id="week-day-input-${ds}"
+        onchange="_schWeekEdits['${ds}']=this.value;_admRenderWeekDays()"
+        oninput="_schWeekEdits['${ds}']=this.value"
+        placeholder="${_schWeekType==='hv'?'Ví dụ: HC, A, C, Hội chẩn...':'Ví dụ: Sáng, Tối, Nghỉ phép...'}"
+        style="width:100%;padding:7px 10px;border:1px solid #F0E7D2;border-radius:8px;
+        font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;
+        outline:none;box-sizing:border-box;">
     </div>`;
   }).join('');
 }
 
+function _admWeekSetDay(ds, val) {
+  _schWeekEdits[ds] = val;
+  _admRenderWeekDays();
+}
+
 async function admSchWeekSave() {
   document.getElementById('adm-sch-week-modal').style.display = 'none';
-  const loc = _schWeekType==='hv' ? 'hung_vuong' : 'pk315';
-  const spec = _schWeekType==='hv' ? 'gy' : 'ob';
-  const timeMap = {
-    'A':{'s':'06:00','e':'14:00'},'HC':{'s':'07:15','e':'16:30'},'C':{'s':'09:00','e':'17:00'},
-    'Sáng':{'s':'08:00','e':'11:00'},'Tối':{'s':'17:00','e':'20:00'},
-    'Sáng+Tối':{'s':'08:00','e':'20:00'},
-  };
   for (const [ds, shiftKey] of Object.entries(_schWeekEdits)) {
-    const isOff = shiftKey==='OFF'||shiftKey==='Nghỉ';
-    if (isOff) {
-      await sb.from('doctor_schedule').delete().eq('date',ds).eq('location',loc);
-    } else {
-      const t = timeMap[shiftKey]||{s:'07:00',e:'17:00'};
-      await sb.from('doctor_schedule').upsert({
-        date:ds, location:loc, shift_name:shiftKey,
-        start_time:t.s, end_time:t.e, specialty:spec,
-        created_by: curUser?.id||null
-      }, {onConflict:'date,location,shift_name'});
-    }
+    await _admSaveShift(ds, _schWeekType, shiftKey);
   }
   await admRenderSchedule();
 }
