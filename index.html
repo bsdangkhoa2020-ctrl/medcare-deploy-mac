@@ -5474,6 +5474,8 @@ function initGyAppts() {
 
   // Lịch BS grid
   window._gyApptWeekOffset = 0;
+
+  // GY lịch BS = BV Hùng Vương, ca xoay → chờ P7 Admin up lịch thật
   window.renderGyBsSchedule = function(offset) {
     window._gyApptWeekOffset = offset;
     const el = document.getElementById('gy-appt-bs-schedule');
@@ -5485,25 +5487,8 @@ function initGyAppts() {
     const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
     const weekLabel = offset === 0 ? 'Tuần này' : offset === 1 ? 'Tuần tới'
       : `${monday.getDate()}/${monday.getMonth()+1} – ${sunday.getDate()}/${sunday.getMonth()+1}`;
-    const SESS = [['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['S 8h–11h','T 17h–20h'],['S 8h–11h','T 17h–20h']];
-    const DOW_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
-    let cells = '';
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday); d.setDate(monday.getDate() + i);
-      const idx = [1,2,3,4,5,6,0].indexOf(d.getDay());
-      const sessions = SESS[idx] || [];
-      const isToday = d.toDateString() === today.toDateString();
-      const hasSang = sessions.some(s => s.startsWith('S'));
-      const hasToi  = sessions.some(s => s.startsWith('T'));
-      cells += `<div style="flex:1;text-align:center;padding:8px 2px;${i<6?'border-right:.5px solid var(--gy-md)':''}${isToday?';background:var(--gy-lt)':''}">
-        <div style="font-size:9px;font-weight:700;color:${isToday?'var(--gy-dk)':'var(--gy-muted)'};margin-bottom:3px">${DOW_LABELS[i]}</div>
-        <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--gy-dk)':'var(--gy-ink)'};line-height:1.1">${d.getDate()}</div>
-        <div style="margin-top:4px;display:flex;flex-direction:column;gap:2px;align-items:center">
-          ${hasSang?`<div style="font-size:8px;background:${isToday?'var(--gy-dk)':'rgba(201,96,128,.15)'};color:${isToday?'#fff':'var(--gy-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">S</div>`:''}
-          ${hasToi ?`<div style="font-size:8px;background:${isToday?'var(--gy-dk)':'rgba(201,96,128,.15)'};color:${isToday?'#fff':'var(--gy-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">T</div>`:''}
-        </div>
-      </div>`;
-    }
+
+    // TODO P7: load window._gyBsScheduleData từ Supabase khi có Admin
     el.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:.5px solid var(--gy-md)">
         <button onclick="renderGyBsSchedule(${offset-1})" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--gy-md);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center">
@@ -5514,10 +5499,11 @@ function initGyAppts() {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-      <div style="display:flex;border-bottom:.5px solid var(--gy-md)">${cells}</div>
-      <div style="padding:7px 14px;font-size:10px;color:var(--gy-muted);text-align:center">S: 8h–11h &nbsp;·&nbsp; T: 17h–20h &nbsp;·&nbsp; PK Phụ Sản 315</div>`;
+      <div style="padding:16px;text-align:center">
+        <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-muted);margin-bottom:6px">BS chưa cập nhật lịch tuần này</div>
+        <div style="font-size:10px;color:var(--gy-muted)">BV Hùng Vương · Ca làm việc xoay theo phân công</div>
+      </div>`;
   };
-  renderGyBsSchedule(0);
 
   // Lịch sử
   const dEl = document.getElementById('gy-appts-done-list');
@@ -5686,20 +5672,13 @@ function initGyHome() {
   _setEl('gy-appt-month', ['CN','T2','T3','T4','T5','T6','T7'][mockDate.getDay()] + ' · tháng ' + (mockDate.getMonth()+1));
   _setEl('gy-appt-type', 'Khám phụ khoa');
 
-  // Lịch BS (3 ngày tới)
+  // Lịch BS — GY dùng BV Hùng Vương, ca xoay → chờ P7 Admin up lịch thật
   const schedEl = document.getElementById('gy-doc-schedule');
   if (schedEl) {
-    const SESS = [['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['S 8h–11h · T 17h–20h'],['S 8h–11h · T 17h–20h']];
-    const rows = [];
-    for (let i = 0; i < 7 && rows.length < 3; i++) {
-      const d = new Date(); d.setDate(d.getDate() + i);
-      const dow = d.getDay();
-      const idx = [1,2,3,4,5,6,0].indexOf(dow);
-      if (idx === -1) continue;
-      const isToday = i === 0;
-      rows.push(`<div style="font-size:${isToday?'11':'10'}px;color:${isToday?'var(--gy-dk)':'var(--gy-muted)'};font-weight:${isToday?'700':'400'}">${['CN','T2','T3','T4','T5','T6','T7'][[0,1,2,3,4,5,6].indexOf(dow)]} ${d.getDate()}/${d.getMonth()+1} · ${SESS[idx].join('')}</div>`);
-    }
-    schedEl.innerHTML = rows.join('');
+    // TODO P7: load từ Supabase table 'doctor_schedule' where location='hung_vuong'
+    schedEl.innerHTML = `
+      <div style="font-size:10px;color:var(--gy-muted);font-style:italic;line-height:1.6">BS chưa cập nhật lịch tuần này</div>
+      <div style="font-size:9px;color:var(--gy-muted);margin-top:4px">BV Hùng Vương · Cập nhật mỗi tuần</div>`;
   }
 }
 
