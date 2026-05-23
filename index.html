@@ -722,30 +722,45 @@ input[type=date], input[type=time], input[type=datetime-local] {
 
   <!-- ═══ TAB: LỊCH BS ═══ -->
   <div id="adm-pane-schedule" class="adm-pane adm-ibm" style="display:none;padding:16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <!-- Week nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <button onclick="admScheduleNav(-1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #F0E7D2;background:#fff;font-size:18px;cursor:pointer;color:#7A6F5C;">‹</button>
-      <div style="text-align:center;">
-        <div class="adm-lora" id="adm-week-label" style="font-size:15px;font-weight:400;"></div>
-        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;">Bấm ô trống để thêm ca</div>
-      </div>
+      <div class="adm-lora" id="adm-week-label" style="font-size:15px;font-weight:400;"></div>
       <button onclick="admScheduleNav(1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #F0E7D2;background:#fff;font-size:18px;cursor:pointer;color:#7A6F5C;">›</button>
     </div>
-    <div style="display:flex;gap:14px;margin-bottom:12px;font-size:11px;color:#7A6F5C;font-weight:300;">
-      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#4A90D9;display:inline-block;"></span>BV Hùng Vương</span>
-      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#E8A93C;display:inline-block;"></span>PK 315</span>
+
+    <!-- Section: BV Hùng Vương -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:10px;height:10px;border-radius:2px;background:#4A90D9;flex-shrink:0;"></div>
+          <div style="font-size:13px;font-weight:500;color:#1F1A0F;">BV Hùng Vương</div>
+        </div>
+        <button onclick="admSchModalOpenLoc('hung_vuong')" style="font-size:11px;color:#4A90D9;border:1px solid #D0E8F8;background:#F0F8FF;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Thêm ca</button>
+      </div>
+      <div id="adm-sch-grid-hv" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
     </div>
-    <div id="adm-sch-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:#F0E7D2;margin-bottom:20px;"></div>
+
+    <!-- Section: PK 315 -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:10px;height:10px;border-radius:2px;background:#E8A93C;flex-shrink:0;"></div>
+          <div style="font-size:13px;font-weight:500;color:#1F1A0F;">PK Phụ Sản 315</div>
+        </div>
+        <button onclick="admSchModalOpenLoc('pk315')" style="font-size:11px;color:#B57A1F;border:1px solid #F0E0B0;background:#FFF8E7;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Thêm ca</button>
+      </div>
+      <div id="adm-sch-grid-pk" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+    </div>
+
+    <!-- Modal thêm ca -->
     <div id="adm-sch-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
       <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;">
-        <div class="adm-lora" style="font-size:18px;font-weight:400;margin-bottom:6px;">Thêm ca làm việc</div>
+        <div class="adm-lora" id="adm-sch-modal-title" style="font-size:18px;font-weight:400;margin-bottom:4px;">Thêm ca làm việc</div>
         <div id="adm-sch-modal-day" style="font-size:12px;color:#B0A490;font-weight:300;margin-bottom:16px;"></div>
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:8px;">Địa điểm</div>
-          <div style="display:flex;gap:8px;">
-            <button id="adm-loc-hv" onclick="admSelectLoc('hung_vuong')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #4A90D9;background:#EBF4FB;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">BV Hùng Vương</button>
-            <button id="adm-loc-pk" onclick="admSelectLoc('pk315')" style="flex:1;padding:10px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">PK 315</button>
-          </div>
-        </div>
         <div style="display:flex;gap:10px;margin-bottom:16px;">
           <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Bắt đầu</div><input id="adm-sch-start" type="time" value="07:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:14px;"></div>
           <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Kết thúc</div><input id="adm-sch-end" type="time" value="11:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:14px;"></div>
@@ -3306,53 +3321,60 @@ function admScheduleNav(dir) {
 }
 
 async function admRenderSchedule() {
-  // Load schedule data
   const { data } = await db.getSchedule();
   adm.schData = data || [];
 
-  // Week label
   const monday = admGetMonday(adm.schWeekOffset);
   const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
   document.getElementById('adm-week-label').textContent =
     `${admFmtDate(monday)} – ${admFmtDate(sunday)}`;
 
-  // Build grid
-  const grid = document.getElementById('adm-sch-grid');
-  grid.innerHTML = '';
+  admRenderSchGrid('adm-sch-grid-hv', 'hung_vuong', '#4A90D9', monday);
+  admRenderSchGrid('adm-sch-grid-pk', 'pk315',      '#E8A93C', monday);
+}
 
+function admRenderSchGrid(gridId, location, color, monday) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = '';
+  const today = new Date().toISOString().slice(0,10);
+
+  // Header row
   DAYS_VN.forEach((d, i) => {
-    // Header cell
-    const dayDate = new Date(monday); dayDate.setDate(dayDate.getDate() + i);
+    const dayDate = new Date(monday); dayDate.setDate(monday.getDate() + i);
+    const dayKey = dayDate.toISOString().slice(0,10);
+    const isToday = dayKey === today;
     const hdr = document.createElement('div');
-    hdr.style.cssText = 'text-align:center;font-size:11px;color:var(--muted);padding:4px 0;font-weight:600';
-    hdr.textContent = d;
+    hdr.style.cssText = `text-align:center;font-size:10px;padding:4px 2px;font-weight:${isToday?'700':'400'};color:${isToday?'#1F1A0F':'#B0A490'};`;
+    hdr.innerHTML = `<div>${d}</div><div style="font-size:9px;color:${isToday?color:'#D0C8BC'}">${dayDate.getDate()}</div>`;
     grid.appendChild(hdr);
   });
 
+  // Ca làm việc
   DAYS_VN.forEach((d, i) => {
-    const dayDate = new Date(monday); dayDate.setDate(dayDate.getDate() + i);
+    const dayDate = new Date(monday); dayDate.setDate(monday.getDate() + i);
     const dayKey = dayDate.toISOString().slice(0,10);
-    const shifts = adm.schData.filter(s => s.week_offset === adm.schWeekOffset && s.day_key === dayKey);
+    const isToday = dayKey === today;
+    const shifts = adm.schData.filter(s => s.day_key === dayKey && s.location === location);
 
     const cell = document.createElement('div');
-    cell.style.cssText = 'min-height:70px;border:1px dashed var(--border);border-radius:8px;padding:4px;display:flex;flex-direction:column;gap:3px;cursor:pointer;position:relative';
-    cell.onclick = () => admSchModalOpen(dayKey, DAYS_FULL[i]);
+    cell.style.cssText = `min-height:52px;border:1px dashed ${isToday?color:'#F0E7D2'};border-radius:8px;padding:3px;display:flex;flex-direction:column;gap:2px;cursor:pointer;background:${isToday?color+'18':'#fff'};`;
+    cell.onclick = () => admSchModalOpenLoc(location, dayKey, DAYS_FULL[i]);
 
-    shifts.forEach(s => {
-      const chip = document.createElement('div');
-      const col = LOC_COLOR[s.location] || 'var(--gold)';
-      chip.style.cssText = `background:${col};color:#fff;border-radius:5px;padding:3px 4px;font-size:9px;line-height:1.3;position:relative`;
-      chip.innerHTML = `<div style="font-weight:600">${(LOC_LABEL[s.location]||'').replace('BV ','').replace('PK ','PK')}</div><div>${s.start_time||''}-${s.end_time||''}</div>`;
-      // Long-press to delete
-      chip.addEventListener('click', e => { e.stopPropagation(); admSchDeleteShift(s.id, dayKey); });
-      cell.appendChild(chip);
-    });
-
-    const addBtn = document.createElement('div');
-    addBtn.style.cssText = 'font-size:18px;color:var(--border);text-align:center;margin-top:auto;line-height:1';
-    addBtn.textContent = '+';
-    cell.appendChild(addBtn);
-
+    if (shifts.length) {
+      shifts.forEach(s => {
+        const chip = document.createElement('div');
+        chip.style.cssText = `background:${color};color:#fff;border-radius:4px;padding:3px 4px;font-size:9px;line-height:1.3;`;
+        chip.innerHTML = `<div style="font-weight:600">${s.start_time||''}</div><div>${s.end_time||''}</div>`;
+        chip.addEventListener('click', e => { e.stopPropagation(); admSchDeleteShift(s.id); });
+        cell.appendChild(chip);
+      });
+    } else {
+      const plus = document.createElement('div');
+      plus.style.cssText = 'font-size:16px;color:#E0D8CE;text-align:center;margin:auto;line-height:1;';
+      plus.textContent = '+';
+      cell.appendChild(plus);
+    }
     grid.appendChild(cell);
   });
 }
@@ -3370,10 +3392,14 @@ function admFmtDate(d) {
   return `${d.getDate()}/${d.getMonth()+1}`;
 }
 
-function admSchModalOpen(dayKey, dayFull) {
-  adm.schModalDay = dayKey;
-  document.getElementById('adm-sch-modal-day').textContent = `📅 ${dayFull}, ${dayKey}`;
-  admSelectLoc('hung_vuong');
+function admSchModalOpenLoc(location, dayKey, dayFull) {
+  adm.schModalDay = dayKey || null;
+  adm.schLoc = location;
+  const locLabel = location === 'hung_vuong' ? 'BV Hùng Vương' : 'PK Phụ Sản 315';
+  const titleEl = document.getElementById('adm-sch-modal-title');
+  if (titleEl) titleEl.textContent = `Thêm ca · ${locLabel}`;
+  const dayEl = document.getElementById('adm-sch-modal-day');
+  if (dayEl) dayEl.textContent = dayKey ? `📅 ${dayFull||''}, ${dayKey}` : '';
   document.getElementById('adm-sch-modal').style.display = 'flex';
 }
 
@@ -3381,23 +3407,15 @@ function admSchModalClose() {
   document.getElementById('adm-sch-modal').style.display = 'none';
 }
 
-function admSelectLoc(loc) {
-  adm.schLoc = loc;
-  const hvBtn = document.getElementById('adm-loc-hv');
-  const pkBtn = document.getElementById('adm-loc-pk');
-  hvBtn.style.borderColor = loc === 'hung_vuong' ? '#4A90D9' : 'var(--border)';
-  hvBtn.style.background  = loc === 'hung_vuong' ? '#EBF4FB' : 'var(--surface)';
-  pkBtn.style.borderColor = loc === 'pk315' ? 'var(--gold)' : 'var(--border)';
-  pkBtn.style.background  = loc === 'pk315' ? 'var(--gold-lt)' : 'var(--surface)';
-}
-
 async function admSchSave() {
   const start = document.getElementById('adm-sch-start').value;
   const end   = document.getElementById('adm-sch-end').value;
   if (!start || !end) { alert('Vui lòng nhập giờ bắt đầu và kết thúc'); return; }
+  const monday = admGetMonday(adm.schWeekOffset);
+  const dayKey = adm.schModalDay || monday.toISOString().slice(0,10);
   const row = {
     week_offset: adm.schWeekOffset,
-    day_key:     adm.schModalDay,
+    day_key:     dayKey,
     location:    adm.schLoc,
     start_time:  start,
     end_time:    end
@@ -3408,7 +3426,7 @@ async function admSchSave() {
   admRenderSchedule();
 }
 
-async function admSchDeleteShift(id, dayKey) {
+async function admSchDeleteShift(id) {
   if (!confirm('Xoá ca này?')) return;
   await sb.from('doctor_schedule').delete().eq('id', id);
   admRenderSchedule();
