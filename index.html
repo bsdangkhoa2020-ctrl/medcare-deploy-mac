@@ -5350,12 +5350,21 @@ function gyRecTab(tab, el) {
   if (tab === 'xn') {
     cont.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">🔬 Kết quả xét nghiệm</div>` +
       GY_MOCK_XN.map(x => `
-      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-          <div style="font-size:13px;font-weight:600;color:var(--gy-ink);flex:1;margin-right:8px">${x.name}</div>
-          <div style="font-size:10px;color:var(--gy-muted);flex-shrink:0">${new Date(x.date).toLocaleDateString('vi-VN')}</div>
+      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);overflow:hidden;margin-bottom:10px">
+        <div style="padding:12px 16px;border-bottom:.5px solid var(--gy-md);display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--gy-ink);margin-bottom:3px">${x.name}</div>
+            <div style="font-size:11px;color:var(--gy-muted)">${new Date(x.date).toLocaleDateString('vi-VN')}</div>
+          </div>
+          <button onclick="showToast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
+            style="display:flex;align-items:center;gap:5px;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--gy-dk);font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            PDF
+          </button>
         </div>
-        <div style="font-size:11px;color:var(--gy-dk);font-weight:600">✓ ${x.result}</div>
+        <div style="padding:10px 16px;background:var(--gy-lt)">
+          <div style="font-size:11px;color:var(--gy-dk);font-weight:700">✓ ${x.result}</div>
+        </div>
       </div>`).join('');
     return;
   }
@@ -5374,17 +5383,61 @@ function gyRecTab(tab, el) {
   }
 
   if (tab === 'rx') {
-    cont.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">💊 Đơn thuốc</div>` +
-      GY_MOCK_RX.map(r => `
-      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);overflow:hidden;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:.5px solid var(--gy-md)">
-          <div style="font-size:13px;font-weight:600;color:var(--gy-ink)">${new Date(r.date).toLocaleDateString('vi-VN')}</div>
-          ${r.note ? `<div style="font-size:10px;color:var(--gy-muted)">${r.note}</div>` : ''}
+    if (!GY_MOCK_RX.length) {
+      cont.innerHTML = '<div class="empty"><p>Chưa có đơn thuốc nào</p></div>';
+      return;
+    }
+    cont.innerHTML = GY_MOCK_RX.map((r, idx) => {
+      const items = Array.isArray(r.items) ? r.items : [];
+      return `
+      <div style="margin-bottom:20px">
+        <!-- Header đơn thuốc -->
+        <div style="background:#fff;border-radius:var(--r-xl) var(--r-xl) 0 0;padding:16px 18px 14px;border:.5px solid var(--gy-md);border-bottom:none;display:flex;justify-content:space-between;align-items:flex-start;border-top:3px solid var(--gy-dk)">
+          <div>
+            <div style="font-family:var(--serif);font-size:18px;color:var(--gy-ink);font-weight:400">Đơn <em style="color:var(--gy-dk)">thuốc</em></div>
+            <div style="font-size:11px;color:var(--gy-muted);margin-top:3px">Ngày ${new Date(r.date).toLocaleDateString('vi-VN')}</div>
+          </div>
+          <button onclick="showToast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
+            style="display:flex;align-items:center;gap:6px;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--gy-dk);font-size:11px;font-weight:700;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            PDF
+          </button>
         </div>
-        <div style="padding:10px 14px">
-          ${r.items.map(i => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:.5px solid var(--gy-md)"><span>${i.name}</span><span style="color:var(--gy-muted)">${i.dose}</span></div>`).join('')}
+        <!-- Body đơn thuốc -->
+        <div style="background:#fff;border:.5px solid var(--gy-md);border-top:none;border-radius:0 0 var(--r-xl) var(--r-xl);padding:16px 18px">
+          <!-- BN info -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:12px;border-bottom:.5px solid var(--gy-md);margin-bottom:12px">
+            <div>
+              <div style="font-size:10px;color:var(--gy-muted);margin-bottom:2px">Họ tên</div>
+              <div style="font-size:13px;font-weight:600;color:var(--gy-ink)">${curUser?.name || '—'}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--gy-muted);margin-bottom:2px">Chẩn đoán</div>
+              <div style="font-size:13px;color:var(--gy-ink)">${r.note || '—'}</div>
+            </div>
+          </div>
+          <!-- Thuốc -->
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:10px">Thuốc điều trị</div>
+          ${items.map((it, i) => `
+          <div style="display:flex;gap:12px;padding:10px 0;${i < items.length-1 ? 'border-bottom:.5px solid var(--gy-md)' : ''}">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--gy-lt);border:.5px solid var(--gy-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--serif);font-size:12px;font-weight:600;color:var(--gy-dk)">${i+1}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;color:var(--gy-ink)">${it.name}</div>
+              <div style="font-size:12px;color:var(--gy-muted);margin-top:2px">${it.dose || ''}</div>
+            </div>
+          </div>`).join('')}
+          <!-- Footer ký tên -->
+          <div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--gy-md);display:flex;justify-content:space-between;align-items:flex-end">
+            <div style="font-size:11px;color:var(--gy-muted);font-style:italic;max-width:55%">Khám bệnh lại xin mang theo đơn này</div>
+            <div style="text-align:center">
+              <div style="font-size:10px;color:var(--gy-muted)">Bác sĩ khám bệnh</div>
+              <div style="width:100px;height:48px;margin:6px auto;border-bottom:.5px solid var(--gy-md)"></div>
+              <div style="font-size:13px;font-weight:700;color:var(--gy-ink)">BS. CK1 Hoàng Thanh Tuấn</div>
+            </div>
+          </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     return;
   }
 
