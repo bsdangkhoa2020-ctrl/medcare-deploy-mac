@@ -4555,31 +4555,29 @@ function renderEducation(week){
 
 // Entry point — auto pick nearest week to current pregnancy week
 function goEducation(){
-  // Tìm currentWeek (từ MILESTONE_DATA logic hoặc default 4)
+  // Tìm currentWeek từ LMP
   let curWk = 4;
   try {
-    if(typeof window._curOBWeek === 'number') curWk = window._curOBWeek;
-    else if(typeof getCurOBWeek === 'function') curWk = getCurOBWeek();
-    else if(typeof curUser !== 'undefined' && curUser && curUser.lmp){
+    if(typeof curUser !== 'undefined' && curUser && curUser.lmp){
       const g = calcGA(curUser.lmp);
-      if(g && g.wk) curWk = g.wk;
+      if(g && g.weeks) curWk = g.weeks;
     }
   } catch(e) {}
 
-  // Pick nearest milestone week (rounded to nearest of EDU_WEEKS)
+  // Tuần hiện tại = mốc milestone lớn nhất mà BN đã ĐẠT hoặc ĐÃ QUA
+  // Ví dụ tuần 28 → chọn tuần 28; tuần 30 → chọn tuần 28; tuần 33 → chọn tuần 32
   let nearest = EDU_WEEKS[0];
-  let minDiff = Math.abs(curWk - EDU_WEEKS[0]);
-  EDU_WEEKS.forEach(w => {
-    const d = Math.abs(curWk - w);
-    if(d < minDiff){ minDiff = d; nearest = w; }
-  });
+  for(let i = 0; i < EDU_WEEKS.length; i++){
+    if(EDU_WEEKS[i] <= curWk) nearest = EDU_WEEKS[i];
+    else break;
+  }
 
-  // ─── LOCK GUARD ─── Nếu landing tuần > maxUnlocked → kéo về maxUnlocked
+  // Lock guard
   const realCurWk = getEduCurWeek();
   const maxUnlocked = getMaxUnlockedWeek(realCurWk);
   if(nearest > maxUnlocked) nearest = maxUnlocked;
 
-  goTo('s-education');
+  goTo('s-ob-journey');
   renderEducation(nearest);
 }
 
