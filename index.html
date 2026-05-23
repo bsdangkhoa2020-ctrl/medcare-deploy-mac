@@ -1367,7 +1367,13 @@ input[type=date], input[type=time], input[type=datetime-local] {
 
   <!-- ═══ HERO ═══ -->
   <div style="background:#fff;padding:calc(var(--sat)+24px) 22px 22px;border-bottom:.5px solid var(--gy-md)">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px;padding-left:6px" id="gy-cycle-month">Chu kỳ tháng 5</div>
+    <!-- Top bar: cycle month + logout -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-left:6px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gy-muted)" id="gy-cycle-month">Chu kỳ tháng 5</div>
+      <div onclick="confirmLogout()" style="width:34px;height:34px;border:.5px solid var(--gy-md);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gy-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </div>
+    </div>
     <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:16px;padding-left:6px">
       <div>
         <div style="font-family:var(--serif);font-size:28px;color:var(--gy-ink);font-weight:300;line-height:1">Chào <em style="color:var(--gy-dk)" id="gy-name">Hồng</em></div>
