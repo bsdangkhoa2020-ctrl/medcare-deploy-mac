@@ -1090,6 +1090,8 @@ input[type=date], input[type=time], input[type=datetime-local] {
         <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.06em">Đọc tiếp →</div>
       </div>
     </div>
+    <!-- Bài viết từ Admin (bổ sung) -->
+    <div id="ob-extra-articles" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <!-- ═══ FOOTER ═══ -->
@@ -1807,6 +1809,8 @@ input[type=date], input[type=time], input[type=datetime-local] {
         <div style="font-size:11px;font-weight:700;color:var(--gy-primary);letter-spacing:.06em">Đọc tiếp →</div>
       </div>
     </div>
+    <!-- Bài viết từ Admin (bổ sung) -->
+    <div id="gy-extra-articles" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <!-- ═══ FOOTER ═══ -->
@@ -3842,6 +3846,8 @@ function initObHome() {
     _setEl('ob-appt-month', DOW[mockDate.getDay()] + ' · ' + MONTH[mockDate.getMonth()]);
     _setEl('ob-appt-time',  'Khám thai' + (ga ? ' · Tuần thứ ' + ga.weeks : '') + ' · 17:30');
   }
+  // Bài viết từ Admin bổ sung
+  loadExtraArticles('ob', 'ob-extra-articles');
 }
 
 function obUpdateGA() {
@@ -6715,6 +6721,86 @@ function initGyHome() {
       <div style="font-size:10px;color:var(--gy-muted);font-style:italic;line-height:1.6">BS chưa cập nhật lịch tuần này</div>
       <div style="font-size:9px;color:var(--gy-muted);margin-top:4px">BV Hùng Vương · Cập nhật mỗi tuần</div>`;
   }
+  // Bài viết từ Admin bổ sung
+  loadExtraArticles('gy', 'gy-extra-articles');
+}
+
+/* ════════════════════════════════════════════════════════════
+   EXTRA ARTICLES — Bài viết từ Admin hiển thị trong app BN
+════════════════════════════════════════════════════════════ */
+async function loadExtraArticles(type, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  try {
+    const { data, error } = await db.getArticles(type);
+    if (error || !data || !data.length) return;
+    const isOB = type === 'ob';
+    const accentColor = isOB ? 'var(--gold)' : 'var(--gy-primary)';
+    const accentBg    = isOB ? 'var(--ink)' : 'var(--gy-dark-bg)';
+    container.innerHTML = data.map((a, i) => {
+      const hasCover = !!a.image_url;
+      const snippet  = (a.content || '').slice(0, 90) + (a.content?.length > 90 ? '…' : '');
+      // First article: big editorial card style; rest: compact list
+      if (i === 0) {
+        return `
+        <div onclick="showExtraArticle(${JSON.stringify(a.id)})" style="background:${accentBg};border-radius:var(--r-xl);overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          ${hasCover ? `<img src="${a.image_url}" style="width:100%;height:130px;object-fit:cover;display:block">` : ''}
+          <div style="padding:18px 20px 16px">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:${accentColor};opacity:.7;margin-bottom:10px">BS. TUẤN · MỚI ĐĂNG</div>
+            <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:#fff;line-height:1.3;margin-bottom:10px">${a.title}</div>
+            <div style="font-family:var(--serif);font-style:italic;font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:12px">${snippet}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:.5px solid rgba(255,255,255,.08)">
+              <div style="font-size:10px;color:rgba(255,255,255,.3)">${new Date(a.created_at).toLocaleDateString('vi-VN')}</div>
+              <div style="font-size:11px;font-weight:700;color:${accentColor};letter-spacing:.06em">Đọc tiếp →</div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        return `
+        <div onclick="showExtraArticle(${JSON.stringify(a.id)})" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+          ${hasCover ? `<img src="${a.image_url}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0">` : ''}
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;line-height:1.4;color:var(--ink);margin-bottom:4px">${a.title}</div>
+            <div style="font-size:11px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${snippet}</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">${new Date(a.created_at).toLocaleDateString('vi-VN')} · BS. Tuấn</div>
+          </div>
+        </div>`;
+      }
+    }).join('');
+  } catch(e) {
+    console.warn('[loadExtraArticles] error:', e);
+  }
+}
+
+// Modal đọc bài viết
+window._extraArticlesCache = {};
+async function showExtraArticle(id) {
+  // Load toàn bộ articles nếu chưa có
+  if (!window._extraArticlesCache[id]) {
+    const { data } = await db.getArticles('all');
+    (data||[]).forEach(a => { window._extraArticlesCache[a.id] = a; });
+  }
+  const a = window._extraArticlesCache[id];
+  if (!a) return;
+
+  // Tạo overlay đọc bài
+  let overlay = document.getElementById('extra-article-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'extra-article-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:990;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="padding:calc(var(--sat)+16px) 22px 40px">
+      <button onclick="document.getElementById('extra-article-overlay').style.display='none'"
+        style="margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-size:13px;cursor:pointer">← Quay lại</button>
+      ${a.image_url ? `<img src="${a.image_url}" style="width:100%;border-radius:14px;margin-bottom:20px;max-height:200px;object-fit:cover">` : ''}
+      <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:12px">BS. HOÀNG THANH TUẤN · ${new Date(a.created_at).toLocaleDateString('vi-VN')}</div>
+      <div style="font-family:var(--serif);font-size:26px;font-weight:400;line-height:1.25;color:var(--ink);margin-bottom:20px">${a.title}</div>
+      <div style="font-size:15px;color:var(--ink);line-height:1.8;white-space:pre-line">${a.content}</div>
+    </div>`;
+  overlay.style.display = 'block';
 }
 
 /* ════════════════════════════════════════════════════════════
