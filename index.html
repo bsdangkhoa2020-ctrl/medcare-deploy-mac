@@ -4167,13 +4167,20 @@ async function initObRecords() {
     _setEl('rec-edd',     ga ? ga.edd : '—');
     _setEl('rec-address', pt.address || '—');
     _setEl('rec-allergy', pt.allergy || 'Chưa ghi nhận');
-    _setEl('rec-pulse',   pt.pulse   ? pt.pulse + ' <span style="font-size:10px;font-weight:400;color:var(--muted)">lần/phút</span>' : '—');
-    _setEl('rec-bp',      pt.bp      ? pt.bp    + ' <span style="font-size:10px;font-weight:400;color:var(--muted)">mmHg</span>'    : '—');
+    // pulse/bp lấy từ lần khám gần nhất (không có trong patients table)
+    const { data: visits0 } = await db.getVisits(curUser.bn_code);
+    const lastV = visits0?.[0];
+    const pulseEl2 = document.getElementById('rec-pulse');
+    const bpEl2    = document.getElementById('rec-bp');
+    if (pulseEl2) pulseEl2.innerHTML = lastV?.pulse
+      ? lastV.pulse + ' <span style="font-size:10px;font-weight:400;color:var(--muted)">lần/phút</span>' : '—';
+    if (bpEl2) bpEl2.innerHTML = (lastV?.bp_systolic && lastV?.bp_diastolic)
+      ? `${lastV.bp_systolic}/${lastV.bp_diastolic} <span style="font-size:10px;font-weight:400;color:var(--muted)">mmHg</span>` : '—';
     // BMI
-    if (pt.weight && pt.height) {
-      const bmi = (pt.weight / ((pt.height/100)**2)).toFixed(1);
-      _setEl('rec-weight', pt.weight);
-      _setEl('rec-height', pt.height);
+    if (pt.weight_kg && pt.height_cm) {
+      const bmi = (pt.weight_kg / ((pt.height_cm/100)**2)).toFixed(1);
+      _setEl('rec-weight', pt.weight_kg);
+      _setEl('rec-height', pt.height_cm);
       _setEl('rec-bmi',    bmi);
       _setEl('rec-bmi-label', 'trước thai kỳ');
     }
@@ -4504,7 +4511,7 @@ function _renderVisits(visits) {
       <!-- Card -->
       <div style="flex:1;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:2px">
         <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:4px">${v.trimester || ''}</div>
-        <div style="font-family:var(--serif);font-size:17px;font-weight:400;color:var(--ink);margin-bottom:4px">${v.type || 'Lần khám'}</div>
+        <div style="font-family:var(--serif);font-size:17px;font-weight:400;color:var(--ink);margin-bottom:4px">${v.visit_type || 'Lần khám'}</div>
         <div style="font-size:12px;color:var(--muted)">Khám ngày ${formatDate(v.visit_date)}</div>
         ${v.weight || v.bp ? `<div style="display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:.5px solid var(--border)">
           ${v.weight ? `<div style="font-size:12px;color:var(--ink-2)">${v.weight} kg</div>` : ''}
@@ -4522,7 +4529,7 @@ function recShowVisitDetail(idx) {
   const m = document.getElementById('visit-detail-modal');
   if (!m) return;
   document.getElementById('vd-trimester').textContent  = v.trimester || '';
-  document.getElementById('vd-type').textContent       = v.type || 'Lần khám';
+  document.getElementById('vd-type').textContent       = v.visit_type || 'Lần khám';
   document.getElementById('vd-date').textContent       = 'Khám ngày ' + formatDate(v.visit_date);
   document.getElementById('vd-doctor').textContent     = v.doctor || 'BS. CK1 Hoàng Thanh Tuấn';
   document.getElementById('vd-note').textContent       = v.note || '—';
@@ -6278,22 +6285,48 @@ function gyRecTab(tab, el) {
   if (!cont) return;
 
   if (tab === 'visit') {
-    cont.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">📋 Lịch sử các lần khám</div>` +
-      GY_MOCK_VISITS.map((v,i) => `
-      <div style="display:flex;gap:0;margin-bottom:0">
-        <div style="width:20px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="width:10px;height:10px;border-radius:50%;background:var(--gy-dk);margin-top:3px;flex-shrink:0"></div>
-          ${i < GY_MOCK_VISITS.length-1 ? `<div style="width:1px;flex:1;background:var(--gy-md);margin-top:3px"></div>` : ''}
-        </div>
-        <div style="flex:1;padding-left:12px;padding-bottom:${i < GY_MOCK_VISITS.length-1 ? '16':'4'}px">
-          <div style="font-size:11px;color:var(--gy-muted);margin-bottom:2px">${new Date(v.date).toLocaleDateString('vi-VN')}</div>
-          <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:12px 14px">
-            <div style="font-size:14px;font-weight:700;color:var(--gy-ink);margin-bottom:4px">${v.type}</div>
-            <div style="font-size:12px;color:var(--gy-muted);margin-bottom:4px">${v.doctor} · BV Hùng Vương</div>
-            ${v.note ? `<div style="font-size:12px;color:var(--gy-ink);line-height:1.6;border-top:.5px solid var(--gy-md);padding-top:8px;margin-top:4px">${v.note}</div>` : ''}
+    cont.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">Lịch sử các lần khám</div>
+      <div id="gy-visit-list"><div style="text-align:center;padding:20px;font-family:var(--serif);font-style:italic;color:var(--gy-muted)">Đang tải...</div></div>`;
+    if (curUser?.bn_code && curUser?._supabase) {
+      db.getVisits(curUser.bn_code).then(({ data: visits }) => {
+        const el = document.getElementById('gy-visit-list');
+        if (!el) return;
+        if (!visits?.length) { el.innerHTML = '<div style="text-align:center;padding:20px;font-family:var(--serif);font-style:italic;color:var(--gy-muted)">Chưa có lần khám nào</div>'; return; }
+        el.innerHTML = visits.map((v, i) => `
+          <div style="display:flex;gap:0;margin-bottom:0">
+            <div style="width:20px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+              <div style="width:10px;height:10px;border-radius:50%;background:var(--gy-dk);margin-top:3px;flex-shrink:0"></div>
+              ${i < visits.length-1 ? `<div style="width:1px;flex:1;background:var(--gy-md);margin-top:3px"></div>` : ''}
+            </div>
+            <div style="flex:1;padding-left:12px;padding-bottom:${i < visits.length-1 ? '16':'4'}px">
+              <div style="font-size:11px;color:var(--gy-muted);margin-bottom:2px">${new Date(v.visit_date).toLocaleDateString('vi-VN')}</div>
+              <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:12px 14px">
+                <div style="font-size:14px;font-weight:700;color:var(--gy-ink);margin-bottom:4px">${v.visit_type || 'Lần khám'}</div>
+                <div style="font-size:12px;color:var(--gy-muted);margin-bottom:4px">BS. Hoàng Thanh Tuấn · BV Hùng Vương</div>
+                ${v.diagnosis ? `<div style="font-size:12px;color:var(--gy-ink);line-height:1.6;border-top:.5px solid var(--gy-md);padding-top:8px;margin-top:4px">${v.diagnosis}</div>` : ''}
+                ${v.notes ? `<div style="font-size:12px;color:var(--gy-muted);line-height:1.6;margin-top:4px">${v.notes}</div>` : ''}
+              </div>
+            </div>
+          </div>`).join('');
+      });
+    } else {
+      const el = document.getElementById('gy-visit-list');
+      if (el) el.innerHTML = GY_MOCK_VISITS.map((v,i) => `
+        <div style="display:flex;gap:0;margin-bottom:0">
+          <div style="width:20px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--gy-dk);margin-top:3px;flex-shrink:0"></div>
+            ${i < GY_MOCK_VISITS.length-1 ? `<div style="width:1px;flex:1;background:var(--gy-md);margin-top:3px"></div>` : ''}
           </div>
-        </div>
-      </div>`).join('');
+          <div style="flex:1;padding-left:12px;padding-bottom:${i < GY_MOCK_VISITS.length-1 ? '16':'4'}px">
+            <div style="font-size:11px;color:var(--gy-muted);margin-bottom:2px">${new Date(v.date).toLocaleDateString('vi-VN')}</div>
+            <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:12px 14px">
+              <div style="font-size:14px;font-weight:700;color:var(--gy-ink);margin-bottom:4px">${v.type}</div>
+              <div style="font-size:12px;color:var(--gy-muted);margin-bottom:4px">${v.doctor} · BV Hùng Vương</div>
+              ${v.note ? `<div style="font-size:12px;color:var(--gy-ink);line-height:1.6;border-top:.5px solid var(--gy-md);padding-top:8px;margin-top:4px">${v.note}</div>` : ''}
+            </div>
+          </div>
+        </div>`).join('');
+    }
     return;
   }
 
@@ -6333,61 +6366,44 @@ function gyRecTab(tab, el) {
   }
 
   if (tab === 'rx') {
-    if (!GY_MOCK_RX.length) {
-      cont.innerHTML = '<div class="empty"><p>Chưa có đơn thuốc nào</p></div>';
-      return;
+    cont.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px">Đơn thuốc</div>
+      <div id="gy-rx-list"><div style="text-align:center;padding:20px;font-family:var(--serif);font-style:italic;color:var(--gy-muted)">Đang tải...</div></div>`;
+    if (curUser?.bn_code && curUser?._supabase) {
+      db.getPrescriptions(curUser.bn_code).then(({ data: rxs }) => {
+        const el = document.getElementById('gy-rx-list');
+        if (!el) return;
+        if (!rxs?.length) { el.innerHTML = '<div style="text-align:center;padding:20px;font-family:var(--serif);font-style:italic;color:var(--gy-muted)">Chưa có đơn thuốc nào</div>'; return; }
+        el.innerHTML = rxs.map(r => {
+          const meds = Array.isArray(r.medications) ? r.medications : [];
+          return `<div style="margin-bottom:20px">
+            <div style="background:#fff;border-radius:var(--r-xl) var(--r-xl) 0 0;padding:16px 18px 14px;border:.5px solid var(--gy-md);border-bottom:none;border-top:3px solid var(--gy-dk)">
+              <div style="font-family:var(--serif);font-size:18px;color:var(--gy-ink);font-weight:400">Đơn <em style="color:var(--gy-dk)">thuốc</em></div>
+              <div style="font-size:11px;color:var(--gy-muted);margin-top:3px">Ngày ${new Date(r.rx_date).toLocaleDateString('vi-VN')}</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--gy-md);border-top:none;border-radius:0 0 var(--r-xl) var(--r-xl);padding:16px 18px">
+              ${r.diagnosis ? `<div style="font-size:12px;color:var(--gy-muted);margin-bottom:12px;padding-bottom:12px;border-bottom:.5px solid var(--gy-md)">Chẩn đoán: <span style="color:var(--gy-ink);font-weight:600">${r.diagnosis}</span></div>` : ''}
+              ${meds.map(m => `<div style="padding:8px 0;border-bottom:.5px solid var(--gy-md)">
+                <div style="font-size:13px;font-weight:600;color:var(--gy-ink)">${m.name||m}</div>
+                ${m.dose ? `<div style="font-size:11px;color:var(--gy-muted);margin-top:2px">${m.dose}${m.duration ? ' · ' + m.duration : ''}</div>` : ''}
+              </div>`).join('')}
+              ${r.instructions ? `<div style="font-size:12px;color:var(--gy-dk);margin-top:12px;font-style:italic">${r.instructions}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      });
+    } else {
+      if (!GY_MOCK_RX.length) {
+        cont.innerHTML += '<div class="empty"><p>Chưa có đơn thuốc nào</p></div>';
+      } else {
+        document.getElementById('gy-rx-list').innerHTML = GY_MOCK_RX.map((r, idx) => {
+          const items = Array.isArray(r.items) ? r.items : [];
+          return `<div style="margin-bottom:16px;background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px 16px">
+            <div style="font-size:12px;color:var(--gy-muted);margin-bottom:6px">Ngày ${new Date(r.date).toLocaleDateString('vi-VN')}</div>
+            ${r.note ? `<div style="font-size:13px;color:var(--gy-ink)">${r.note}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
     }
-    cont.innerHTML = GY_MOCK_RX.map((r, idx) => {
-      const items = Array.isArray(r.items) ? r.items : [];
-      return `
-      <div style="margin-bottom:20px">
-        <!-- Header đơn thuốc -->
-        <div style="background:#fff;border-radius:var(--r-xl) var(--r-xl) 0 0;padding:16px 18px 14px;border:.5px solid var(--gy-md);border-bottom:none;display:flex;justify-content:space-between;align-items:flex-start;border-top:3px solid var(--gy-dk)">
-          <div>
-            <div style="font-family:var(--serif);font-size:18px;color:var(--gy-ink);font-weight:400">Đơn <em style="color:var(--gy-dk)">thuốc</em></div>
-            <div style="font-size:11px;color:var(--gy-muted);margin-top:3px">Ngày ${new Date(r.date).toLocaleDateString('vi-VN')}</div>
-          </div>
-          <button onclick="showToast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
-            style="display:flex;align-items:center;gap:6px;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--gy-dk);font-size:11px;font-weight:700;white-space:nowrap">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            PDF
-          </button>
-        </div>
-        <!-- Body đơn thuốc -->
-        <div style="background:#fff;border:.5px solid var(--gy-md);border-top:none;border-radius:0 0 var(--r-xl) var(--r-xl);padding:16px 18px">
-          <!-- BN info -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:12px;border-bottom:.5px solid var(--gy-md);margin-bottom:12px">
-            <div>
-              <div style="font-size:10px;color:var(--gy-muted);margin-bottom:2px">Họ tên</div>
-              <div style="font-size:13px;font-weight:600;color:var(--gy-ink)">${curUser?.name || '—'}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--gy-muted);margin-bottom:2px">Chẩn đoán</div>
-              <div style="font-size:13px;color:var(--gy-ink)">${r.note || '—'}</div>
-            </div>
-          </div>
-          <!-- Thuốc -->
-          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:10px">Thuốc điều trị</div>
-          ${items.map((it, i) => `
-          <div style="display:flex;gap:12px;padding:10px 0;${i < items.length-1 ? 'border-bottom:.5px solid var(--gy-md)' : ''}">
-            <div style="width:22px;height:22px;border-radius:50%;background:var(--gy-lt);border:.5px solid var(--gy-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--serif);font-size:12px;font-weight:600;color:var(--gy-dk)">${i+1}</div>
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:700;color:var(--gy-ink)">${it.name}</div>
-              <div style="font-size:12px;color:var(--gy-muted);margin-top:2px">${it.dose || ''}</div>
-            </div>
-          </div>`).join('')}
-          <!-- Footer ký tên -->
-          <div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--gy-md);display:flex;justify-content:space-between;align-items:flex-end">
-            <div style="font-size:11px;color:var(--gy-muted);font-style:italic;max-width:55%">Khám bệnh lại xin mang theo đơn này</div>
-            <div style="text-align:center">
-              <div style="font-size:10px;color:var(--gy-muted)">Bác sĩ khám bệnh</div>
-              <div style="width:100px;height:48px;margin:6px auto;border-bottom:.5px solid var(--gy-md)"></div>
-              <div style="font-size:13px;font-weight:700;color:var(--gy-ink)">BS. CK1 Hoàng Thanh Tuấn</div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
     return;
   }
 
@@ -6506,6 +6522,34 @@ function gyRecTab(tab, el) {
   }
   _setEl('gy-rec-phase', cycle ? `${cycle.phase.label} · Chu kỳ tháng ${new Date().getMonth()+1}` : '—');
   _setEl('gy-rec-cycle', `${cycle?.cycleLen || curUser?.cycle_len || 28} ngày`);
+  gyRecTab('visit', document.querySelector('#s-gy-records .chip'));
+}
+
+async function initGyRecords() {
+  // Hero: ngày D, tên, phase từ curUser
+  const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
+  _setEl('gy-rec-day-big', cycle?.day || '—');
+  _setEl('gy-rec-name',    curUser?.name || '—');
+  _setEl('gy-rec-phase',   cycle ? `${cycle.phase.label} · Chu kỳ tháng ${new Date().getMonth()+1}` : '—');
+  _setEl('gy-rec-cycle',   `${cycle?.cycleLen || curUser?.cycle_len || 28} ngày`);
+
+  // Load thêm thông tin từ patients table nếu có BN thật
+  if (curUser?.bn_code && curUser?._supabase) {
+    try {
+      const { data: pt } = await db.getMyPatient(curUser.bn_code);
+      if (pt) {
+        if (pt.lmp && pt.lmp !== curUser.lmp) {
+          curUser.lmp = pt.lmp;
+          const c2 = calcGyCycle(pt.lmp, pt.cycle_len || curUser?.cycle_len || 28);
+          if (c2) {
+            _setEl('gy-rec-day-big', c2.day);
+            _setEl('gy-rec-phase', `${c2.phase.label} · Chu kỳ tháng ${new Date().getMonth()+1}`);
+            _setEl('gy-rec-cycle', `${c2.cycleLen} ngày`);
+          }
+        }
+      }
+    } catch(e) { console.warn('[initGyRecords]', e); }
+  }
   gyRecTab('visit', document.querySelector('#s-gy-records .chip'));
 }
 
