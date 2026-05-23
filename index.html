@@ -3950,21 +3950,23 @@ function eduToggleRedFlags(week){
 // Mốc xét nghiệm/siêu âm theo tuần
 const OB_TIMELINE = [
   // XÉT NGHIỆM
-  {wk:[8,10],  kind:'xn', title:'Xét nghiệm máu tổng quát', sub:'Công thức máu, nhóm máu, Rh, HBsAg, HIV, giang mai, rubella'},
-  {wk:[11,13], kind:'xn', title:'Double test / NIPT', sub:'Sàng lọc Down và bất thường nhiễm sắc thể'},
-  {wk:[24,28], kind:'xn', title:'Nghiệm pháp dung nạp glucose (GCT)', sub:'Sàng lọc tiểu đường thai kỳ — uống 75g glucose'},
-  {wk:[32,34], kind:'xn', title:'Non-stress test (NST)', sub:'Theo dõi tim thai và cử động — chỉ định khi cần'},
-  {wk:[36,38], kind:'xn', title:'GBS + xét nghiệm trước sinh', sub:'Liên cầu nhóm B, công thức máu, đông máu'},
+  {wk:[8,10],  kind:'xn', title:'Xét nghiệm máu tổng quát lần 1', sub:'Công thức máu, nhóm máu, Rh, HBsAg, HIV, giang mai, rubella IgG, ferritin, TSH'},
+  {wk:[10,13], kind:'xn', title:'Double test / NIPT', sub:'NIPT từ tuần 10, Double test tuần 11–13+6 — sàng lọc Down và bất thường NST'},
+  {wk:[15,18], kind:'xn', title:'Triple test (nếu chưa làm NIPT)', sub:'Sàng lọc hội chứng Down, Edwards, dị tật ống thần kinh — cửa sổ tuần 15–20'},
+  {wk:[24,28], kind:'xn', title:'OGTT 75g — tầm soát tiểu đường', sub:'Nhịn ăn 8h, uống 75g glucose, đo đường huyết 3 thời điểm. Tiêu chuẩn WHO/BYT VN'},
+  {wk:[28,32], kind:'xn', title:'Xét nghiệm máu lần 2', sub:'Công thức máu, ferritin, đường huyết, protein niệu — phát hiện thiếu máu và tiền sản giật'},
+  {wk:[35,37], kind:'xn', title:'GBS + xét nghiệm trước sinh', sub:'Liên cầu nhóm B (swab âm đạo-hậu môn), đông máu, nhóm máu — chuẩn bị sinh'},
   // SIÊU ÂM
-  {wk:[8,12],  kind:'sa', title:'Siêu âm 3 tháng đầu', sub:'Xác nhận tim thai, tuổi thai, đo độ mờ da gáy (NT)'},
-  {wk:[18,22], kind:'sa', title:'Siêu âm hình thái học', sub:'Tầm soát dị tật toàn thân, xác định giới tính'},
-  {wk:[28,32], kind:'sa', title:'Siêu âm tháng 7', sub:'Đánh giá tăng trưởng, nước ối, vị trí nhau thai'},
-  {wk:[36,40], kind:'sa', title:'Siêu âm cuối thai kỳ', sub:'Ngôi thai, ước lượng cân nặng, chỉ số AFI'},
+  {wk:[6,8],   kind:'sa', title:'Siêu âm xác nhận thai', sub:'Xác nhận thai trong tử cung, loại trừ thai ngoài, xác nhận tim thai (~tuần 6–7)'},
+  {wk:[11,13], kind:'sa', title:'Siêu âm đo độ mờ da gáy (NT)', sub:'Đo NT tuần 11–13+6, kết hợp Double test sàng lọc Down. Cần KTV có chứng chỉ FMF'},
+  {wk:[20,22], kind:'sa', title:'Siêu âm hình thái học', sub:'Tầm soát dị tật toàn thân (tim, não, cột sống, tứ chi). Siêu âm 2D tiêu chuẩn — quan trọng nhất TCN 2'},
+  {wk:[28,32], kind:'sa', title:'Siêu âm tăng trưởng thai', sub:'Đánh giá tăng trưởng, nước ối, vị trí nhau, ngôi thai sơ bộ'},
+  {wk:[36,38], kind:'sa', title:'Siêu âm cuối thai kỳ', sub:'Xác định ngôi thai, ước lượng cân nặng, chỉ số AFI, Doppler động mạch rốn nếu cần'},
   // TIÊM CHỦNG
-  {wk:[0,12],  kind:'tc', title:'Rubella (trước mang thai)', sub:'Tiêm ít nhất 3 tháng trước khi mang thai — nếu chưa miễn dịch'},
-  {wk:[27,32], kind:'tc', title:'Tdap — Bạch hầu · Ho gà · Uốn ván', sub:'Mỗi lần mang thai, kháng thể truyền qua nhau bảo vệ bé 6 tháng đầu'},
-  {wk:[32,36], kind:'tc', title:'RSV (Abrysvo)', sub:'Khuyến cáo BYT VN · Bảo vệ bé khỏi viêm phổi RSV sau sinh'},
-  {wk:[0,40],  kind:'tc', title:'Cúm mùa', sub:'An toàn bất kỳ tuần nào · Giảm nguy cơ sinh non và biến chứng nặng'},
+  {wk:[0,12],  kind:'tc', title:'Rubella (trước mang thai)', sub:'Tiêm ít nhất 3 tháng trước khi mang thai nếu chưa miễn dịch. Không tiêm khi đang mang thai'},
+  {wk:[14,20], kind:'tc', title:'Cúm mùa', sub:'An toàn bất kỳ tuần nào trong thai kỳ. Giảm nguy cơ biến chứng nặng và sinh non do cúm'},
+  {wk:[27,32], kind:'tc', title:'Tdap / Td — Bạch hầu · Ho gà · Uốn ván', sub:'Mỗi lần mang thai (tuần 27–36, tối ưu 27–32). Kháng thể truyền qua nhau bảo vệ bé 6 tháng đầu. Tại VN nhiều nơi dùng Td — hỏi BS'},
+  {wk:[32,36], kind:'tc', title:'RSV — Abrysvo (theo chỉ định BS)', sub:'Theo QĐ 2323/BYT 2025. Tuần 32–36. Bảo vệ bé khỏi viêm phổi RSV sau sinh. Hỏi BS về khả năng cung ứng tại cơ sở'},
 ];
 
 
@@ -4053,7 +4055,7 @@ const EDU_CONTENT = {
     babyDev: [
       'Phôi thai vừa làm tổ vào niêm mạc tử cung, kích thước chỉ ~2mm — nhỏ như hạt mè. Phôi đang ở giai đoạn phôi nang (blastocyst), chuẩn bị bước vào giai đoạn phôi vị hóa ở tuần sau. [ACOG]',
       'Ống thần kinh bắt đầu hình thành — sẽ phát triển thành não và tủy sống. Đây là lý do acid folic cần được bổ sung từ trước khi mang thai. [CDC]',
-      'Tim nguyên thủy và hệ tuần hoàn sơ khai đang được tạo lập, chưa đập rõ. Siêu âm tuần này thường chưa thấy túi thai. [Williams Obstetrics 26th ed]',
+      'Tim nguyên thủy đang hình thành — sẽ bắt đầu đập vào tuần 5–6. Tuần 4 siêu âm thường chỉ thấy túi thai, chưa thấy tim thai. Không cần lo lắng nếu chưa siêu âm ngay. [Williams Obstetrics 26th ed]',
       'Nhau thai bắt đầu hình thành và tiết hCG — chính là hormone mà que thử thai phát hiện. [WHO]'
     ],
     momNote: 'Lúc này mẹ thường chỉ trễ kinh vài ngày, có thể chưa biết mình mang thai. Một số mẹ thấy mệt nhẹ, căng ngực, đi tiểu nhiều hơn — nhưng nhiều mẹ hoàn toàn không có triệu chứng gì. Que thử thai sau trễ kinh 3–5 ngày sẽ cho kết quả đáng tin cậy. Đừng vội đi siêu âm — tuần 6–8 mới thấy rõ tim thai.',
@@ -4202,11 +4204,11 @@ const EDU_CONTENT = {
       'DHA 200–300mg/ngày — cá hồi, cá thu nhỏ, hạt óc chó, hạt chia. Hỗ trợ phát triển não và thị giác bé. [WHO]'
     ],
     lifestyle: [
-      'Làm Triple Test tuần 16–18 nếu chưa làm NIPT/Double Test — sàng lọc dị tật ống thần kinh và rối loạn nhiễm sắc thể. [ACOG]',
-      'Bắt đầu nói chuyện, đọc sách, mở nhạc nhẹ cho bé nghe — bé phản ứng tốt với giọng mẹ. [AAP]',
-      'Tập thể dục đều đặn: đi bộ 30 phút/ngày, bơi, yoga bầu, pilates. Chuẩn bị thói quen nằm nghiêng — sau tuần 20 nên tránh nằm ngửa lâu vì chèn ép tĩnh mạch chủ dưới. [ACOG]',
-      'Tư thế ngủ: nằm nghiêng trái tốt nhất cho tuần hoàn thai. Dùng gối ôm dài hỗ trợ bụng và chân. [ACOG]',
-      'Kiểm tra răng miệng định kỳ — viêm nướu thai kỳ tăng nguy cơ sinh non. Có thể trám răng, lấy cao răng an toàn. [ADA]'
+      'Làm Triple Test tuần 16–18 nếu chưa có kết quả NIPT/Double Test — sàng lọc hội chứng Down, Edwards, dị tật ống thần kinh. Đây là cơ hội cuối cùng cho sàng lọc huyết thanh. [ACOG]',
+      'Bắt đầu nói chuyện, đọc sách, mở nhạc nhẹ cho bé nghe — tai trong bé đã phát triển đủ để nghe từ tuần này. [AAP]',
+      'Tập thể dục đều đặn 30 phút/ngày — đi bộ, bơi, yoga bầu. Giai đoạn này mẹ khỏe nhất, tận dụng để duy trì thể lực. [ACOG]',
+      'Tư thế ngủ: bắt đầu tập nằm nghiêng (trái tốt hơn) — dùng gối ôm dài hỗ trợ. Sau tuần 20 tránh nằm ngửa lâu vì chèn ép tĩnh mạch chủ dưới. [ACOG]',
+      'Kiểm tra răng miệng — viêm nướu thai kỳ gặp ở 60–75% mẹ bầu, tăng nguy cơ sinh non. Trám răng, lấy cao răng an toàn trong TCN 2. [ADA]'
     ],
     redFlags: [
       { sign: 'Đau đầu dữ dội kèm phù mặt/tay, nhìn mờ, đau thượng vị', action: 'Đến BV ngay — nghi tiền sản giật sớm' },
@@ -4248,7 +4250,7 @@ const EDU_CONTENT = {
       'Hạn chế đường đơn và đồ ngọt — tuần 24–28 sắp test tiểu đường thai kỳ, ăn uống lành mạnh từ giờ giúp giảm nguy cơ. [ADA]'
     ],
     lifestyle: [
-      'Siêu âm hình thái học tuần 20–22 — bắt buộc, kiểm tra toàn bộ cấu trúc bé: tim, não, cột sống, tứ chi, các tạng. [ACOG]',
+      'Siêu âm hình thái học tuần 20–22 — bắt buộc, kiểm tra toàn bộ cấu trúc bé: tim, não, cột sống, tứ chi, các tạng. Đây là siêu âm 2D tiêu chuẩn, không phải 4D. [ACOG]',
       'Làm quen với cử động bé — chú ý lúc bé hoạt động nhiều (thường sau ăn, buổi tối). Đếm cử động thai chính thức (≥10 lần/2 giờ) sẽ bắt đầu từ tuần 28 theo khuyến cáo ACOG. [ACOG]',
       'Mua áo ngực bầu (không gọng) phù hợp với ngực to lên. Kem chống rạn vẫn duy trì hằng ngày. [thực tế]',
       'Đăng ký lớp học tiền sản — kiến thức về sinh nở, chăm sóc bé, cho con bú. [Bộ Y tế VN]',
@@ -4332,7 +4334,7 @@ const EDU_CONTENT = {
       'Phổi tiếp tục trưởng thành nhưng vẫn cần thêm thời gian. Sinh ở tuần này tỷ lệ sống cao (>90% ở các trung tâm NICU hiện đại) khi có chăm sóc tích cực. [Williams Obstetrics]',
       'Mỡ dưới da bắt đầu tích lũy — bé sẽ bớt nhăn nheo trong các tuần tới. [ACOG]'
     ],
-    momNote: 'Chính thức bước vào tam cá nguyệt 3 — chuẩn bị về đích. Mẹ thường khám thai 2 tuần/lần thay vì mỗi tháng. Đau lưng, phù chân, mất ngủ tăng. Một số mẹ thấy cơn gò sinh lý (Braxton Hicks) — không đều, không đau, tự hết. Đây là tuần tiêm Tdap (vaccine bạch hầu–ho gà–uốn ván) — bảo vệ bé khỏi ho gà sơ sinh.',
+    momNote: 'Chính thức bước vào tam cá nguyệt 3 — chuẩn bị về đích. Mẹ thường khám thai 2 tuần/lần thay vì mỗi tháng. Đau lưng, phù chân, mất ngủ tăng. Một số mẹ thấy cơn gò sinh lý (Braxton Hicks) — không đều, không đau, tự hết. Đây là thời điểm tiêm vaccine phòng ho gà-bạch hầu-uốn ván (Tdap hoặc Td tùy cơ sở tại VN) — kháng thể truyền qua nhau bảo vệ bé khỏi ho gà sơ sinh.',
     nutrition: [
       'Tăng đạm: 1.1g/kg cân nặng/ngày (~60–80g cho mẹ 55–70kg) — thịt nạc, cá, trứng, sữa, đậu. Bé tích lũy đạm nhanh ở giai đoạn này. [ACOG]',
       'Sắt 27mg + axit folic + vitamin PNC — tiếp tục bắt buộc. Thiếu máu cuối thai kỳ gặp ở 30–40% mẹ Việt. [Bộ Y tế VN]',
