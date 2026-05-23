@@ -77,10 +77,10 @@
   --gy-primary:    #F0B8C0;
   --gy-dk:         #C96080;
   --gy-lt:         #FFF0F2;
-  --gy-md:         #F5D0D8;
+  --gy-md:         #E8B8C4;
   --gy-bg:         #FDEEF0;
   --gy-ink:        #2A1015;
-  --gy-muted:      #C0A0A8;
+  --gy-muted:      #9A6070;
   --gy-dark-bg:    #2A1015;
   /* FONTS */
   --sans:  'Be Vietnam Pro', system-ui, sans-serif;
@@ -1395,14 +1395,14 @@ input[type=date], input[type=time], input[type=datetime-local] {
   </div>
 
   <!-- ═══ CHECK-IN TỐI ═══ -->
-  <div onclick="openGyCheckin()" style="margin:14px 22px 0;background:var(--gy-dark-bg);border-radius:var(--r-xl);padding:16px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent">
-    <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,184,192,.5);margin-bottom:5px">Check-in buổi tối</div>
+  <div onclick="openGyCheckin()" style="margin:14px 22px 0;background:var(--gy-dk);border-radius:var(--r-xl);padding:16px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:5px">Check-in buổi tối</div>
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--serif);font-size:17px;color:#fff" id="gy-checkin-title">Hôm nay chị thế nào?</div>
-        <div style="font-size:11px;color:rgba(240,184,192,.4);margin-top:3px" id="gy-checkin-streak">0 ngày liên tiếp</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px" id="gy-checkin-streak">0 ngày liên tiếp</div>
       </div>
-      <div style="font-size:11px;color:var(--gy-primary);font-weight:700">Bắt đầu →</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700">Bắt đầu →</div>
     </div>
   </div>
 
@@ -1426,7 +1426,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="width:28px;height:28px;border-radius:50%;background:var(--gy-lt);border:.5px solid var(--gy-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px">💛</div>
       <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-ink)" id="gy-note-title">Chị nên biết</div>
     </div>
-    <div style="background:var(--gy-lt);padding:14px 14px 6px;border-radius:var(--r-lg)" id="gy-supplement-list"></div>
+    <div style="background:#fff;padding:14px 14px 6px;border-radius:var(--r-lg);border:.5px solid var(--gy-md)" id="gy-supplement-list"></div>
   </div>
 
   <!-- ═══ WORKSHOP ═══ -->
