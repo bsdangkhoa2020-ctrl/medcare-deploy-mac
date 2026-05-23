@@ -1368,24 +1368,26 @@ input[type=date], input[type=time], input[type=datetime-local] {
 <div class="scroll" style="padding-bottom:80px">
 
   <!-- ═══ HERO ═══ -->
-  <div style="background:var(--gy-bg);padding:calc(var(--sat)+24px) 36px 20px">
-    <div style="font-family:var(--serif);font-size:26px;color:var(--gy-ink);font-weight:300;line-height:1.2;margin-bottom:4px">Chào <em style="color:var(--gy-dk)" id="gy-name">Hồng</em></div>
-    <div style="font-size:13px;color:var(--gy-muted);margin-bottom:14px" id="gy-cycle-label">Ngày D1 · Chu kỳ tháng này</div>
-    <!-- Thanh chu kỳ -->
-    <div style="background:var(--surface);border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:12px 14px" id="gy-cycle-bar">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <div style="font-size:10px;font-weight:700;color:var(--gy-dk)" id="gy-phase-label">Hành kinh · D1–D5</div>
-        <div style="font-size:10px;color:var(--gy-muted)" id="gy-ovulation-label">Rụng trứng D14</div>
+  <div style="background:#fff;padding:calc(var(--sat)+24px) 28px 22px;border-bottom:.5px solid var(--gy-md)">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:12px" id="gy-cycle-month">Chu kỳ tháng 5</div>
+    <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-family:var(--serif);font-size:28px;color:var(--gy-ink);font-weight:300;line-height:1">Chào <em style="color:var(--gy-dk)" id="gy-name">Hồng</em></div>
+        <div style="font-size:14px;color:var(--gy-muted);margin-top:5px" id="gy-cycle-label">Ngày D8 · Nang noãn</div>
       </div>
-      <div style="position:relative;height:6px;background:var(--gy-md);border-radius:3px;overflow:hidden;margin-bottom:8px">
-        <div style="position:absolute;left:0;top:0;width:18%;height:100%;background:#C03030;border-radius:3px 0 0 3px"></div>
-        <div style="position:absolute;left:18%;top:0;width:28%;height:100%;background:var(--gy-dk)"></div>
-        <div style="position:absolute;left:46%;top:0;width:4%;height:100%;background:#F5C462"></div>
-        <div style="position:absolute;left:50%;top:0;width:50%;height:100%;background:var(--gy-primary);border-radius:0 3px 3px 0"></div>
-        <div id="gy-cycle-cursor" style="position:absolute;left:0%;top:-1px;width:2px;height:8px;background:var(--gy-ink)"></div>
+      <div style="margin-left:auto;text-align:right;flex-shrink:0">
+        <div style="font-family:var(--serif);font-size:52px;font-weight:300;color:var(--gy-primary);line-height:1" id="gy-day-big">8</div>
+        <div style="font-size:10px;font-weight:700;color:var(--gy-dk);letter-spacing:.1em">NGÀY</div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--gy-ink)" id="gy-ovulation-countdown">Đang tính...</div>
     </div>
+    <!-- 4 phase chips -->
+    <div style="display:flex;gap:4px;margin-bottom:10px" id="gy-phase-chips">
+      <div style="flex:5;background:var(--gy-lt);border:.5px solid #C03030;border-radius:4px;padding:5px 0;text-align:center;font-size:9px;font-weight:700;color:#C03030">Kinh</div>
+      <div style="flex:8;background:var(--gy-lt);border:1.5px solid var(--gy-dk);border-radius:4px;padding:5px 0;text-align:center;font-size:9px;font-weight:700;color:var(--gy-dk)">Nang noãn ●</div>
+      <div style="flex:1;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:4px;padding:5px 0;text-align:center;font-size:9px;color:var(--gy-muted)">R.T</div>
+      <div style="flex:14;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:4px;padding:5px 0;text-align:center;font-size:9px;color:var(--gy-muted)">Hoàng thể</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--gy-ink)" id="gy-ovulation-countdown">Đang tính...</div>
   </div>
 
   <!-- ═══ CHECK-IN TỐI ═══ -->
@@ -5022,18 +5024,29 @@ function initGyHome() {
   const { day, cycleLen, phase, ovulDay, daysToOvul } = cycle;
   const monthName = new Date().toLocaleDateString('vi-VN',{month:'long'});
 
-  // Hero
-  _setEl('gy-cycle-label', `Ngày D${day} · Chu kỳ ${monthName} · ${cycleLen} ngày`);
-  _setEl('gy-phase-label', `${phase.label} · D${phase.days[0]}–D${phase.days[1]}`);
-  _setEl('gy-ovulation-label', `Rụng trứng D${ovulDay}`);
+  // Hero H3
+  _setEl('gy-cycle-month', `Chu kỳ ${monthName}`);
+  _setEl('gy-cycle-label', `Ngày D${day} · ${phase.label}`);
+  _setEl('gy-day-big', day);
   _setEl('gy-ovulation-countdown',
     daysToOvul > 0 ? `Còn ${daysToOvul} ngày đến rụng trứng` :
     daysToOvul === 0 ? '⚡ Hôm nay là ngày rụng trứng ước tính' :
     `Đã qua rụng trứng ${Math.abs(daysToOvul)} ngày`);
 
-  // Cursor trên thanh
-  const cursor = document.getElementById('gy-cycle-cursor');
-  if (cursor) cursor.style.left = Math.min((day/cycleLen)*100, 98) + '%';
+  // Phase chips — highlight chip đúng phase
+  const chipsEl = document.getElementById('gy-phase-chips');
+  if (chipsEl) {
+    const CHIPS = [
+      { label:'Kinh',       active: day>=1&&day<=5,    flex:5,  activeBorder:'#C03030', activeColor:'#C03030' },
+      { label:'Nang noãn ●',active: day>=6&&day<=13,   flex:8,  activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)' },
+      { label:'R.T',        active: day===ovulDay,      flex:1,  activeBorder:'#F5A030', activeColor:'#F5A030' },
+      { label:'Hoàng thể',  active: day>ovulDay,        flex:14, activeBorder:'var(--gy-dk)', activeColor:'var(--gy-dk)' },
+    ];
+    chipsEl.innerHTML = CHIPS.map(c => `
+      <div style="flex:${c.flex};background:var(--gy-lt);border:${c.active?'1.5px':'0.5px'} solid ${c.active?c.activeBorder:'var(--gy-md)'};border-radius:4px;padding:5px 0;text-align:center;font-size:9px;font-weight:${c.active?'700':'400'};color:${c.active?c.activeColor:'var(--gy-muted)'}">
+        ${c.label}
+      </div>`).join('');
+  }
 
   // Chị nên biết
   _setEl('gy-note-title', `Chị nên biết · D${day}`);
