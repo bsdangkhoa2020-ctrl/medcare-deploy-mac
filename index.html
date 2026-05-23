@@ -691,8 +691,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
     <!-- Tab bar -->
     <div id="adm-tabs" style="display:flex;">
       <div class="adm-tab adm-tab-active adm-ibm" data-tab="patients" onclick="admSwitchTab('patients')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#1F1A0F;cursor:pointer;border-bottom:2px solid #E8A93C;font-weight:500;letter-spacing:.04em;">Bệnh nhân</div>
-      <div class="adm-tab adm-ibm" data-tab="schedule" onclick="admSwitchTab('schedule')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch BS</div>
-      <div class="adm-tab adm-ibm" data-tab="appts" onclick="admSwitchTab('appts')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch hẹn</div>
+      <div class="adm-tab adm-ibm" data-tab="schedule" onclick="admSwitchTab('schedule')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch &amp; Ca</div>
       <div class="adm-tab adm-ibm" data-tab="articles" onclick="admSwitchTab('articles')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Tạp chí</div>
     </div>
   </div>
@@ -721,9 +720,44 @@ input[type=date], input[type=time], input[type=datetime-local] {
   </div>
 
   <!-- ═══ TAB: LỊCH BS ═══ -->
-  <div id="adm-pane-schedule" class="adm-pane adm-ibm" style="display:none;padding:16px;gap:16px;display:none;flex-direction:column;">
+  <div id="adm-pane-schedule" class="adm-pane adm-ibm" style="display:none;padding:16px;display:none;flex-direction:column;gap:14px;">
 
-  <!-- CARD: BV Hùng Vương -->
+  <!-- 1. HÀNH ĐỘNG NHANH: LỊCH HẸN HÔM NAY -->
+  <div style="background:#fff;border:1px solid #F0E7D2;border-radius:16px;padding:14px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#E8A93C;flex-shrink:0;"></div>
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;" id="adm-quick-label">Lịch hẹn hôm nay</div>
+      </div>
+      <div id="adm-quick-badge" style="background:#1F1A0F;color:#E8A93C;font-size:10px;font-weight:700;padding:5px 12px;border-radius:20px;letter-spacing:.06em;"></div>
+    </div>
+    <div id="adm-quick-list">
+      <div style="text-align:center;padding:20px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Đang tải...</div>
+    </div>
+  </div>
+
+  <!-- 2. LỊCH HẸN THEO NGÀY -->
+  <div style="background:#fff;border:1px solid #F0E7D2;border-radius:16px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;">
+      <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Lịch hẹn khách hàng</div>
+      <div id="adm-appt-today-label" style="font-size:11px;color:#B0A490;font-weight:300;"></div>
+    </div>
+    <!-- Calendar strip 7 ngày -->
+    <div id="adm-cal-strip" style="display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #F0E7D2;"></div>
+    <!-- Danh sách hẹn ngày được chọn -->
+    <div style="padding:14px 16px;">
+      <div id="adm-cal-day-label" style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#E8A93C;font-weight:700;margin-bottom:10px;"></div>
+      <div id="adm-cal-appt-list" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="text-align:center;padding:20px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Chọn ngày để xem</div>
+      </div>
+    </div>
+    <!-- Nút tạo hẹn -->
+    <div style="padding:0 16px 14px;display:flex;justify-content:flex-end;">
+      <button onclick="admApptCreate()" style="padding:7px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Tạo lịch hẹn</button>
+    </div>
+  </div>
+
+  <!-- 3. LỊCH LÀM VIỆC BV HÙNG VƯƠNG -->
   <div style="background:#FFF8E7;border:1px solid #F0E7D2;border-radius:16px;padding:16px 16px 14px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-bottom:12px;border-bottom:1px solid #F0E7D2;margin-bottom:14px;">
       <div>
@@ -736,43 +770,39 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <div style="display:flex;align-items:center;background:#fff;border:1px solid #F0E7D2;border-radius:10px;overflow:hidden;">
           <button onclick="admHvWeekNav(-1)" style="padding:6px 10px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#7A6F5C;">‹</button>
-          <div style="text-align:center;padding:0 4px;min-width:80px;">
+          <div style="text-align:center;padding:0 4px;min-width:76px;">
             <div id="adm-hv-week-tag" style="font-size:10px;font-weight:600;color:#1F1A0F;"></div>
             <div id="adm-hv-week-range" style="font-size:9px;color:#B0A490;font-family:monospace;"></div>
           </div>
           <button onclick="admHvWeekNav(1)" style="padding:6px 10px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#7A6F5C;">›</button>
         </div>
-        <button onclick="admHvEditWeek()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:#E8A93C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.06em;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
-          ✏️ Sửa cả tuần
-        </button>
+        <button onclick="admHvEditWeek()" style="padding:7px 10px;background:#E8A93C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa cả tuần</button>
       </div>
     </div>
     <div id="adm-hv-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
     <div style="font-size:10px;color:#B0A490;font-style:italic;margin-top:10px;font-weight:300;">Bấm vào ngày để đổi ca</div>
   </div>
 
-  <!-- CARD: PK 315 -->
-  <div style="background:#FFF8E7;border:1px solid #F0E7D2;border-radius:16px;padding:16px 16px 14px;margin-top:16px;">
+  <!-- 4. LỊCH PK 315 -->
+  <div style="background:#FFF8E7;border:1px solid #F0E7D2;border-radius:16px;padding:16px 16px 14px;margin-bottom:16px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-bottom:12px;border-bottom:1px solid #F0E7D2;margin-bottom:14px;">
       <div>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
           <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">PK Phụ Sản 315</div>
           <span style="font-size:9px;letter-spacing:.1em;background:#fff;border:1px solid #F0E7D2;color:#B0A490;padding:2px 7px;border-radius:4px;">Phòng khám tư</span>
         </div>
-        <div style="font-size:11px;color:#B0A490;font-weight:300;font-style:italic;">Ca: Sáng · Tối · Sáng+Tối · Nghỉ</div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;font-style:italic;">Ca: Sáng · Tối · Sáng + Tối · Nghỉ</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <div style="display:flex;align-items:center;background:#fff;border:1px solid #F0E7D2;border-radius:10px;overflow:hidden;">
           <button onclick="admPkWeekNav(-1)" style="padding:6px 10px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#7A6F5C;">‹</button>
-          <div style="text-align:center;padding:0 4px;min-width:80px;">
+          <div style="text-align:center;padding:0 4px;min-width:76px;">
             <div id="adm-pk-week-tag" style="font-size:10px;font-weight:600;color:#1F1A0F;"></div>
             <div id="adm-pk-week-range" style="font-size:9px;color:#B0A490;font-family:monospace;"></div>
           </div>
           <button onclick="admPkWeekNav(1)" style="padding:6px 10px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#7A6F5C;">›</button>
         </div>
-        <button onclick="admPkEditWeek()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:#E8A93C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.06em;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
-          ✏️ Sửa cả tuần
-        </button>
+        <button onclick="admPkEditWeek()" style="padding:7px 10px;background:#E8A93C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa cả tuần</button>
       </div>
     </div>
     <div id="adm-pk-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
@@ -782,20 +812,16 @@ input[type=date], input[type=time], input[type=datetime-local] {
   <!-- Modal sửa 1 ngày -->
   <div id="adm-sch-day-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:flex-end;">
     <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;">
-      <!-- Badge + tiêu đề -->
       <div style="margin-bottom:14px;">
         <span id="adm-sch-day-badge" style="font-size:9px;background:#E8A93C;color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;"></span>
         <div class="adm-lora" id="adm-sch-day-title" style="font-size:17px;font-weight:400;margin-top:8px;color:#1F1A0F;"></div>
       </div>
-      <!-- Preset nhanh -->
       <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">Chọn mẫu nhanh:</div>
       <div id="adm-sch-day-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
-      <!-- Text input tự do -->
       <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:6px;">Nhập tự do / Ghi chú:</div>
       <input id="adm-sch-day-input" type="text" placeholder="Ví dụ: HC, A, Hội chẩn, Nghỉ phép..."
         style="width:100%;padding:10px 14px;border:1px solid #F0E7D2;border-radius:12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;outline:none;box-sizing:border-box;margin-bottom:4px;">
       <div style="font-size:10px;color:#B0A490;font-style:italic;margin-bottom:16px;">BS có thể ghi đè bất kỳ nội dung nào cho ngày này.</div>
-      <!-- Actions -->
       <div style="display:flex;gap:8px;">
         <button onclick="document.getElementById('adm-sch-day-modal').style.display='none'"
           style="flex:1;padding:12px;border-radius:12px;border:1px solid #1F1A0F;background:transparent;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;">Huỷ bỏ</button>
@@ -809,61 +835,51 @@ input[type=date], input[type=time], input[type=datetime-local] {
   <div id="adm-sch-week-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:flex-end;">
     <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;max-height:85vh;overflow-y:auto;">
       <div class="adm-lora" id="adm-sch-week-title" style="font-size:17px;font-weight:400;margin-bottom:6px;color:#1F1A0F;"></div>
-      <div style="font-size:11px;color:#B0A490;margin-bottom:14px;">Áp dụng nhanh cho cả tuần:</div>
-      <div id="adm-sch-week-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
-      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">Chi tiết từng ngày:</div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">⚡ Áp dụng nhanh cả tuần:</div>
+      <div id="adm-sch-week-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7A6F5C;font-weight:600;margin-bottom:8px;">Chi tiết từng ngày:</div>
       <div id="adm-sch-week-days" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:300px;overflow-y:auto;"></div>
       <div style="display:flex;gap:8px;">
         <button onclick="document.getElementById('adm-sch-week-modal').style.display='none'"
-          style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          style="flex:1;padding:12px;border-radius:12px;border:1px solid #1F1A0F;background:transparent;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;">Huỷ bỏ</button>
         <button onclick="admSchWeekSave()"
-          style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu cả tuần</button>
+          style="flex:1;padding:12px;border-radius:12px;border:none;background:#E8A93C;color:#fff;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu lịch tuần</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal tạo/sửa lịch hẹn -->
+  <div id="adm-appt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
+    <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;">
+      <div class="adm-lora" id="adm-appt-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Tạo lịch hẹn</div>
+      <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tên bệnh nhân *</div>
+        <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;">
+        <datalist id="adm-appt-pt-list"></datalist></div>
+      <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Số điện thoại</div>
+        <input id="adm-appt-phone" type="tel" placeholder="0901 234 567" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;">
+        <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ngày hẹn *</div><input id="adm-appt-date" type="date" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
+        <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Giờ hẹn *</div><input id="adm-appt-time" type="time" value="08:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
+      </div>
+      <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Loại khám</div>
+        <select id="adm-appt-type" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;background:#fff;">
+          <option value="kham_thai">Khám thai định kỳ</option>
+          <option value="sieu_am">Siêu âm</option>
+          <option value="xet_nghiem">Xét nghiệm</option>
+          <option value="phu_khoa">Khám phụ khoa</option>
+          <option value="tu_van">Tư vấn</option>
+          <option value="khac">Khác</option>
+        </select></div>
+      <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ghi chú</div>
+        <textarea id="adm-appt-note" rows="2" placeholder="Ghi chú thêm..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:none;box-sizing:border-box;"></textarea></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="admApptModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+        <button onclick="admApptSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu lịch hẹn</button>
       </div>
     </div>
   </div>
 
 </div>
-  <!-- ═══ TAB: LỊCH HẸN ═══ -->
-  <div id="adm-pane-appts" class="adm-pane adm-ibm" style="display:none;padding:16px;">
-    <div id="adm-appt-strip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:none;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div class="adm-lora" id="adm-appt-date-label" style="font-size:16px;font-weight:400;"></div>
-      <button onclick="admApptCreate()" style="padding:7px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Tạo hẹn</button>
-    </div>
-    <div id="adm-appt-list" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
-    </div>
-    <div id="adm-appt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
-      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;">
-        <div class="adm-lora" id="adm-appt-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Tạo lịch hẹn</div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tên bệnh nhân *</div>
-          <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;">
-          <datalist id="adm-appt-pt-list"></datalist></div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Số điện thoại</div>
-          <input id="adm-appt-phone" type="tel" placeholder="0901 234 567" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
-        <div style="display:flex;gap:10px;margin-bottom:12px;">
-          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ngày hẹn *</div><input id="adm-appt-date" type="date" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
-          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Giờ hẹn *</div><input id="adm-appt-time" type="time" value="08:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
-        </div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Loại khám</div>
-          <select id="adm-appt-type" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;background:#fff;">
-            <option value="kham_thai">Khám thai định kỳ</option>
-            <option value="sieu_am">Siêu âm</option>
-            <option value="xet_nghiem">Xét nghiệm</option>
-            <option value="phu_khoa">Khám phụ khoa</option>
-            <option value="tu_van">Tư vấn</option>
-            <option value="khac">Khác</option>
-          </select></div>
-        <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ghi chú</div>
-          <textarea id="adm-appt-note" rows="2" placeholder="Ghi chú thêm..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:none;box-sizing:border-box;"></textarea></div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="admApptModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
-          <button onclick="admApptSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu lịch hẹn</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ═══ TAB: TẠP CHÍ ═══ -->
   <div id="adm-pane-articles" class="adm-pane adm-ibm" style="display:none;padding:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -3253,11 +3269,14 @@ const adm = {
 // INIT ADMIN
 // ────────────────────────────────────────
 async function initAdmin() {
-  // Set today as selected appt date
   adm.apptDate = new Date().toISOString().slice(0,10);
-
+  // Label hôm nay
+  const todayLabel = document.getElementById('adm-appt-today-label');
+  if (todayLabel) {
+    const d = new Date();
+    todayLabel.textContent = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+  }
   admSwitchTab('patients');
-  admRenderApptStrip();
 }
 
 // ────────────────────────────────────────
@@ -3278,8 +3297,7 @@ function admSwitchTab(tab) {
   if (pane) pane.style.display = 'block';
   // Load data
   if (tab === 'patients' && adm.patients.length === 0) admLoadPatients();
-  if (tab === 'schedule') admRenderSchedule();
-  if (tab === 'appts') admLoadAppts();
+  if (tab === 'schedule') { admRenderSchedule(); admLoadQuickAppts(); admRenderCalStrip(); }
   if (tab === 'articles' && adm.articles.length === 0) admLoadArticles();
 }
 
@@ -3676,6 +3694,112 @@ async function admSchWeekSave() {
     await _admSaveShift(ds, _schWeekType, shiftKey);
   }
   await admRenderSchedule();
+}
+
+// ────────────────────────────────────────
+// LỊCH & CA — Quick action + Calendar strip
+// ────────────────────────────────────────
+let _calSelDate = new Date().toISOString().slice(0,10);
+
+async function admLoadQuickAppts() {
+  const today = new Date().toISOString().slice(0,10);
+  const { data } = await db.getAllAppointments();
+  const todayList = (data||[]).filter(a =>
+    (a.datetime||'').slice(0,10) === today && a.status !== 'cancelled'
+  );
+  const badge = document.getElementById('adm-quick-badge');
+  if (badge) badge.textContent = `${todayList.length} CA CHỜ XỬ LÝ`;
+  const label = document.getElementById('adm-quick-label');
+  const d = new Date();
+  if (label) label.textContent = `Hành động nhanh: Lịch hẹn hôm nay (${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()})`;
+  const list = document.getElementById('adm-quick-list');
+  if (!list) return;
+  if (!todayList.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Không tìm thấy lịch tái khám nào được đặt hôm nay.</div>`;
+    return;
+  }
+  const typeLabel = {kham_thai:'Khám thai',sieu_am:'Siêu âm',xet_nghiem:'Xét nghiệm',phu_khoa:'Phụ khoa',tu_van:'Tư vấn',khac:'Khác'};
+  list.innerHTML = todayList.map(a => {
+    const name = a.patients?.name || a.patient_name || 'Khách vãng lai';
+    const time = (a.datetime||'').slice(11,16);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 12px;background:#FAFAF8;border:1px solid #F0E7D2;border-radius:10px;margin-bottom:6px;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${name}</div>
+        <div style="font-size:11px;color:#B0A490;margin-top:2px;">⏱ ${time} · ${typeLabel[a.appt_type]||a.appt_type||''}</div>
+      </div>
+      <button onclick="admApptEdit('${a.id}')"
+        style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+        padding:7px 12px;border:1px solid #E0D8CE;background:#fff;border-radius:8px;cursor:pointer;
+        color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Hồ sơ →</button>
+    </div>`;
+  }).join('');
+}
+
+function admRenderCalStrip() {
+  const strip = document.getElementById('adm-cal-strip');
+  if (!strip) return;
+  const today = new Date();
+  const dow = today.getDay() || 7;
+  const monday = new Date(today); monday.setDate(today.getDate() - dow + 1); monday.setHours(0,0,0,0);
+  const DOW = ['T2','T3','T4','T5','T6','T7','CN'];
+  const todayStr = today.toISOString().slice(0,10);
+  strip.innerHTML = Array.from({length:7}, (_,i) => {
+    const d = new Date(monday); d.setDate(monday.getDate()+i);
+    const ds = d.toISOString().slice(0,10);
+    const isSel = ds === _calSelDate;
+    const isToday = ds === todayStr;
+    return `<div onclick="admCalSelectDay('${ds}')"
+      style="padding:10px 4px;text-align:center;cursor:pointer;border-bottom:2px solid ${isSel?'#1F1A0F':'transparent'};
+      background:${isSel?'#1F1A0F':'#fff'};transition:all .12s;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.06em;
+        color:${isSel?'#E8A93C':isToday?'#B57A1F':'#B0A490'}">${DOW[i]}</div>
+      <div style="font-family:'Lora',serif;font-size:15px;font-weight:400;margin-top:2px;
+        color:${isSel?'#fff':isToday?'#1F1A0F':'#1F1A0F'}">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+  admCalLoadAppts();
+}
+
+async function admCalSelectDay(ds) {
+  _calSelDate = ds;
+  adm.apptDate = ds;
+  admRenderCalStrip();
+}
+
+async function admCalLoadAppts() {
+  const labelEl = document.getElementById('adm-cal-day-label');
+  const listEl  = document.getElementById('adm-cal-appt-list');
+  if (!labelEl || !listEl) return;
+  const d = new Date(_calSelDate+'T00:00:00');
+  const DOW2 = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+  labelEl.textContent = `${_calSelDate} · Danh sách khám hẹn`;
+  listEl.innerHTML = `<div style="text-align:center;padding:16px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Đang tải...</div>`;
+  const { data } = await db.getAllAppointments();
+  const dayList = (data||[]).filter(a =>
+    (a.datetime||'').slice(0,10) === _calSelDate && a.status !== 'cancelled'
+  ).sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+  if (!dayList.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:20px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Không có lịch tái hẹn trong ngày này.</div>`;
+    return;
+  }
+  const typeLabel = {kham_thai:'Khám thai',sieu_am:'Siêu âm',xet_nghiem:'Xét nghiệm',phu_khoa:'Phụ khoa',tu_van:'Tư vấn',khac:'Khác'};
+  listEl.innerHTML = dayList.map(a => {
+    const name = a.patients?.name || a.patient_name || 'Khách vãng lai';
+    const time = (a.datetime||'').slice(11,16);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 12px;background:#F8F6F2;border:1px solid #F0E7D2;border-radius:10px;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${name} <span style="color:#B0A490;font-size:11px;">(${a.bn_code||''})</span></div>
+        <div style="font-size:11px;color:#B0A490;margin-top:2px;">⏱ ${time} · ${typeLabel[a.appt_type]||a.appt_type||''}</div>
+        ${a.notes?`<div style="font-size:11px;font-style:italic;color:#B0A490;margin-top:2px;">${a.notes}</div>`:''}
+      </div>
+      <button onclick="admApptEdit('${a.id}')"
+        style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+        padding:7px 12px;border:1px solid #E0D8CE;background:#fff;border-radius:8px;cursor:pointer;
+        color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;">Hồ sơ →</button>
+    </div>`;
+  }).join('');
 }
 
 // ────────────────────────────────────────
