@@ -3997,7 +3997,7 @@ async function obLoadHomeData() {
         const weekStr = ga ? `Tuần thứ ${ga.weeks}` : '';
         _setEl('ob-appt-day',   dt.getDate());
         _setEl('ob-appt-month', DOW[dt.getDay()] + ' · ' + MONTH[dt.getMonth()]);
-        _setEl('ob-appt-time',  (nextAppt.type || 'Khám thai') + (weekStr ? ' · ' + weekStr : '') + ' · ' + formatTime(nextAppt.datetime));
+        _setEl('ob-appt-time',  (nextAppt.appt_type || 'Khám thai') + (weekStr ? ' · ' + weekStr : '') + ' · ' + formatTime(nextAppt.datetime));
       } else {
         _setEl('ob-appt-day',   '—');
         _setEl('ob-appt-month', 'Chưa có lịch');
@@ -4019,7 +4019,7 @@ async function obLoadHomeData() {
     const { data: pt } = await db.getMyPatient(curUser.bn_code);
     if (pt) {
       const blEl = document.getElementById('ob-blood');
-      if (blEl) blEl.textContent = pt.blood || '—';
+      if (blEl) blEl.textContent = pt.blood_type || '—';
       // Sync LMP
       if (pt.lmp && pt.lmp !== curUser.lmp) {
         curUser.lmp = pt.lmp;
@@ -4974,7 +4974,6 @@ async function obLoadDocScheduleCard() {
   const grid = document.getElementById('ob-doc-week-grid');
   if (!grid) return;
   const DAY_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
-  const DAY_KEYS   = ['mon','tue','wed','thu','fri','sat','sun'];
   // Render placeholder trước
   grid.innerHTML = DAY_LABELS.map((d,i) => `
     <div style="text-align:center">
@@ -4984,20 +4983,28 @@ async function obLoadDocScheduleCard() {
   try {
     const { data } = await db.getSchedule();
     if (!data) return;
-    // Chỉ lấy lịch PK 315 cho BN — không hiện lịch BV
-    const rows = data.filter(r => r.week_offset === 0 && r.location === 'pk315' && r.on); // 0=CN,1=T2...
-    DAY_KEYS.forEach((key, i) => {
-      const rows = data.filter(r => r.week_offset === 0 && r.day_key === key && r.on);
+    const todayDow = new Date().getDay(); // 0=CN,1=T2...6=T7
+    // Calcola le date ISO per ciascun giorno della settimana corrente (T2-CN)
+    const now = new Date();
+    const curMonday = new Date(now);
+    const dayOfWeek = now.getDay() || 7; // 1=T2...7=CN
+    curMonday.setDate(now.getDate() - dayOfWeek + 1);
+    // Tạo map: index (0=T2..6=CN) → ISO date string
+    const isoForIdx = Array.from({length:7}, (_,i) => {
+      const d = new Date(curMonday);
+      d.setDate(curMonday.getDate() + i);
+      return d.toISOString().slice(0,10);
+    });
+    DAY_LABELS.forEach((label, i) => {
+      const isoDate = isoForIdx[i];
+      const rows = data.filter(r => r.week_offset === 0 && r.day_key === isoDate);
       const dot  = document.getElementById(`ob-sched-dot-${i}`);
       if (!dot) return;
-      // Highlight hôm nay
       const dow = [1,2,3,4,5,6,0][i]; // T2=1...CN=0
       const isToday = dow === todayDow;
       if (rows.length) {
-        // Có lịch làm việc
-        const locs = [...new Set(rows.map(r => r.location === 'hv' ? 'HV' : '315'))];
+        const locs = [...new Set(rows.map(r => r.location === 'hung_vuong' ? 'HV' : '315'))];
         dot.style.background = isToday ? 'var(--gold)' : 'rgba(184,129,74,.35)';
-        dot.style.borderRadius = '4px';
         dot.innerHTML = `<div style="font-size:7px;color:${isToday?'#1C1510':'rgba(184,129,74,.9)'};font-weight:700;line-height:1.2;padding:2px 1px;text-align:center">${locs.join('<br>')}</div>`;
       } else {
         dot.style.background = isToday ? 'rgba(255,255,255,.15)' : 'rgba(255,255,255,.05)';
@@ -5005,7 +5012,7 @@ async function obLoadDocScheduleCard() {
       }
     });
   } catch(e) {
-    // Nếu lỗi giữ placeholder
+    console.warn('[obLoadDocScheduleCard]', e);
   }
 }
 
@@ -6724,22 +6731,74 @@ function initGyHome() {
   if (jTitleEl) jTitleEl.innerHTML = journal.title;
   _setEl('gy-journal-sub', journal.sub);
 
-  // Lịch hẹn mock
-  const mockDate = new Date(); mockDate.setDate(mockDate.getDate() + 7);
-  _setEl('gy-appt-day', mockDate.getDate());
-  _setEl('gy-appt-month', ['CN','T2','T3','T4','T5','T6','T7'][mockDate.getDay()] + ' · tháng ' + (mockDate.getMonth()+1));
-  _setEl('gy-appt-type', 'Khám phụ khoa');
-
-  // Lịch BS — GY dùng BV Hùng Vương, ca xoay → chờ P7 Admin up lịch thật
-  const schedEl = document.getElementById('gy-doc-schedule');
-  if (schedEl) {
-    // TODO P7: load từ Supabase table 'doctor_schedule' where location='hung_vuong'
-    schedEl.innerHTML = `
+  // Lịch hẹn — load từ Supabase nếu có BN thật, fallback mock
+  if (curUser?.bn_code && curUser?._supabase) {
+    gyLoadHomeData();
+  } else {
+    const mockDate = new Date(); mockDate.setDate(mockDate.getDate() + 7);
+    _setEl('gy-appt-day', mockDate.getDate());
+    _setEl('gy-appt-month', ['CN','T2','T3','T4','T5','T6','T7'][mockDate.getDay()] + ' · tháng ' + (mockDate.getMonth()+1));
+    _setEl('gy-appt-type', 'Khám phụ khoa');
+    // Lịch BS mock
+    const schedEl = document.getElementById('gy-doc-schedule');
+    if (schedEl) schedEl.innerHTML = `
       <div style="font-size:10px;color:var(--gy-muted);font-style:italic;line-height:1.6">BS chưa cập nhật lịch tuần này</div>
       <div style="font-size:9px;color:var(--gy-muted);margin-top:4px">BV Hùng Vương · Cập nhật mỗi tuần</div>`;
   }
   // Bài viết từ Admin bổ sung
   loadExtraArticles('gy', 'gy-extra-articles');
+}
+
+async function gyLoadHomeData() {
+  if (!curUser?.bn_code) return;
+  try {
+    // ── Lịch hẹn tiếp theo ──
+    const { data: appts } = await db.getMyAppointments(curUser.bn_code);
+    const upcoming = (appts || []).filter(a => a.status === 'scheduled' && new Date(a.datetime) >= new Date());
+    const next = upcoming[0];
+    if (next) {
+      const dt = new Date(next.datetime);
+      const DOW = ['CN','T2','T3','T4','T5','T6','T7'];
+      _setEl('gy-appt-day',   dt.getDate());
+      _setEl('gy-appt-month', DOW[dt.getDay()] + ' · tháng ' + (dt.getMonth()+1));
+      _setEl('gy-appt-type',  next.appt_type || 'Khám phụ khoa');
+    } else {
+      _setEl('gy-appt-day',   '—');
+      _setEl('gy-appt-month', 'Chưa có lịch');
+      _setEl('gy-appt-type',  'PK 315 · Ngoài giờ');
+    }
+    // ── Lịch BS tuần này ──
+    const schedEl = document.getElementById('gy-doc-schedule');
+    if (schedEl) {
+      const { data: sched } = await db.getSchedule();
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0,10);
+      const weekShifts = (sched || []).filter(r => r.week_offset === 0);
+      if (!weekShifts.length) {
+        schedEl.innerHTML = `<div style="font-size:10px;color:var(--gy-muted);font-style:italic;">BS chưa cập nhật lịch tuần này</div>`;
+      } else {
+        const LOC_LABEL = { hung_vuong: 'BV Hùng Vương', pk315: 'PK 315 · Q.6' };
+        schedEl.innerHTML = weekShifts.map(r => {
+          const d = new Date(r.day_key + 'T00:00:00');
+          const isToday = r.day_key === todayStr;
+          const dow = ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];
+          const dateStr = `${dow} ${d.getDate()}/${d.getMonth()+1}`;
+          const locColor = r.location === 'pk315' ? 'var(--gy-dk)' : '#4A90D9';
+          return `
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;
+            ${isToday ? 'border-left:2px solid var(--gy-dk);padding-left:8px;' : 'padding-left:10px;'}">
+            <div style="font-size:11px;font-weight:${isToday?'600':'400'};color:${isToday?'var(--gy-ink)':'var(--gy-muted)'};min-width:52px;">${dateStr}</div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:${locColor};font-weight:500;">${LOC_LABEL[r.location]||r.location}</div>
+              <div style="font-size:9px;color:var(--gy-muted);">${r.start_time||''} – ${r.end_time||''}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {
+    console.warn('[gyLoadHomeData]', e);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
