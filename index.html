@@ -656,220 +656,184 @@ input[type=date], input[type=time], input[type=datetime-local] {
      BLOCK 6: HTML — ADMIN
      Placeholder — sẽ build trong P7
 ════════════════════════════════════════════════════════════ -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+.adm-lora { font-family: 'Lora', serif !important; }
+.adm-ibm  { font-family: 'IBM Plex Sans', sans-serif !important; }
+/* Tabs */
+#s-admin .adm-tab      { transition: color .15s, border-color .15s; }
+/* List rows */
+.adm-pt-row:hover      { background: #FEFAF3 !important; }
+/* Init avatar */
+.adm-init { width:36px;height:36px;border-radius:8px;background:#F5F0E8;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:11px;color:#7A6F5C;flex-shrink:0;font-style:italic;font-weight:500;letter-spacing:.01em; }
+.adm-init-gy { background:#FEF5F7; }
+/* Badge */
+.adm-badge-ob { background:#1F1A0F;color:#E8A93C;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
+.adm-badge-gy { background:#FFF0F4;color:#C96080;border:1px solid #F5D0DC;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
+/* Status dot */
+.adm-dot-ok { width:7px;height:7px;border-radius:50%;background:#3DAA72;flex-shrink:0; }
+</style>
+
 <div class="screen" id="s-admin">
-  <!-- Top bar -->
-  <div class="bbar" style="background:var(--ink);color:var(--bg)">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:16px">👨‍⚕️</div>
+  <!-- ── HEADER ── -->
+  <div class="adm-ibm" style="background:#fff;padding:20px 20px 0;border-bottom:1px solid #F0E7D2;flex-shrink:0;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
       <div>
-        <div class="serif-h" style="font-size:16px;color:#fff">BS. <em style="color:var(--gold)">Tuấn</em></div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5)">Admin · Sản Phụ khoa</div>
+        <div style="font-size:9px;letter-spacing:.4em;color:#B0A490;text-transform:uppercase;font-weight:300;margin-bottom:6px;">BaoBei · Quản trị</div>
+        <div class="adm-lora" style="font-size:22px;font-weight:400;line-height:1.1;color:#1F1A0F;">BS. <em style="font-style:italic;color:#B57A1F;">Hoàng Thanh Tuấn</em></div>
+        <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:4px;">CK1 Sản Phụ khoa · BV Hùng Vương</div>
+      </div>
+      <div style="background:#FFF8E7;border:1px solid #F0E0B0;border-radius:8px;padding:8px 14px;text-align:right;cursor:pointer;" onclick="confirmLogout()">
+        <div class="adm-lora" id="adm-hdr-count" style="font-size:26px;color:#B57A1F;font-weight:400;line-height:1;">—</div>
+        <div style="font-size:9px;color:#B0A490;font-weight:300;letter-spacing:.06em;margin-top:2px;">bệnh nhân</div>
       </div>
     </div>
-    <div class="bbtn" onclick="confirmLogout()" style="color:rgba(255,255,255,.7)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-    </div>
-  </div>
-
-  <!-- Tab bar -->
-  <div id="adm-tabs" style="display:flex;background:var(--ink);border-bottom:1px solid rgba(255,255,255,.1)">
-    <div class="adm-tab adm-tab-active" data-tab="patients" onclick="admSwitchTab('patients')" style="flex:1;padding:10px 4px;text-align:center;font-size:11px;color:#fff;cursor:pointer;border-bottom:2px solid var(--gold)">
-      <div style="font-size:18px">👥</div><div>Bệnh nhân</div>
-    </div>
-    <div class="adm-tab" data-tab="schedule" onclick="admSwitchTab('schedule')" style="flex:1;padding:10px 4px;text-align:center;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent">
-      <div style="font-size:18px">📅</div><div>Lịch BS</div>
-    </div>
-    <div class="adm-tab" data-tab="appts" onclick="admSwitchTab('appts')" style="flex:1;padding:10px 4px;text-align:center;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent">
-      <div style="font-size:18px">🗓️</div><div>Lịch hẹn</div>
-    </div>
-    <div class="adm-tab" data-tab="articles" onclick="admSwitchTab('articles')" style="flex:1;padding:10px 4px;text-align:center;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent">
-      <div style="font-size:18px">📰</div><div>Tạp chí</div>
+    <!-- Tab bar -->
+    <div id="adm-tabs" style="display:flex;">
+      <div class="adm-tab adm-tab-active adm-ibm" data-tab="patients" onclick="admSwitchTab('patients')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#1F1A0F;cursor:pointer;border-bottom:2px solid #E8A93C;font-weight:500;letter-spacing:.04em;">Bệnh nhân</div>
+      <div class="adm-tab adm-ibm" data-tab="schedule" onclick="admSwitchTab('schedule')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch BS</div>
+      <div class="adm-tab adm-ibm" data-tab="appts" onclick="admSwitchTab('appts')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch hẹn</div>
+      <div class="adm-tab adm-ibm" data-tab="articles" onclick="admSwitchTab('articles')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Tạp chí</div>
     </div>
   </div>
 
   <!-- ═══ TAB: BỆNH NHÂN ═══ -->
-  <div id="adm-pane-patients" class="adm-pane scroll" style="padding:16px">
-    <!-- Search + filter -->
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input id="adm-pt-search" type="search" placeholder="🔍 Tìm tên hoặc mã BN..." oninput="admFilterPatients()"
-        style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--surface);color:var(--ink);outline:none">
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:14px">
+  <div id="adm-pane-patients" class="adm-pane adm-ibm" style="padding:16px;">
+    <input id="adm-pt-search" type="search" placeholder="Tìm tên hoặc mã bệnh nhân..." oninput="admFilterPatients()"
+      style="width:100%;padding:10px 14px;border:1px solid #EDE7D8;border-radius:10px;font-size:13px;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;font-weight:300;background:#fff;outline:none;margin-bottom:12px;box-sizing:border-box;">
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
       <button class="adm-pt-filter adm-pt-filter-active" data-f="all" onclick="admSetPtFilter('all')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--gold);background:var(--gold);color:#fff;font-size:12px;cursor:pointer">Tất cả</button>
+        style="padding:5px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Tất cả</button>
       <button class="adm-pt-filter" data-f="ob" onclick="admSetPtFilter('ob')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer">🤰 OB</button>
+        style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Sản khoa</button>
       <button class="adm-pt-filter" data-f="gy" onclick="admSetPtFilter('gy')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer">🌸 GY</button>
+        style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Phụ khoa</button>
     </div>
-    <div id="adm-pt-list" style="display:flex;flex-direction:column;gap:8px">
-      <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Đang tải...</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+      <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;font-weight:300;">Danh sách</div>
+      <div class="adm-lora" id="adm-pt-count-label" style="font-style:italic;font-size:13px;color:#B0A490;">—</div>
     </div>
+    <div id="adm-pt-list" style="border:1px solid #F0E7D2;border-radius:14px;overflow:hidden;background:#fff;">
+      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
+    </div>
+    <!-- Lịch hẹn hôm nay -->
+    <div id="adm-today-appts" style="margin-top:16px;"></div>
   </div>
 
   <!-- ═══ TAB: LỊCH BS ═══ -->
-  <div id="adm-pane-schedule" class="adm-pane scroll" style="display:none;padding:16px">
-    <!-- Week nav -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <button onclick="admScheduleNav(-1)" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:18px;cursor:pointer">‹</button>
-      <div style="text-align:center">
-        <div class="serif-h" id="adm-week-label" style="font-size:15px"></div>
-        <div style="font-size:11px;color:var(--muted)">Bấm ô trống để thêm ca</div>
+  <div id="adm-pane-schedule" class="adm-pane adm-ibm" style="display:none;padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <button onclick="admScheduleNav(-1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #F0E7D2;background:#fff;font-size:18px;cursor:pointer;color:#7A6F5C;">‹</button>
+      <div style="text-align:center;">
+        <div class="adm-lora" id="adm-week-label" style="font-size:15px;font-weight:400;"></div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;">Bấm ô trống để thêm ca</div>
       </div>
-      <button onclick="admScheduleNav(1)" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:18px;cursor:pointer">›</button>
+      <button onclick="admScheduleNav(1)" style="width:36px;height:36px;border-radius:50%;border:1px solid #F0E7D2;background:#fff;font-size:18px;cursor:pointer;color:#7A6F5C;">›</button>
     </div>
-    <!-- Legend -->
-    <div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px">
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#4A90D9;display:inline-block"></span>BV Hùng Vương</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--gold);display:inline-block"></span>PK 315</span>
+    <div style="display:flex;gap:14px;margin-bottom:12px;font-size:11px;color:#7A6F5C;font-weight:300;">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#4A90D9;display:inline-block;"></span>BV Hùng Vương</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#E8A93C;display:inline-block;"></span>PK 315</span>
     </div>
-    <!-- Grid -->
-    <div id="adm-sch-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
-
-    <!-- Modal thêm ca -->
-    <div id="adm-sch-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:none;align-items:flex-end">
-      <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px;width:100%">
-        <div class="serif-h" style="font-size:17px;margin-bottom:16px">Thêm ca làm việc</div>
-        <div id="adm-sch-modal-day" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Địa điểm</div>
-          <div style="display:flex;gap:8px">
-            <button id="adm-loc-hv" onclick="admSelectLoc('hung_vuong')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #4A90D9;background:#EBF4FB;font-size:13px;cursor:pointer">🏥 BV Hùng Vương</button>
-            <button id="adm-loc-pk" onclick="admSelectLoc('pk315')" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer">🏠 PK 315</button>
+    <div id="adm-sch-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+    <div id="adm-sch-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;">
+        <div class="adm-lora" style="font-size:18px;font-weight:400;margin-bottom:6px;">Thêm ca làm việc</div>
+        <div id="adm-sch-modal-day" style="font-size:12px;color:#B0A490;font-weight:300;margin-bottom:16px;"></div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:8px;">Địa điểm</div>
+          <div style="display:flex;gap:8px;">
+            <button id="adm-loc-hv" onclick="admSelectLoc('hung_vuong')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #4A90D9;background:#EBF4FB;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">BV Hùng Vương</button>
+            <button id="adm-loc-pk" onclick="admSelectLoc('pk315')" style="flex:1;padding:10px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">PK 315</button>
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-bottom:16px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Giờ bắt đầu</div>
-            <input id="adm-sch-start" type="time" value="07:00" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:10px;font-size:14px">
-          </div>
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Giờ kết thúc</div>
-            <input id="adm-sch-end" type="time" value="11:00" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:10px;font-size:14px">
-          </div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Bắt đầu</div><input id="adm-sch-start" type="time" value="07:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:14px;"></div>
+          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Kết thúc</div><input id="adm-sch-end" type="time" value="11:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:14px;"></div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="admSchModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:14px;cursor:pointer">Huỷ</button>
-          <button onclick="admSchSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:600;cursor:pointer">Lưu ca</button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="admSchModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Huỷ</button>
+          <button onclick="admSchSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu ca</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ═══ TAB: LỊCH HẸN ═══ -->
-  <div id="adm-pane-appts" class="adm-pane scroll" style="display:none;padding:16px">
-    <!-- Date strip -->
-    <div id="adm-appt-strip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:none"></div>
-    <!-- List -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div class="serif-h" id="adm-appt-date-label" style="font-size:15px"></div>
-      <button onclick="admApptCreate()" style="padding:7px 14px;border-radius:20px;border:none;background:var(--gold);color:#fff;font-size:12px;font-weight:600;cursor:pointer">+ Tạo hẹn</button>
+  <div id="adm-pane-appts" class="adm-pane adm-ibm" style="display:none;padding:16px;">
+    <div id="adm-appt-strip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:none;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="adm-lora" id="adm-appt-date-label" style="font-size:16px;font-weight:400;"></div>
+      <button onclick="admApptCreate()" style="padding:7px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Tạo hẹn</button>
     </div>
-    <div id="adm-appt-list" style="display:flex;flex-direction:column;gap:8px">
-      <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Đang tải...</div>
+    <div id="adm-appt-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
     </div>
-
-    <!-- Modal tạo/sửa lịch hẹn -->
-    <div id="adm-appt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-end">
-      <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto">
-        <div class="serif-h" id="adm-appt-modal-title" style="font-size:17px;margin-bottom:16px">Tạo lịch hẹn</div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Tên bệnh nhân *</div>
-          <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list"
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;box-sizing:border-box">
-          <datalist id="adm-appt-pt-list"></datalist>
+    <div id="adm-appt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;">
+        <div class="adm-lora" id="adm-appt-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Tạo lịch hẹn</div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tên bệnh nhân *</div>
+          <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;">
+          <datalist id="adm-appt-pt-list"></datalist></div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Số điện thoại</div>
+          <input id="adm-appt-phone" type="tel" placeholder="0901 234 567" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ngày hẹn *</div><input id="adm-appt-date" type="date" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
+          <div style="flex:1;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Giờ hẹn *</div><input id="adm-appt-time" type="time" value="08:00" style="width:100%;padding:9px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;"></div>
         </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Số điện thoại</div>
-          <input id="adm-appt-phone" type="tel" placeholder="0901 234 567"
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div style="display:flex;gap:10px;margin-bottom:12px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Ngày hẹn *</div>
-            <input id="adm-appt-date" type="date" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:10px;font-size:13px">
-          </div>
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Giờ hẹn *</div>
-            <input id="adm-appt-time" type="time" value="08:00" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:10px;font-size:13px">
-          </div>
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Loại khám</div>
-          <select id="adm-appt-type" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--surface)">
-            <option value="kham_thai">🤰 Khám thai định kỳ</option>
-            <option value="sieu_am">🔬 Siêu âm</option>
-            <option value="xet_nghiem">🧪 Xét nghiệm</option>
-            <option value="phu_khoa">🌸 Khám phụ khoa</option>
-            <option value="tu_van">💬 Tư vấn</option>
-            <option value="khac">📋 Khác</option>
-          </select>
-        </div>
-        <div style="margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Ghi chú</div>
-          <textarea id="adm-appt-note" rows="2" placeholder="Ghi chú thêm (không bắt buộc)..."
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;resize:none;box-sizing:border-box"></textarea>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="admApptModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:14px;cursor:pointer">Huỷ</button>
-          <button onclick="admApptSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:600;cursor:pointer">Lưu lịch hẹn</button>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Loại khám</div>
+          <select id="adm-appt-type" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;background:#fff;">
+            <option value="kham_thai">Khám thai định kỳ</option>
+            <option value="sieu_am">Siêu âm</option>
+            <option value="xet_nghiem">Xét nghiệm</option>
+            <option value="phu_khoa">Khám phụ khoa</option>
+            <option value="tu_van">Tư vấn</option>
+            <option value="khac">Khác</option>
+          </select></div>
+        <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ghi chú</div>
+          <textarea id="adm-appt-note" rows="2" placeholder="Ghi chú thêm..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:none;box-sizing:border-box;"></textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="admApptModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          <button onclick="admApptSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu lịch hẹn</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ═══ TAB: TẠP CHÍ ═══ -->
-  <div id="adm-pane-articles" class="adm-pane scroll" style="display:none;padding:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+  <div id="adm-pane-articles" class="adm-pane adm-ibm" style="display:none;padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <div>
-        <div class="serif-h" style="font-size:16px">Tạp chí sức khoẻ</div>
-        <div style="font-size:11px;color:var(--muted)" id="adm-art-count"></div>
+        <div class="adm-lora" style="font-size:18px;font-weight:400;">Tạp chí sức khoẻ</div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;" id="adm-art-count"></div>
       </div>
-      <button onclick="admArtCreate()" style="padding:8px 14px;border-radius:20px;border:none;background:var(--gold);color:#fff;font-size:12px;font-weight:600;cursor:pointer">+ Bài mới</button>
+      <button onclick="admArtCreate()" style="padding:8px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Bài mới</button>
     </div>
-    <!-- Filter -->
-    <div style="display:flex;gap:6px;margin-bottom:14px">
-      <button class="adm-art-filter adm-art-filter-active" data-f="all" onclick="admSetArtFilter('all')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--gold);background:var(--gold);color:#fff;font-size:12px;cursor:pointer">Tất cả</button>
-      <button class="adm-art-filter" data-f="ob" onclick="admSetArtFilter('ob')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer">🤰 OB</button>
-      <button class="adm-art-filter" data-f="gy" onclick="admSetArtFilter('gy')"
-        style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer">🌸 GY</button>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button class="adm-art-filter adm-art-filter-active" data-f="all" onclick="admSetArtFilter('all')" style="padding:5px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Tất cả</button>
+      <button class="adm-art-filter" data-f="ob" onclick="admSetArtFilter('ob')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Sản khoa</button>
+      <button class="adm-art-filter" data-f="gy" onclick="admSetArtFilter('gy')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Phụ khoa</button>
     </div>
-    <div id="adm-art-list" style="display:flex;flex-direction:column;gap:8px">
-      <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Đang tải...</div>
+    <div id="adm-art-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
     </div>
-
-    <!-- Modal tạo/sửa bài viết -->
-    <div id="adm-art-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-end">
-      <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto">
-        <div class="serif-h" id="adm-art-modal-title" style="font-size:17px;margin-bottom:16px">Bài viết mới</div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Tiêu đề *</div>
-          <input id="adm-art-title" type="text" placeholder="Tiêu đề bài viết..."
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Đối tượng</div>
-          <div style="display:flex;gap:8px">
-            <button id="adm-art-cat-ob" onclick="admArtSelectCat('ob')" style="flex:1;padding:9px;border-radius:10px;border:2px solid var(--gold);background:var(--gold-lt);font-size:12px;cursor:pointer">🤰 Sản khoa</button>
-            <button id="adm-art-cat-gy" onclick="admArtSelectCat('gy')" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🌸 Phụ khoa</button>
-            <button id="adm-art-cat-both" onclick="admArtSelectCat('both')" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🌿 Cả hai</button>
-          </div>
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Ảnh thumbnail (URL)</div>
-          <input id="adm-art-img" type="url" placeholder="https://..."
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;box-sizing:border-box">
-        </div>
-        <div style="margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Nội dung *</div>
-          <textarea id="adm-art-content" rows="6" placeholder="Nội dung bài viết..."
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="admArtModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:14px;cursor:pointer">Huỷ</button>
-          <button onclick="admArtSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--gold);color:#fff;font-size:14px;font-weight:600;cursor:pointer">Đăng bài</button>
+    <div id="adm-art-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;">
+        <div class="adm-lora" id="adm-art-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Bài viết mới</div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tiêu đề *</div>
+          <input id="adm-art-title" type="text" placeholder="Tiêu đề bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:8px;">Đối tượng</div>
+          <div style="display:flex;gap:8px;">
+            <button id="adm-art-cat-ob" onclick="admArtSelectCat('ob')" style="flex:1;padding:9px;border-radius:10px;border:2px solid #1F1A0F;background:#FFF8E7;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;font-weight:500;">Sản khoa</button>
+            <button id="adm-art-cat-gy" onclick="admArtSelectCat('gy')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Phụ khoa</button>
+            <button id="adm-art-cat-both" onclick="admArtSelectCat('both')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Cả hai</button>
+          </div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ảnh thumbnail (URL)</div>
+          <input id="adm-art-img" type="url" placeholder="https://..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+        <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Nội dung *</div>
+          <textarea id="adm-art-content" rows="6" placeholder="Nội dung bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="admArtModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          <button onclick="admArtSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Đăng bài</button>
         </div>
       </div>
     </div>
@@ -3213,11 +3177,12 @@ async function initAdmin() {
 // ────────────────────────────────────────
 function admSwitchTab(tab) {
   adm.tab = tab;
-  // Update tab bar styles
+  // Update tab bar styles — light design
   document.querySelectorAll('.adm-tab').forEach(el => {
     const active = el.dataset.tab === tab;
-    el.style.color = active ? '#fff' : 'rgba(255,255,255,.5)';
-    el.style.borderBottomColor = active ? 'var(--gold)' : 'transparent';
+    el.style.color = active ? '#1F1A0F' : '#B0A490';
+    el.style.borderBottomColor = active ? '#E8A93C' : 'transparent';
+    el.style.fontWeight = active ? '500' : '400';
   });
   // Show/hide panes
   document.querySelectorAll('.adm-pane').forEach(el => el.style.display = 'none');
@@ -3244,9 +3209,9 @@ function admSetPtFilter(f) {
   adm.ptFilter = f;
   document.querySelectorAll('.adm-pt-filter').forEach(el => {
     const active = el.dataset.f === f;
-    el.style.background = active ? 'var(--gold)' : 'var(--surface)';
-    el.style.color = active ? '#fff' : 'var(--muted)';
-    el.style.borderColor = active ? 'var(--gold)' : 'var(--border)';
+    el.style.background = active ? '#1F1A0F' : '#fff';
+    el.style.color = active ? '#E8A93C' : '#7A6F5C';
+    el.style.borderColor = active ? '#1F1A0F' : '#EDE7D8';
   });
   admRenderPatients();
 }
@@ -3258,32 +3223,64 @@ function admFilterPatients() {
 
 function admRenderPatients() {
   const list = document.getElementById('adm-pt-list');
+  const countEl = document.getElementById('adm-pt-count-label');
   let pts = adm.patients;
   if (adm.ptFilter !== 'all') pts = pts.filter(p => p.patient_type === adm.ptFilter);
   if (adm.ptSearch) pts = pts.filter(p =>
     (p.name||'').toLowerCase().includes(adm.ptSearch) ||
     (p.bn_code||'').toLowerCase().includes(adm.ptSearch)
   );
+  if (countEl) countEl.textContent = pts.length + ' bệnh nhân';
+  const hdrCount = document.getElementById('adm-hdr-count');
+  if (hdrCount) hdrCount.textContent = adm.patients.length;
   if (!pts.length) {
-    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Không tìm thấy bệnh nhân</div>`;
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:#B0A490;font-size:13px;font-weight:300;">Không tìm thấy bệnh nhân</div>`;
     return;
   }
-  list.innerHTML = pts.map(p => {
+  list.innerHTML = pts.map((p, idx) => {
     const isOB = p.patient_type === 'ob';
+    const shortName = (p.name||'BN').split(' ').pop();
+    const avatarClass = isOB ? 'adm-init' : 'adm-init adm-init-gy';
     const badge = isOB
-      ? `<span style="background:#FDF0E8;color:#8C5C2E;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">🤰 OB</span>`
-      : `<span style="background:#FFF0F2;color:#C96080;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">🌸 GY</span>`;
+      ? `<span class="adm-badge-ob">OB</span>`
+      : `<span class="adm-badge-gy">GY</span>`;
+    const border = idx > 0 ? 'border-top:1px solid #F5EFE4;' : '';
     return `
-    <div onclick="admViewPatient('${p.bn_code}')" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--gold-lt);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${isOB?'🤰':'🌸'}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:14px;color:var(--ink)">${p.name || '—'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${p.bn_code} · ${p.phone || 'Chưa có SĐT'}</div>
+    <div class="adm-pt-row" onclick="admViewPatient('${p.bn_code}')"
+      style="display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;${border}">
+      <div class="${avatarClass}">${shortName}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:500;color:#1F1A0F;">${p.name || '—'}</div>
+        <div style="font-size:11px;color:#7A6F5C;margin-top:2px;font-weight:300;">${p.bn_code}${p.phone ? ' · ' + p.phone : ''}</div>
       </div>
       ${badge}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      <span style="color:#D8D0C4;font-size:16px;font-weight:300;">›</span>
     </div>`;
   }).join('');
+  admLoadTodayAppts();
+}
+
+async function admLoadTodayAppts() {
+  const container = document.getElementById('adm-today-appts');
+  if (!container) return;
+  const today = new Date().toISOString().slice(0,10);
+  const { data } = await db.getAllAppointments();
+  const todayList = (data||[])
+    .filter(a => (a.datetime||'').slice(0,10) === today && a.status !== 'cancelled')
+    .sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+  if (!todayList.length) { container.innerHTML = ''; return; }
+  const typeLabel = { kham_thai:'Khám thai', sieu_am:'Siêu âm', xet_nghiem:'Xét nghiệm', phu_khoa:'Phụ khoa', tu_van:'Tư vấn', khac:'Khác' };
+  container.innerHTML = `
+    <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;font-weight:300;margin-bottom:8px;">Lịch hẹn hôm nay</div>
+    ${todayList.map(a => `
+    <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;border:1px solid #F0E7D2;border-radius:12px;margin-bottom:6px;">
+      <div style="font-family:'Lora',serif;font-size:20px;color:#B57A1F;font-weight:400;min-width:48px;">${(a.datetime||'').slice(11,16)}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${a.patients?.name || a.patient_name || 'Khách vãng lai'}</div>
+        <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:2px;">${typeLabel[a.appointment_type]||a.appointment_type||''}</div>
+      </div>
+      <div class="adm-dot-ok"></div>
+    </div>`).join('')}`;
 }
 
 function admViewPatient(bnCode) {
@@ -3575,9 +3572,9 @@ function admSetArtFilter(f) {
   adm.artFilter = f;
   document.querySelectorAll('.adm-art-filter').forEach(el => {
     const active = el.dataset.f === f;
-    el.style.background = active ? 'var(--gold)' : 'var(--surface)';
-    el.style.color = active ? '#fff' : 'var(--muted)';
-    el.style.borderColor = active ? 'var(--gold)' : 'var(--border)';
+    el.style.background = active ? '#1F1A0F' : '#fff';
+    el.style.color = active ? '#E8A93C' : '#7A6F5C';
+    el.style.borderColor = active ? '#1F1A0F' : '#EDE7D8';
   });
   admRenderArticles();
 }
