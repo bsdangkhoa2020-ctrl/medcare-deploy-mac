@@ -1354,29 +1354,124 @@ input[type=date], input[type=time], input[type=datetime-local] {
      Placeholder — sẽ build trong P5
 ════════════════════════════════════════════════════════════ -->
 <div class="screen" id="s-gy-home">
-  <div class="scroll" style="padding:24px 18px">
-    <div class="serif-h" style="font-size:24px;margin-bottom:16px">Xin chào <em style="color:var(--gold-dk)" id="gy-name">Chị</em> 🌸</div>
-    <div class="card card-gold">
-      <div class="card-pad" style="text-align:center">
-        <div class="eyebrow" style="margin-bottom:8px">Phụ khoa</div>
-        <div class="serif-h" style="font-size:20px">Trang chủ <em style="color:var(--gold-dk)">phụ khoa</em></div>
-        <div style="font-size:11px;color:var(--hint);margin-top:8px">Đang xây dựng trong P5</div>
+<div class="scroll" style="padding-bottom:80px">
+
+  <!-- ═══ HERO ═══ -->
+  <div style="background:#FBF5ED;padding:calc(var(--sat)+24px) 22px 20px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:8px">Phụ khoa · BaoBei</div>
+    <div style="font-family:var(--serif);font-size:26px;color:var(--ink);font-weight:300;line-height:1.2;margin-bottom:4px">Chào <em style="color:var(--gold-dk)" id="gy-name">Hồng</em></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="gy-cycle-label">Ngày D1 · Chu kỳ tháng này</div>
+    <!-- Thanh chu kỳ -->
+    <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-lg);padding:12px 14px" id="gy-cycle-bar">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:10px;font-weight:700;color:var(--gold-dk)" id="gy-phase-label">Hành kinh · D1–D5</div>
+        <div style="font-size:10px;color:var(--muted)" id="gy-ovulation-label">Rụng trứng D14</div>
+      </div>
+      <div style="position:relative;height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div style="position:absolute;left:0;top:0;width:18%;height:100%;background:#C03030;border-radius:3px 0 0 3px"></div>
+        <div style="position:absolute;left:18%;top:0;width:28%;height:100%;background:var(--gold)"></div>
+        <div style="position:absolute;left:46%;top:0;width:4%;height:100%;background:#F5C462"></div>
+        <div style="position:absolute;left:50%;top:0;width:50%;height:100%;background:var(--gold-lt);border-radius:0 3px 3px 0"></div>
+        <div id="gy-cycle-cursor" style="position:absolute;left:0%;top:-1px;width:2px;height:8px;background:var(--ink)"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--ink)" id="gy-ovulation-countdown">Đang tính...</div>
+    </div>
+  </div>
+
+  <!-- ═══ CHECK-IN TỐI ═══ -->
+  <div onclick="openGyCheckin()" style="margin:14px 22px 0;background:var(--ink);border-radius:var(--r-xl);padding:16px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,129,74,.6);margin-bottom:5px">Check-in buổi tối</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--serif);font-size:17px;color:#fff" id="gy-checkin-title">Hôm nay chị thế nào?</div>
+        <div style="font-size:11px;color:rgba(184,129,74,.5);margin-top:3px" id="gy-checkin-streak">0 ngày liên tiếp</div>
+      </div>
+      <div style="font-size:11px;color:var(--gold);font-weight:700">Bắt đầu →</div>
+    </div>
+  </div>
+
+  <!-- ═══ LỊCH HẸN + LỊCH BS ═══ -->
+  <div style="display:grid;grid-template-columns:2fr 3fr;gap:10px;margin:14px 22px 0">
+    <div id="gy-appt-card" onclick="goTo('s-gy-appts')" style="background:var(--surface);border:.5px solid var(--gold-md);border-radius:var(--r-lg);padding:14px;cursor:pointer">
+      <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px">Lịch hẹn</div>
+      <div style="font-family:var(--serif);font-weight:300;font-size:34px;line-height:.9;color:var(--ink)" id="gy-appt-day">—</div>
+      <div style="font-family:var(--serif);font-style:italic;font-size:12px;color:var(--gold-dk);margin-top:5px" id="gy-appt-month">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="gy-appt-type">—</div>
+    </div>
+    <div onclick="goTo('s-gy-appts')" style="background:var(--gold-lt);border:.5px solid var(--gold-md);border-radius:var(--r-lg);padding:14px;cursor:pointer">
+      <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dk);font-weight:600;margin-bottom:10px">Lịch BS Tuấn</div>
+      <div id="gy-doc-schedule" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+  </div>
+
+  <!-- ═══ CHỊ NÊN BIẾT ═══ -->
+  <div style="margin:20px 22px 0">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-lt);border:.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px">💛</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)" id="gy-note-title">Chị nên biết</div>
+    </div>
+    <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-lg);padding:16px">
+      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink);line-height:1.75;border-left:2px solid var(--gold-md);padding-left:14px" id="gy-mom-note">—</div>
+    </div>
+  </div>
+
+  <!-- ═══ BS KHUYÊN DÙNG ═══ -->
+  <div style="margin:20px 22px 0">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--gold-lt);border:.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px">💊</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)" id="gy-supp-title">BS khuyên dùng</div>
+    </div>
+    <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden" id="gy-supplement-card">
+      <div style="padding:13px 16px;border-bottom:.5px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--gold-dk);margin-bottom:3px" id="gy-supp-phase">—</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink)" id="gy-supp-items">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="gy-supp-desc">—</div>
+      </div>
+      <div style="padding:10px 16px;font-size:11px;color:var(--gold-dk);font-weight:700">Xem chi tiết →</div>
+    </div>
+  </div>
+
+  <!-- ═══ BÀI VIẾT SỨC KHOẺ ═══ -->
+  <div style="margin:20px 22px 0">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)">Sức khoẻ phụ khoa</div>
+    </div>
+    <div id="gy-journal-card" style="background:var(--ink);border-radius:var(--r-xl);padding:22px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:12px" id="gy-journal-eyebrow">TIÊU ĐIỂM · CHU KỲ</div>
+      <div style="font-family:var(--serif);font-size:22px;color:#fff;line-height:1.25;margin-bottom:10px" id="gy-journal-title">Rụng trứng: <em style="color:var(--gold)">nhận biết</em> và cách theo dõi chu kỳ</div>
+      <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:rgba(255,255,255,.45);line-height:1.65;margin-bottom:14px" id="gy-journal-sub">Hiểu chu kỳ giúp chị chủ động chăm sóc sức khoẻ sinh sản.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:.5px solid rgba(184,129,74,.2)">
+        <div style="font-size:10px;color:rgba(184,129,74,.5)">BS. Hoàng Thanh Tuấn · 3 phút đọc</div>
+        <div style="font-size:11px;font-weight:700;color:var(--gold)">Đọc tiếp →</div>
       </div>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="confirmLogout()" style="margin-top:8px">Đăng xuất</button>
   </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <div style="margin:28px 22px 8px;text-align:center">
+    <div style="width:32px;height:.5px;background:var(--gold-md);margin:0 auto 16px"></div>
+    <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);line-height:1.8">App này là một phần trong đề tài nghiên cứu của BS. CK1 Hoàng Thanh Tuấn<br>nghiên cứu ứng dụng công nghệ số vào chăm sóc sức khoẻ phụ nữ &amp; thai nhi.</div>
+  </div>
+
+</div><!-- /scroll -->
+
+  <!-- Bottom nav GY -->
   <div class="bnav">
-    <div class="ni on" onclick="goTo('s-gy-home')">
+    <div class="ni on" onclick="gySetNav('s-gy-home',this)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 10.5L12 3l8 7.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V10.5z"/><path d="M9 21V12h6v9"/></svg>
       <span class="nl">Trang chủ</span>
     </div>
-    <div class="ni" onclick="goTo('s-gy-appts')">
+    <div class="ni" onclick="gySetNav('s-gy-records',this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      <span class="nl">Hồ sơ</span>
+    </div>
+    <div class="ni" onclick="gySetNav('s-gy-appts',this)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
       <span class="nl">Lịch hẹn</span>
     </div>
-    <div class="ni" onclick="goTo('s-explore')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-      <span class="nl">Khám phá</span>
+    <div class="ni" onclick="gySetNav('s-gy-journey',this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      <span class="nl">Kiến thức</span>
     </div>
   </div>
 </div>
@@ -2063,7 +2158,7 @@ const ADMIN_ONLY = ['s-admin', 's-patient-detail', 's-admin-add-patient', 's-adm
 // Screens OB
 const OB_SCREENS = ['s-ob-home', 's-ob-records', 's-ob-appts', 's-ob-kick', 's-ob-checkin', 's-ob-journey', 's-ob-doctor', 's-education-ob', 's-ob-journal'];
 // Screens GY
-const GY_SCREENS = ['s-gy-home', 's-gy-records', 's-gy-appts', 's-gy-checkin', 's-education-gy'];
+const GY_SCREENS = ['s-gy-home', 's-gy-records', 's-gy-appts', 's-gy-checkin', 's-gy-journey', 's-education-gy'];
 
 function goTo(id) {
   const next = document.getElementById(id);
@@ -2234,7 +2329,10 @@ const QUICK_ACCOUNTS = {
     role: 'ob', patient_type: 'gy',
     id: 'test-gy-001', email: 'hong@test.com',
     name: 'Lê Thị Hồng',
-    bn_code: 'BN-002', _supabase: false
+    bn_code: 'BN-002', _supabase: false,
+    lmp: new Date(Date.now() - 8 * 86400000).toISOString().split('T')[0],
+    cycle_len: 28,
+    patient_type: 'gy'
   }
 };
 
@@ -4858,13 +4956,114 @@ goTo = function(id) {
   if (id === 's-ob-kick')    setTimeout(initKickCounter, 50);
   if (id === 's-ob-journey') setTimeout(initEducation, 50);
   if (id === 's-ob-doctor')  setTimeout(initDocSchedule, 50);
+  if (id === 's-gy-home')    setTimeout(initGyHome, 50);
 };
 
 /* ════════════════════════════════════════════════════════════
    BLOCK 17: JS — PHỤ KHOA (GY)
    Sẽ build trong P5
 ════════════════════════════════════════════════════════════ */
-// placeholder — P5
+
+// ── GY DATA ──
+const GY_PHASES = [
+  { days:[1,5],  label:'Hành kinh',   note:'Cơ thể đang trong giai đoạn hành kinh. Nghỉ ngơi nhiều, tránh vận động mạnh, uống đủ nước và bổ sung sắt nếu kinh nhiều.', supp:'Sắt · Magie · Vitamin C', suppDesc:'Bù đắp sắt mất qua kinh nguyệt, giảm đau bụng kinh', color:'#C03030' },
+  { days:[6,13], label:'Nang noãn',   note:'Cơ thể đang chuẩn bị phóng noãn. Ngủ đủ giấc, giảm stress và bổ sung dinh dưỡng giúp noãn phát triển tốt hơn.', supp:'CoQ10 · Vitamin E · Omega-3', suppDesc:'Hỗ trợ chất lượng nang noãn, chuẩn bị rụng trứng', color:'#B8814A' },
+  { days:[14,14],label:'Rụng trứng',  note:'Hôm nay là ngày rụng trứng ước tính. Đây là thời điểm quan trọng nhất trong chu kỳ sinh sản.', supp:'CoQ10 · Vitamin E · Omega-3', suppDesc:'Hỗ trợ quá trình phóng noãn', color:'#F5C462' },
+  { days:[15,28],label:'Hoàng thể',   note:'Giai đoạn hoàng thể — cơ thể tiết progesterone. Một số chị có thể cảm thấy ngực căng, bụng chướng — đây là bình thường.', supp:'Vitamin B6 · Magie · Vitex', suppDesc:'Cân bằng progesterone, giảm triệu chứng PMS', color:'#907060' },
+];
+
+const GY_JOURNAL = [
+  { phase: 'Hành kinh',  eyebrow:'TIÊU ĐIỂM · HÀNH KINH',  title:'Đau bụng kinh nặng — <em style="color:var(--gold)">khi nào cần lo?</em>', sub:'Phân biệt đau bụng kinh thông thường với lạc nội mạc tử cung — BS. Tuấn giải thích.' },
+  { phase: 'Nang noãn',  eyebrow:'TIÊU ĐIỂM · NANG NOÃN',  title:'Rụng trứng: <em style="color:var(--gold)">nhận biết</em> và cách theo dõi chu kỳ', sub:'Hiểu chu kỳ giúp chị chủ động chăm sóc sức khoẻ sinh sản.' },
+  { phase: 'Rụng trứng', eyebrow:'TIÊU ĐIỂM · RỤNG TRỨNG', title:'Dịch cổ tử cung — <em style="color:var(--gold)">dấu hiệu rụng trứng</em> chị cần biết', sub:'Cách theo dõi dịch cổ tử cung để nhận biết ngày rụng trứng chính xác.' },
+  { phase: 'Hoàng thể',  eyebrow:'TIÊU ĐIỂM · HOÀNG THỂ',  title:'PMS — <em style="color:var(--gold)">triệu chứng nào là bình thường?</em>', sub:'Phân biệt PMS thông thường với PMDD và khi nào cần đến gặp BS.' },
+];
+
+function calcGyCycle(lmp, cycleLen = 28) {
+  if (!lmp) return null;
+  const lmpDate = new Date(lmp);
+  const today = new Date();
+  const diff = Math.floor((today - lmpDate) / 86400000);
+  const dayInCycle = (diff % cycleLen) + 1;
+  const ovulDay = cycleLen - 14;
+  let phase = GY_PHASES[3];
+  for (const p of GY_PHASES) {
+    if (dayInCycle >= p.days[0] && dayInCycle <= p.days[1]) { phase = p; break; }
+  }
+  const daysToOvul = ovulDay - dayInCycle;
+  return { day: dayInCycle, cycleLen, phase, ovulDay, daysToOvul };
+}
+
+function gySetNav(screenId, el) {
+  document.querySelectorAll('#s-gy-home .ni').forEach(n => n.classList.remove('on'));
+  if (el) el.classList.add('on');
+  goTo(screenId);
+}
+
+function openGyCheckin() { showToast('Check-in phụ khoa — sẽ có trong P6.5'); }
+
+function initGyHome() {
+  const nameEl = document.getElementById('gy-name');
+  if (nameEl && curUser?.name) nameEl.textContent = curUser.name.split(' ').pop();
+
+  const cycle = calcGyCycle(curUser?.lmp, curUser?.cycle_len || 28);
+  if (!cycle) return;
+
+  const { day, cycleLen, phase, ovulDay, daysToOvul } = cycle;
+  const monthName = new Date().toLocaleDateString('vi-VN',{month:'long'});
+
+  // Hero
+  _setEl('gy-cycle-label', `Ngày D${day} · Chu kỳ ${monthName} · ${cycleLen} ngày`);
+  _setEl('gy-phase-label', `${phase.label} · D${phase.days[0]}–D${phase.days[1]}`);
+  _setEl('gy-ovulation-label', `Rụng trứng D${ovulDay}`);
+  _setEl('gy-ovulation-countdown',
+    daysToOvul > 0 ? `Còn ${daysToOvul} ngày đến rụng trứng` :
+    daysToOvul === 0 ? '⚡ Hôm nay là ngày rụng trứng ước tính' :
+    `Đã qua rụng trứng ${Math.abs(daysToOvul)} ngày`);
+
+  // Cursor trên thanh
+  const cursor = document.getElementById('gy-cycle-cursor');
+  if (cursor) cursor.style.left = Math.min((day/cycleLen)*100, 98) + '%';
+
+  // Chị nên biết
+  _setEl('gy-note-title', `Chị nên biết · D${day}`);
+  _setEl('gy-mom-note', phase.note);
+
+  // BS khuyên dùng
+  _setEl('gy-supp-title', `BS khuyên dùng · D${day}`);
+  _setEl('gy-supp-phase', `${phase.label} · D${phase.days[0]}–D${phase.days[1]}`);
+  _setEl('gy-supp-items', phase.supp);
+  _setEl('gy-supp-desc', phase.suppDesc);
+
+  // Bài viết
+  const journal = GY_JOURNAL.find(j => j.phase === phase.label) || GY_JOURNAL[1];
+  _setEl('gy-journal-eyebrow', journal.eyebrow);
+  const titleEl = document.getElementById('gy-journal-title');
+  if (titleEl) titleEl.innerHTML = journal.title;
+  _setEl('gy-journal-sub', journal.sub);
+
+  // Lịch hẹn mock
+  const mockDate = new Date(); mockDate.setDate(mockDate.getDate() + 7);
+  _setEl('gy-appt-day', mockDate.getDate());
+  _setEl('gy-appt-month', ['CN','T2','T3','T4','T5','T6','T7'][mockDate.getDay()] + ' · tháng ' + (mockDate.getMonth()+1));
+  _setEl('gy-appt-type', 'Khám phụ khoa');
+
+  // Lịch BS (3 ngày tới)
+  const schedEl = document.getElementById('gy-doc-schedule');
+  if (schedEl) {
+    const SESS = [['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['T 17h–20h'],['S+T'],['S+T']];
+    const rows = [];
+    for (let i = 0; i < 7 && rows.length < 3; i++) {
+      const d = new Date(); d.setDate(d.getDate() + i);
+      const dow = d.getDay();
+      const idx = [1,2,3,4,5,6,0].indexOf(dow);
+      if (idx === -1) continue;
+      const isToday = i === 0;
+      rows.push(`<div style="font-size:${isToday?'11':'10'}px;color:${isToday?'var(--gold-dk)':'var(--muted)'};font-weight:${isToday?'700':'400'}">${['CN','T2','T3','T4','T5','T6','T7'][[0,1,2,3,4,5,6].indexOf(dow)]} ${d.getDate()}/${d.getMonth()+1} · ${SESS[idx].join('')}</div>`);
+    }
+    schedEl.innerHTML = rows.join('');
+  }
+}
 
 /* ════════════════════════════════════════════════════════════
    BLOCK 18: JS — AI CHAT
