@@ -1285,68 +1285,13 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="width:38px"></div>
     </div>
 
-    <!-- ══ WORKSHOP TUẦN NÀY ══ -->
-    <div style="margin-bottom:16px">
-      <!-- Đề mục: dot đỏ + LIVE badge -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="background:#C03030;width:7px;height:7px;border-radius:50%"></div>
-          <div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.04em">Workshop tuần này</div>
-          <div style="background:#C03030;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:700;color:#fff;letter-spacing:.06em">LIVE</div>
-        </div>
-        <div onclick="eduToggleWorkshopHistory()" style="font-size:11px;color:var(--gold-dk);font-style:italic;font-family:var(--serif);cursor:pointer">Trước đây →</div>
-      </div>
-
-      <!-- Ticket -->
-      <a id="edu-banner-link" href="#" target="_blank" rel="noopener"
-         style="display:block;border-radius:12px;overflow:hidden;text-decoration:none;border:.5px solid var(--border);-webkit-tap-highlight-color:transparent">
-        <!-- Ảnh -->
-        <div style="position:relative;aspect-ratio:2/1;overflow:hidden">
-          <img id="edu-banner-img"
-               src="https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/ManHinhCho_WS_NextG_Cal_Final.PNG"
-               alt="Workshop BS. Hoàng Thanh Tuấn"
-               style="width:100%;height:100%;display:block;object-fit:cover"
-               onerror="this.parentElement.style.background='linear-gradient(135deg,#F5C462,#E8A030)';this.style.display='none'">
-          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(28,21,16,.5))"></div>
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-            <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.93);display:flex;align-items:center;justify-content:center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#1C1510"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </div>
-          </div>
-        </div>
-        <!-- Đường cắt vé -->
-        <div style="display:flex;align-items:center;background:#1C1510">
-          <div style="width:16px;height:16px;border-radius:50%;background:var(--bg);margin-left:-8px;flex-shrink:0"></div>
-          <div style="flex:1;border-top:1.5px dashed rgba(184,129,74,.35)"></div>
-          <div style="width:16px;height:16px;border-radius:50%;background:var(--bg);margin-right:-8px;flex-shrink:0"></div>
-        </div>
-        <!-- Stub thông tin -->
-        <div style="background:#1C1510;padding:10px 14px 12px;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-family:var(--serif);font-size:14px;color:#fff;margin-bottom:2px" id="edu-ws-title">Hậu sản không "rệu rã"</div>
-            <div style="font-size:9px;color:rgba(184,129,74,.6)" id="edu-ws-date">10.05.2026 · 10h00 · BS CK1. Hoàng Thanh Tuấn</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;background:#B8814A;padding:6px 11px;border-radius:20px;flex-shrink:0;margin-left:10px">
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span style="font-size:10px;font-weight:700;color:#fff">Xem ngay</span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Workshop trước đây (ẩn mặc định) -->
-      <div id="edu-ws-history" style="display:none;border:.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--surface);margin-top:8px">
-        <div style="padding:10px 14px 4px">
-          <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Workshop trước đây</div>
-          <div id="edu-ws-history-list"></div>
-        </div>
-      </div>
-    </div>
 
     <!-- Pills chọn tuần -->
     <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);margin-bottom:8px">Kiến thức theo tuần thai</div>
     <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none" id="edu-pills"></div>
   </div>
   <div class="scroll" style="padding:0 22px 48px" id="edu-body">
+
     <div class="empty"><p>Đang tải...</p></div>
   </div>
 </div>
