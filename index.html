@@ -5461,7 +5461,7 @@ function initGyAppts() {
     const d = new Date(next.datetime);
     _setEl('gy-appt-hero-date', `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`);
     _setEl('gy-appt-hero-time', `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);
-    _setEl('gy-appt-hero-meta', `${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][d.getDay()]} · ${next.type} · Phụ Sản 315`);
+    _setEl('gy-appt-hero-meta', `${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][d.getDay()]} · ${next.type} · BV Hùng Vương`);
     _setEl('gy-appt-hero-type', next.type);
     if (next.note) {
       const w = document.getElementById('gy-appt-hero-note-wrap');
@@ -5512,7 +5512,7 @@ function initGyAppts() {
     return `<div style="background:var(--surface);border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:12px 16px;margin-bottom:8px;opacity:.75;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--serif);font-size:16px;color:var(--gy-ink)">${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()} <span style="font-size:11px;color:var(--gy-dk);font-style:italic">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span></div>
-        <div style="font-size:12px;color:var(--gy-muted);margin-top:2px">${a.type}</div>
+        <div style="font-size:12px;color:var(--gy-muted);margin-top:2px">${a.type} · BV Hùng Vương</div>
       </div>
       <div style="font-size:10px;color:#2E6E50;font-weight:700">✓ Đã khám</div>
     </div>`;
