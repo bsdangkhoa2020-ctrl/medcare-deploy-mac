@@ -1,28 +1,29 @@
 {
-  "name": "BS. CK1 Hoàng Thanh Tuấn — Sản Phụ Khoa",
-  "short_name": "BS. Tuấn",
-  "description": "Ứng dụng theo dõi thai kỳ và sức khỏe sản phụ khoa của BS. CK1 Hoàng Thanh Tuấn — BV Hùng Vương · TP.HCM",
+  "name": "BaoBei — BS. Hoàng Thanh Tuấn",
+  "short_name": "BaoBei",
+  "description": "Ứng dụng chăm sóc sức khoẻ thai kỳ & phụ khoa",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
+  "background_color": "#1C1510",
+  "theme_color": "#1C1510",
   "orientation": "portrait",
-  "background_color": "#F5EBE3",
-  "theme_color": "#3E2A3D",
   "lang": "vi",
-  "dir": "ltr",
-  "categories": ["health", "medical", "lifestyle"],
   "icons": [
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%233E2A3D'/><text x='96' y='110' font-family='Georgia,serif' font-size='52' font-style='italic' font-weight='300' fill='%23C7A47B' text-anchor='middle'>BT</text><text x='96' y='148' font-family='Inter,sans-serif' font-size='10' fill='%23F5EBE3' text-anchor='middle' letter-spacing='3'>BS. TUẤN</text></svg>",
+      "src": "https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%233E2A3D'/><text x='256' y='290' font-family='Georgia,serif' font-size='140' font-style='italic' font-weight='300' fill='%23C7A47B' text-anchor='middle'>BT</text><text x='256' y='390' font-family='Inter,sans-serif' font-size='28' fill='%23F5EBE3' text-anchor='middle' letter-spacing='8'>BS. TUẤN</text></svg>",
+      "src": "https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
+    },
+    {
+      "src": "https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple touch icon"
     }
   ]
 }
