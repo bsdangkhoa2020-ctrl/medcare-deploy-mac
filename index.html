@@ -2851,17 +2851,17 @@ function _renderMockDocSchedule() {
   if (!grid) return;
   const DAY_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
   const SESSIONS = [
-    ['Chiều'],          // T2
-    ['Chiều'],          // T3
-    ['Chiều'],          // T4
-    ['Chiều'],          // T5
-    ['Chiều'],          // T6
-    ['Sáng','Chiều'],  // T7
-    ['Sáng','Chiều'],  // CN
+    ['17h–20h'],             // T2
+    ['17h–20h'],             // T3
+    ['17h–20h'],             // T4
+    ['17h–20h'],             // T5
+    ['17h–20h'],             // T6
+    ['8h–11h','17h–20h'],   // T7
+    ['8h–11h','17h–20h'],   // CN
   ];
   const todayDow = new Date().getDay(); // 0=CN
 
-  // Chỉ hiện hôm nay + 2 ngày kế tiếp có lịch
+  // Hiện hôm nay + 2 ngày kế tiếp
   const upcoming = [];
   for (let offset = 0; offset < 7 && upcoming.length < 3; offset++) {
     const d = new Date();
@@ -2879,7 +2879,7 @@ function _renderMockDocSchedule() {
         ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gold-dk);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
         <span style="font-size:11px;font-weight:${isToday?'700':'500'};color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.8)'}">${label} ${dateStr}</span>
       </div>
-      <span style="font-size:10px;color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.7)'};font-weight:600">${sessions.join(' & ')}</span>
+      <span style="font-size:10px;color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.7)'};font-weight:600;text-align:right">${sessions.join(' · ')}</span>
     </div>`;
   }).join('') + `<div style="font-size:9px;color:rgba(184,129,74,.5);margin-top:6px;text-align:center;letter-spacing:.08em">Phụ Sản 315 · Q.6</div>`;
 }
