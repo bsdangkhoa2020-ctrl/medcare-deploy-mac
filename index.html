@@ -4997,7 +4997,7 @@ async function obLoadDocScheduleCard() {
     });
     DAY_LABELS.forEach((label, i) => {
       const isoDate = isoForIdx[i];
-      const rows = data.filter(r => r.week_offset === 0 && r.day_key === isoDate);
+      const rows = data.filter(r => r.week_offset === 0 && r.day_key === isoDate && r.location === 'pk315');
       const dot  = document.getElementById(`ob-sched-dot-${i}`);
       if (!dot) return;
       const dow = [1,2,3,4,5,6,0][i]; // T2=1...CN=0
@@ -6773,7 +6773,7 @@ async function gyLoadHomeData() {
       const { data: sched } = await db.getSchedule();
       const today = new Date();
       const todayStr = today.toISOString().slice(0,10);
-      const weekShifts = (sched || []).filter(r => r.week_offset === 0);
+      const weekShifts = (sched || []).filter(r => r.week_offset === 0 && r.location === 'hung_vuong');
       if (!weekShifts.length) {
         schedEl.innerHTML = `<div style="font-size:10px;color:var(--gy-muted);font-style:italic;">BS chưa cập nhật lịch tuần này</div>`;
       } else {
