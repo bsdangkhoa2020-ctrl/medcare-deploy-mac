@@ -2760,12 +2760,19 @@ function obUpdateGA() {
   const mData   = (typeof MILESTONE_DATA !== 'undefined') && MILESTONE_DATA[nearest];
   const eduData = (typeof EDU_CONTENT    !== 'undefined') && EDU_CONTENT[nearest];
   // Journal card theo TCN
-  const JOURNAL = {
-    1: { eyebrow:'TIÊU ĐIỂM · TAM CÁ NGUYỆT 1', title:'5 điều mẹ bầu cần làm <em style="color:var(--gold)">ngay trong 12 tuần đầu</em>', sub:'Khám thai sớm, uống Folic, tránh X-quang — những việc không thể bỏ qua trong giai đoạn vàng.' },
-    2: { eyebrow:'TIÊU ĐIỂM · TAM CÁ NGUYỆT 2', title:'Siêu âm hình thái học: <em style="color:var(--gold)">mẹ cần biết gì</em> trước khi vào phòng?', sub:'Mốc kiểm tra quan trọng nhất thai kỳ — BS. Tuấn giải thích từng chỉ số cần theo dõi.' },
-    3: { eyebrow:'TIÊU ĐIỂM · TAM CÁ NGUYỆT 3', title:'7 dấu hiệu mẹ bầu <em style="color:var(--gold)">không nên bỏ qua</em> trong 3 tháng cuối', sub:'Ra dịch hồng bất thường, đau bụng dữ dội, cử động thai giảm rõ — những chia sẻ y khoa cần biết.' }
+  const JOURNAL_BY_WEEK = {
+    4:  { eyebrow:'TUẦN 4 · TAM CÁ NGUYỆT 1', title:'Que thử 2 vạch — <em style="color:var(--gold)">bắt đầu từ đâu?</em>', sub:'Acid folic, khám thai lần đầu, những việc cần làm ngay trong tuần đầu tiên biết có thai.' },
+    8:  { eyebrow:'TUẦN 8 · TAM CÁ NGUYỆT 1', title:'Nghén nặng — <em style="color:var(--gold)">mẹ làm gì cho đúng?</em>', sub:'Ăn gì khi không thể ăn, khi nào cần đi khám, và những điều BS Tuấn muốn mẹ biết về nghén.' },
+    12: { eyebrow:'TUẦN 12 · TAM CÁ NGUYỆT 1', title:'Sàng lọc dị tật sớm — <em style="color:var(--gold)">mẹ cần hiểu gì</em> về Double test & NIPT?', sub:'NT, Double test, NIPT — sự khác nhau, khi nào cần làm và cách đọc kết quả đừng để lo lắng thêm.' },
+    16: { eyebrow:'TUẦN 16 · TAM CÁ NGUYỆT 2', title:'Thai máy lần đầu — <em style="color:var(--gold)">cảm giác đó là thật không?</em>', sub:'Phân biệt thai máy với cơn gò, khi nào nên lo, và cách theo dõi cử động thai đúng khuyến cáo.' },
+    20: { eyebrow:'TUẦN 20 · TAM CÁ NGUYỆT 2', title:'Siêu âm hình thái học — <em style="color:var(--gold)">đọc kết quả thế nào?</em>', sub:'Mốc siêu âm quan trọng nhất thai kỳ. BS Tuấn giải thích từng chỉ số mẹ cần hiểu trước khi vào phòng.' },
+    24: { eyebrow:'TUẦN 24 · TAM CÁ NGUYỆT 2', title:'Test tiểu đường thai kỳ — <em style="color:var(--gold)">mẹ sợ nhưng không nên bỏ</em>', sub:'OGTT 75g là gì, nhịn ăn mấy tiếng, kết quả thế nào là bình thường — giải đáp toàn bộ thắc mắc.' },
+    28: { eyebrow:'TUẦN 28 · TAM CÁ NGUYỆT 3', title:'Đếm cử động thai — <em style="color:var(--gold)">bao nhiêu lần là đủ?</em>', sub:'Quy tắc 10 cử động trong 2 giờ, khi nào cần đến BV ngay, cách đếm đúng mỗi tối trước khi ngủ.' },
+    32: { eyebrow:'TUẦN 32 · TAM CÁ NGUYỆT 3', title:'Cơn gò Braxton Hicks — <em style="color:var(--gold)">phân biệt với chuyển dạ thật</em>', sub:'4 dấu hiệu chuyển dạ thật, khi nào gọi BS, và tại sao không nên chờ đến đau không chịu được mới đi.' },
+    36: { eyebrow:'TUẦN 36 · TAM CÁ NGUYỆT 3', title:'Chuẩn bị sinh — <em style="color:var(--gold)">giỏ đồ mang vào BV</em> cần gì?', sub:'Checklist đầy đủ cho mẹ và bé, giấy tờ cần chuẩn bị, và những điều BS Tuấn nhắn mẹ trước ngày sinh.' },
+    40: { eyebrow:'TUẦN 40 · SẮP SINH', title:'Quá ngày dự sinh — <em style="color:var(--gold)">bình thường hay cần can thiệp?</em>', sub:'40 tuần chỉ là ước tính, sinh từ 37–42 tuần đều được coi là đủ tháng. BS Tuấn giải thích khi nào cần giục sinh.' },
   };
-  const j = JOURNAL[ga.trimester] || JOURNAL[3];
+  const j = JOURNAL_BY_WEEK[nearest] || JOURNAL_BY_WEEK[28];
   const jEye  = document.getElementById('ob-journal-eyebrow');
   const jTitle = document.getElementById('ob-journal-title');
   const jSub  = document.getElementById('ob-journal-sub');
