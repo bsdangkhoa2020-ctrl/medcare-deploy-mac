@@ -3241,38 +3241,54 @@ function _renderMilestoneTab(kind) {
   const curWk = ga?.weeks || 0;
 
   const KIND = {
-    xn: { color:'var(--gold-dk)', bg:'var(--gold-lt)' },
-    sa: { color:'#2E6E50',        bg:'#E8F4EC'        },
-    tc: { color:'#5B4AA0',        bg:'#EEEAF8'        },
+    xn: { color:'#B8814A', bg:'#FDF0E8', label:'Xét nghiệm' },
+    sa: { color:'#2E6E50', bg:'#E8F4EC', label:'Siêu âm'    },
+    tc: { color:'#5B4AA0', bg:'#EEEAF8', label:'Tiêm chủng' },
   };
 
   const items = OB_TIMELINE.filter(it => it.kind === kind);
   const k = KIND[kind] || KIND.xn;
 
-  const rows = items.map(it => {
+  const rows = items.map((it, i) => {
     const done   = curWk >= it.wk[1];
     const active = !done && curWk >= it.wk[0];
+    const isLast = i === items.length - 1;
+
+    const dotColor = done ? k.color : active ? k.color : 'var(--border)';
+    const dotBg    = done ? k.bg    : active ? k.color  : 'var(--bg)';
+
     return `
-    <div style="display:flex;gap:12px;padding:12px 14px;background:var(--surface);border-radius:var(--r-md);margin-bottom:8px;border:.5px solid ${active ? k.color : 'var(--border)'};${active ? 'border-left:3px solid '+k.color : ''}">
-      <div style="flex-shrink:0;margin-top:3px">
-        ${done
-          ? `<div style="width:22px;height:22px;border-radius:50%;background:${k.bg};display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${k.color}" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>`
-          : active
-          ? `<div style="width:22px;height:22px;border-radius:50%;background:${k.color};display:flex;align-items:center;justify-content:center"><div style="width:7px;height:7px;border-radius:50%;background:#fff"></div></div>`
-          : `<div style="width:22px;height:22px;border-radius:50%;border:.5px solid var(--border)"></div>`
-        }
+    <div style="display:flex;gap:0">
+      <!-- Trục timeline -->
+      <div style="display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0">
+        <!-- Dot -->
+        <div style="width:22px;height:22px;border-radius:50%;background:${dotBg};border:2px solid ${dotColor};flex-shrink:0;display:flex;align-items:center;justify-content:center;z-index:1">
+          ${done
+            ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${k.color}" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`
+            : active
+            ? `<div style="width:7px;height:7px;border-radius:50%;background:#fff"></div>`
+            : `<div style="width:6px;height:6px;border-radius:50%;background:var(--border)"></div>`
+          }
+        </div>
+        <!-- Connector -->
+        ${!isLast ? `<div style="width:2px;flex:1;min-height:20px;background:${done ? k.color : 'var(--border)'};opacity:${done ? '.4' : '.3'};margin:4px 0"></div>` : ''}
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${done ? 'var(--hint)' : k.color};margin-bottom:3px">Tuần ${it.wk[0]}${it.wk[0] !== it.wk[1] ? '\u2013'+it.wk[1] : ''}</div>
-        <div style="font-size:14px;font-weight:600;color:${done ? 'var(--muted)' : 'var(--ink)'};margin-bottom:3px">${it.title}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.5">${it.sub}</div>
-        ${active ? `<div style="margin-top:6px;font-size:11px;font-weight:700;color:${k.color}">→ Đang trong khoảng tuần này</div>` : ''}
+      <!-- Nội dung -->
+      <div style="flex:1;padding-bottom:${isLast ? '8' : '20'}px;padding-left:12px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:${done ? 'var(--muted)' : k.color};margin-bottom:3px;margin-top:2px">Tuần ${it.wk[0]}${it.wk[0] !== it.wk[1] ? '–'+it.wk[1] : ''}</div>
+        <div style="font-size:14px;font-weight:600;color:${done ? 'var(--muted)' : 'var(--ink)'};margin-bottom:3px;line-height:1.3">${it.title}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.55">${it.sub}</div>
+        ${active ? `<div style="margin-top:6px;display:inline-block;font-size:10px;font-weight:700;color:${k.color};background:${k.bg};padding:3px 10px;border-radius:10px">→ Đang trong khoảng tuần này</div>` : ''}
         ${done   ? `<div style="margin-top:4px;font-size:11px;color:var(--hint)">✓ Đã qua</div>` : ''}
       </div>
     </div>`;
   }).join('');
 
-  return `<div style="padding-top:4px">${rows}<div style="font-size:11px;color:var(--hint);font-style:italic;text-align:center;padding:8px 0 16px">Theo ACOG · WHO · BYT VN</div></div>`;
+  return `
+    <div style="padding:4px 0 8px">
+      ${rows}
+      <div style="font-size:11px;color:var(--hint);font-style:italic;text-align:center;padding:12px 0 8px">Theo ACOG · WHO · BYT VN</div>
+    </div>`;
 }
 
 function _renderVisits(visits) {
