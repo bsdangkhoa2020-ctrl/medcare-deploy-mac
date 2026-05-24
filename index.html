@@ -3518,7 +3518,7 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
           ${ca.label}
         </div>
         <div style="font-size:8px;color:${isPast?'#C0B8B0':'#B0A490'};">
-          ${isPast?'🔒 Xem':isOff?'':'✏️ Sửa'}
+          ${isOff?'':(!isPast?'✏️ Sửa':'')}
         </div>
       </div>
     </div>`;
@@ -3669,7 +3669,7 @@ function _admRenderWeekDays() {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
           background:${isToday?'#E8A93C':'#FFF8E7'};color:${isToday?'#fff':'#7A6F5C'};">${dayLabel}</span>
-        ${isPast?'<span style="font-size:9px;color:#C0B8B0;">🔒 Đã qua</span>':''}
+        ${isPast?'<span style="font-size:9px;color:#C0B8B0;">Đã qua</span>':''}
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${presetBtns}</div>
       <input type="text" value="${cur}" id="week-day-input-${ds}"
