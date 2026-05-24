@@ -508,7 +508,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
     </div>
 
     <!-- Bước 1: Mã mời (disabled) -->
-    <div id="reg-s1" style="display:none">
+    <div id="reg-s1" style="display:none;visibility:hidden;height:0;overflow:hidden">
       <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Mã mời</div>
       <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Nhập mã được phòng khám cung cấp</div>
       <div class="input-group">
@@ -527,9 +527,27 @@ input[type=date], input[type=time], input[type=datetime-local] {
     </div>
 
     <!-- Bước 2: Thông tin -->
-    <div id="reg-s2">
+    <div id="reg-s2" style="display:block">
       <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Thông tin <em style="color:var(--gold-dk)">của bạn</em></div>
-      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Điền đầy đủ để bắt đầu hành trình thai kỳ</div>
+      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:24px">Điền đầy đủ để bắt đầu hành trình sức khoẻ</div>
+      <!-- Chọn loại bệnh nhân -->
+      <div class="input-group">
+        <label class="input-label">Bạn muốn theo dõi</label>
+        <div style="display:flex;gap:10px;">
+          <button id="reg-type-ob" type="button" onclick="regSelectType('ob')"
+            style="flex:1;padding:14px 8px;border-radius:12px;border:2px solid var(--gold-dk);background:var(--gold-lt);cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:22px;margin-bottom:4px;">🤰</div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink);">Thai kỳ</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Theo dõi sản khoa</div>
+          </button>
+          <button id="reg-type-gy" type="button" onclick="regSelectType('gy')"
+            style="flex:1;padding:14px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:22px;margin-bottom:4px;">🌸</div>
+            <div style="font-size:13px;font-weight:600;color:var(--muted);">Phụ khoa</div>
+            <div style="font-size:11px;color:var(--hint);margin-top:2px;">Theo dõi chu kỳ</div>
+          </button>
+        </div>
+      </div>
       <div class="input-group">
         <label class="input-label">Họ và tên đầy đủ</label>
         <input class="input" id="reg-name" type="text" placeholder="Nguyễn Thị Lan" autocomplete="name">
@@ -605,9 +623,9 @@ input[type=date], input[type=time], input[type=datetime-local] {
           </div>
         </div>
 
-        <div style="padding:12px 18px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:12px;color:var(--muted)">Mã mời</div>
-          <div id="reg-confirm-code" style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.12em;font-family:var(--sans)">—</div>
+        <div style="padding:12px 18px;display:flex;justify-content:space-between;align-items:center" id="reg-confirm-type-row">
+          <div style="font-size:12px;color:var(--muted)">Loại theo dõi</div>
+          <div id="reg-confirm-type" style="font-size:13px;font-weight:700;color:var(--ink);">—</div>
         </div>
       </div>
 
@@ -3161,42 +3179,36 @@ function regCalcBMI() {
 }
 
 async function regStep1() {
-  const code  = document.getElementById('reg-code')?.value?.trim().toUpperCase();
-  const errEl = document.getElementById('reg-err1');
-  if (errEl) errEl.style.display = 'none';
+  // Không còn dùng — bỏ bước mã mời
+}
 
-  if (!code || code.length < 6) {
-    if (errEl) { errEl.textContent = 'Vui lòng nhập mã mời hợp lệ'; errEl.style.display = 'block'; }
-    return;
+function regSelectType(type) {
+  _regData.specialty = type;
+  const obBtn = document.getElementById('reg-type-ob');
+  const gyBtn = document.getElementById('reg-type-gy');
+  if (obBtn) {
+    obBtn.style.borderWidth = type==='ob'?'2px':'1px';
+    obBtn.style.borderColor = type==='ob'?'var(--gold-dk)':'var(--border)';
+    obBtn.style.background  = type==='ob'?'var(--gold-lt)':'#fff';
   }
-
-  showLoading('Đang kiểm tra mã mời...');
-  try {
-    const { data, error } = await db.verifyInviteCode(code);
-    if (error || !data) {
-      if (errEl) { errEl.textContent = 'Mã mời không hợp lệ hoặc đã được sử dụng'; errEl.style.display = 'block'; }
-      return;
-    }
-    _regData.code     = code;
-    _regData.specialty = data.specialty;
-    _regData.inviteRow = data;
-
-    // Qua bước 2
-    document.getElementById('reg-s1').style.display = 'none';
-    document.getElementById('reg-s2').style.display = '';
-    document.getElementById('seg2').classList.add('done');
-    document.getElementById('reg-step-label').textContent = 'Bước 2 / 3';
-  } catch(e) {
-    if (errEl) { errEl.textContent = 'Lỗi kết nối. Thử lại.'; errEl.style.display = 'block'; }
-  } finally {
-    hideLoading();
+  if (gyBtn) {
+    gyBtn.style.borderWidth = type==='gy'?'2px':'1px';
+    gyBtn.style.borderColor = type==='gy'?'#C96080':'var(--border)';
+    gyBtn.style.background  = type==='gy'?'#FFF0F4':'#fff';
+  }
+  // Label LMP động
+  const lmpLabel = document.querySelector('label[for="reg-lmp"], .input-label + #reg-lmp');
+  const lmpGroup = document.getElementById('reg-lmp')?.closest('.input-group');
+  if (lmpGroup) {
+    const lbl = lmpGroup.querySelector('.input-label');
+    if (lbl) lbl.textContent = type==='gy' ? 'Ngày đầu chu kỳ gần nhất' : 'Ngày đầu kỳ kinh cuối (LMP)';
   }
 }
 
 function regGoBack() {
   document.getElementById("reg-s3").style.display = "none";
   document.getElementById("reg-s2").style.display = "";
-  const seg2 = document.getElementById("seg2"); if(seg2) seg2.classList.remove("done");
+  const seg3 = document.getElementById("seg3"); if(seg3) seg3.classList.remove("done");
   document.getElementById("reg-step-label").textContent = "Bước 1 / 2";
 }
 
@@ -3238,17 +3250,18 @@ function regStep2() {
   _regData.height = height || null;
   _regData.weight = parseFloat(document.getElementById('reg-weight')?.value) || null;
   _regData.lmp    = document.getElementById('reg-lmp')?.value || '';
+  // Specialty từ UI chọn — mặc định ob nếu chưa chọn
+  if (!_regData.specialty) _regData.specialty = 'ob';
 
   // Cập nhật confirm view
-  const specText = 'Sản khoa';
+  const specText = _regData.specialty === 'gy' ? '🌸 Phụ khoa' : '🤰 Thai kỳ (Sản khoa)';
   const initials = name.trim().split(/\s+/).map(w => w[0]).slice(-2).join('').toUpperCase();
   const avatarEl = document.getElementById('reg-confirm-avatar');
   if (avatarEl) avatarEl.textContent = initials || '👤';
   document.getElementById('reg-confirm-name').textContent  = name;
   document.getElementById('reg-confirm-email').textContent = email;
-  document.getElementById('reg-confirm-type').textContent  = specText;
-  const codeEl = document.getElementById('reg-confirm-code');
-  if (codeEl && codeEl.parentElement) codeEl.parentElement.style.display = 'none';
+  const typeEl = document.getElementById('reg-confirm-type');
+  if (typeEl) typeEl.textContent = specText;
 
   document.getElementById('reg-s2').style.display = 'none';
   document.getElementById('reg-s3').style.display = '';
@@ -3299,10 +3312,7 @@ async function regSubmit() {
     // 4. Update profiles bn_code
     await db.updateProfile(uid, { bn_code: bnCode });
 
-    // 5. Đánh dấu invite code đã dùng
-    await db.markInviteUsed(_regData.code, uid);
-
-    // 6. Login luôn
+    // 5. Login luôn
     const { data: loginData } = await db.signIn(_regData.email, _regData.pass);
     if (loginData?.user) {
       const { data: profile } = await db.getProfile(loginData.user.id);
