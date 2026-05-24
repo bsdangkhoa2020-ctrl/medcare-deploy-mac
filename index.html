@@ -800,6 +800,9 @@ input[type=date], input[type=time], input[type=datetime-local] {
         <button onclick="openChatPanel('bs')" style="display:flex;align-items:center;gap:5px;padding:7px 12px;background:#1F1A0F;color:#E8A93C;border:none;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
           🤖 BaoBei Khoa
         </button>
+        <button id="wake-toggle-btn" onclick="toggleWakeWord()" style="display:flex;align-items:center;gap:4px;padding:6px 11px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">
+          🎙️ Rảnh tay
+        </button>
         <div style="background:#FFF8E7;border:1px solid #F0E0B0;border-radius:8px;padding:6px 12px;text-align:right;cursor:pointer;" onclick="confirmLogout()">
           <div class="adm-lora" id="adm-hdr-count" style="font-size:22px;color:#B57A1F;font-weight:400;line-height:1;">—</div>
           <div style="font-size:9px;color:#B0A490;font-weight:300;letter-spacing:.06em;margin-top:1px;">bệnh nhân</div>
@@ -3798,8 +3801,8 @@ async function initAdmin() {
     todayLabel.textContent = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
   }
   admSwitchTab('patients');
-  // Kích hoạt wake word cho Admin
-  setTimeout(startWakeWord, 1500);
+  // KHÔNG auto-start wake word — Safari iOS cần user gesture
+  // BS bấm nút "🎙️ Rảnh tay" để kích hoạt
 }
 
 // ────────────────────────────────────────
@@ -8182,6 +8185,27 @@ function _chatShowTyping() {
 
 function _chatRemoveTyping(id) {
   if (id) document.getElementById(id)?.remove();
+}
+
+function toggleWakeWord() {
+  const btn = document.getElementById('wake-toggle-btn');
+  if (_wakeActive) {
+    stopWakeWord();
+    if (btn) {
+      btn.style.background = '#fff';
+      btn.style.color = '#7A6F5C';
+      btn.style.borderColor = '#F0E7D2';
+      btn.innerHTML = '🎙️ Rảnh tay';
+    }
+  } else {
+    startWakeWord();
+    if (btn) {
+      btn.style.background = '#D64545';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#D64545';
+      btn.innerHTML = '⏹️ Đang nghe';
+    }
+  }
 }
 
 // ── Wake Word "Khoa ơi" ──
