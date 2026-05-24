@@ -7858,34 +7858,35 @@ let _chatRecog   = null;
 
 // ── System prompts ──
 // ── RAG: Scan knowledge base ──
-function _ragSearch(query) {
+function _ragSearch(query, chatType, patientType) {
   const q = query.toLowerCase();
+  const words = q.split(/\s+/).filter(w => w.length > 2);
+  if (!words.length) return [];
   const results = [];
-  // Scan OB_TIMELINE
-  if (typeof OB_TIMELINE !== 'undefined') {
+  const scanOB = chatType === 'bs' || patientType === 'ob';
+  const scanGY = chatType === 'bs' || patientType === 'gy';
+
+  if (scanOB && typeof OB_TIMELINE !== 'undefined') {
     OB_TIMELINE.forEach(item => {
       const score = (item.title + ' ' + (item.sub||'')).toLowerCase();
-      const words = q.split(/\s+/).filter(w => w.length > 2);
       if (words.some(w => score.includes(w))) {
-        results.push(`[Lịch khám OB tuần ${item.wk[0]}-${item.wk[1]}] ${item.title}: ${item.sub||''}`);
+        results.push(`[Sản khoa tuần ${item.wk[0]}-${item.wk[1]}] ${item.title}: ${item.sub||''}`);
       }
     });
   }
-  // Scan GY_EDU_ARTICLES
-  if (typeof GY_EDU_ARTICLES !== 'undefined') {
+  if (scanGY && typeof GY_EDU_ARTICLES !== 'undefined') {
     Object.entries(GY_EDU_ARTICLES).forEach(([key, articles]) => {
       if (Array.isArray(articles)) {
         articles.forEach(a => {
           const score = (a.title + ' ' + (a.body||'')).toLowerCase();
-          const words = q.split(/\s+/).filter(w => w.length > 2);
           if (words.some(w => score.includes(w))) {
-            results.push(`[Kiến thức GY: ${key}] ${a.title}: ${(a.body||'').slice(0,120)}`);
+            results.push(`[Phụ khoa: ${key}] ${a.title}: ${(a.body||'').slice(0,150)}`);
           }
         });
       }
     });
   }
-  return results.slice(0, 4); // Tối đa 4 kết quả
+  return results.slice(0, chatType === 'bs' ? 6 : 4);
 }
 
 function _getChatSystemPrompt(type) {
@@ -7944,9 +7945,14 @@ function openChat() {
 }
 
 function openChatPanel(type) {
-  _chatType    = type;
-  _chatHistory = [];
   _chatLoading = false;
+  // Chỉ reset khi đổi type (BN ↔ BS) hoặc lần đầu
+  if (_chatType !== type) {
+    _chatType    = type;
+    _chatHistory = [];
+  } else {
+    _chatType = type;
+  }
 
   // Cấu hình giao diện theo type
   const isBs = type === 'bs';
@@ -7968,10 +7974,20 @@ function openChatPanel(type) {
   // Render chips
   _chatRenderChips();
 
-  // Welcome message
+  // Render lại messages từ history nếu có
   const msgs = document.getElementById('chat-messages');
-  if (msgs) msgs.innerHTML = '';
+  if (!msgs) { goTo('s-chat'); return; }
 
+  if (_chatHistory.length > 0) {
+    // Re-render lịch sử
+    msgs.innerHTML = '';
+    _chatHistory.forEach(m => _chatAppendMsg(m.role, m.content, true));
+    goTo('s-chat');
+    return;
+  }
+
+  // Lần đầu mở → show welcome
+  msgs.innerHTML = '';
   const name = (curUser?.name||'').split(' ').pop();
   const welcome = isBs
     ? `Chào anh Tuấn mập 👋 Em là **BaoBei Khoa** — cộng sự 24/7 của anh đây! Lịch trực, hồ sơ bệnh nhân, hay phác đồ y khoa — anh cứ hỏi, em cân tất! 😎`
@@ -7979,7 +7995,8 @@ function openChatPanel(type) {
       ? `Chào chị ${name} 💝 Em là **Cô Hương**, trợ lý hộ sinh 24/7 của Bác sĩ Hoàng Thanh Tuấn. Chị có câu hỏi về sức khoẻ phụ khoa cứ chia sẻ với em nhé!`
       : `Chào Mẹ ${name} 💝 Em là **Cô Hương**, trợ lý hộ sinh 24/7 của Bác sĩ Hoàng Thanh Tuấn. Mẹ có lo lắng gì về thai kỳ cứ tâm sự với em, em luôn ở đây!`;
 
-  _chatAppendMsg('assistant', welcome);
+  // Welcome KHÔNG push vào history (không phải từ AI thật)
+  _chatAppendMsgNoHistory('assistant', welcome);
   goTo('s-chat');
 }
 
@@ -8029,8 +8046,8 @@ async function chatSend(customText) {
   const typingId = _chatShowTyping();
 
   try {
-    // RAG: tìm kiến thức liên quan
-    const ragResults = _ragSearch(text);
+    // RAG: tìm kiến thức liên quan — phân biệt context
+    const ragResults = _ragSearch(text, _chatType, curUser?.patient_type);
     let ragContext = '';
     if (ragResults.length > 0) {
       ragContext = '\n\n[TÀI LIỆU THAM KHẢO — ưu tiên dùng thông tin này khi trả lời]:\n' + ragResults.join('\n');
@@ -8079,6 +8096,10 @@ async function chatSend(customText) {
     // Smart Intent (chỉ cho BS)
     if (_chatType === 'bs') _parseIntent(text, reply);
     _chatAppendMsg('assistant', reply);
+    // Rảnh tay: restart mic sau khi AI trả lời xong
+    if (_wakeActive && _chatType === 'bs') {
+      setTimeout(() => { if (!_chatMicOn) _chatStartMic(); }, 800);
+    }
 
   } catch(e) {
     _chatRemoveTyping(typingId);
@@ -8090,7 +8111,12 @@ async function chatSend(customText) {
 
 // ── Append message ──
 let _ttsUtterance = null;
-function _chatAppendMsg(role, text) {
+// Append msg mà không push vào history (dùng cho welcome)
+function _chatAppendMsgNoHistory(role, text) {
+  _chatAppendMsg(role, text, true);
+}
+
+function _chatAppendMsg(role, text, skipHistory) {
   const msgs = document.getElementById('chat-messages');
   if (!msgs) return;
   const isUser = role === 'user';
@@ -8108,8 +8134,8 @@ function _chatAppendMsg(role, text) {
   msgs.insertAdjacentHTML('beforeend', html);
   msgs.scrollTop = msgs.scrollHeight;
   // Auto-play cho BN (không auto cho BS)
-  // Auto-play cho cả BN lẫn BS
-  if (!isUser) {
+  // Auto-play CHỈ khi BS đang ở chế độ Rảnh tay (wake word active)
+  if (!isUser && _chatType === 'bs' && _wakeActive) {
     setTimeout(() => chatSpeak(document.getElementById('tts-' + msgId), msgId), 400);
   }
 }
@@ -8288,35 +8314,51 @@ function _onWakeWord() {
 
 // ── Smart Intent: nhận diện lệnh tạo lịch ──
 function _parseIntent(text, aiReply) {
-  // Tìm JSON intent trong reply AI
   try {
     const m = aiReply.match(/\{[\s\S]*?"action"\s*:[\s\S]*?\}/);
-    if (m) {
-      const intent = JSON.parse(m[0]);
-      if (intent.action === 'create_appt') {
-        // Điền sẵn vào modal tạo lịch hẹn
-        const nameEl  = document.getElementById('adm-appt-name');
-        const dateEl  = document.getElementById('adm-appt-date');
-        const timeEl  = document.getElementById('adm-appt-time');
-        const typeEl  = document.getElementById('adm-appt-type');
-        const noteEl  = document.getElementById('adm-appt-note');
-        if (nameEl && intent.patient_name) nameEl.value = intent.patient_name;
-        if (dateEl && intent.date)         dateEl.value = intent.date;
-        if (timeEl && intent.time)         timeEl.value = intent.time;
-        if (typeEl && intent.appt_type)    typeEl.value = intent.appt_type;
-        if (noteEl && intent.note)         noteEl.value = intent.note || '';
-        // Populate datalist
-        admPopulateApptPatientList();
-        // Mở modal sau 1 giây (để BS đọc phản hồi trước)
-        setTimeout(() => {
-          adm.apptEditId = null;
-          document.getElementById('adm-appt-modal').style.display = 'flex';
-        }, 1200);
-        return true;
-      }
-    }
+    if (!m) return false;
+    const intent = JSON.parse(m[0]);
+    if (intent.action !== 'create_appt') return false;
+
+    // Hiện bubble xác nhận thay vì auto-open modal
+    const typeLabel = {
+      kham_thai:'Khám thai', sieu_am:'Siêu âm',
+      xet_nghiem:'Xét nghiệm', phu_khoa:'Phụ khoa',
+      tu_van:'Tư vấn', khac:'Khác'
+    };
+    const intentId = 'intent-' + Date.now();
+    const confirmBubble = `<div id="${intentId}" style="background:#FFF8E7;border:1px solid #E8A93C;border-radius:14px;padding:12px 14px;margin-top:6px;">
+      <div style="font-size:11px;font-weight:700;color:#B57A1F;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">📅 Tạo lịch hẹn?</div>
+      <div style="font-size:13px;color:#1F1A0F;margin-bottom:4px;"><b>${intent.patient_name||'?'}</b></div>
+      <div style="font-size:12px;color:#7A6F5C;">${intent.date||''} ${intent.time||''} · ${typeLabel[intent.appt_type]||intent.appt_type||''}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="_intentConfirm('${intentId}',${JSON.stringify(intent).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})" style="flex:1;padding:8px;border-radius:10px;border:none;background:#1F1A0F;color:#E8A93C;font-size:12px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✅ Xác nhận tạo lịch</button>
+        <button onclick="document.getElementById('${intentId}').remove()" style="padding:8px 12px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+      </div>
+    </div>`;
+
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) { msgs.insertAdjacentHTML('beforeend', confirmBubble); msgs.scrollTop = msgs.scrollHeight; }
+    return true;
   } catch(e) {}
   return false;
+}
+
+function _intentConfirm(bubbleId, intent) {
+  document.getElementById(bubbleId)?.remove();
+  const nameEl = document.getElementById('adm-appt-name');
+  const dateEl = document.getElementById('adm-appt-date');
+  const timeEl = document.getElementById('adm-appt-time');
+  const typeEl = document.getElementById('adm-appt-type');
+  const noteEl = document.getElementById('adm-appt-note');
+  if (nameEl && intent.patient_name) nameEl.value = intent.patient_name;
+  if (dateEl && intent.date)         dateEl.value = intent.date;
+  if (timeEl && intent.time)         timeEl.value = intent.time;
+  if (typeEl && intent.appt_type)    typeEl.value = intent.appt_type;
+  if (noteEl && intent.note)         noteEl.value = intent.note || '';
+  if (typeof admPopulateApptPatientList === 'function') admPopulateApptPatientList();
+  adm.apptEditId = null;
+  document.getElementById('adm-appt-modal').style.display = 'flex';
 }
 
 // ── Voice Dictation (Admin only) ──
@@ -8332,21 +8374,46 @@ function chatToggleMic() {
   }
 }
 
+let _chatAutoSendTimer = null;
+
 function _chatStartMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   _chatRecog = new SR();
   _chatRecog.lang = 'vi-VN';
-  _chatRecog.continuous = false;
+  _chatRecog.continuous = true;
   _chatRecog.interimResults = true;
 
   _chatRecog.onresult = (e) => {
     const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
     const input = document.getElementById('chat-input');
     if (input) { input.value = transcript; chatAutoResize(input); }
+
+    // Nếu đang ở chế độ rảnh tay → auto-send sau 1.5s im lặng
+    if (_wakeActive) {
+      clearTimeout(_chatAutoSendTimer);
+      const isFinal = e.results[e.results.length - 1].isFinal;
+      if (isFinal) {
+        _chatAutoSendTimer = setTimeout(() => {
+          const val = document.getElementById('chat-input')?.value?.trim();
+          if (val) {
+            chatSend();
+          }
+        }, 1200);
+      }
+    }
   };
 
-  _chatRecog.onend = () => { _chatMicOn = false; _chatUpdateMicBtn(); };
-  _chatRecog.onerror = () => { _chatMicOn = false; _chatUpdateMicBtn(); };
+  _chatRecog.onend = () => {
+    _chatMicOn = false;
+    _chatUpdateMicBtn();
+    // Ở chế độ rảnh tay → restart mic sau khi AI xong
+    if (_wakeActive && !_chatLoading) {
+      setTimeout(_chatStartMic, 500);
+    }
+  };
+  _chatRecog.onerror = (e) => {
+    if (e.error !== 'aborted') { _chatMicOn = false; _chatUpdateMicBtn(); }
+  };
 
   _chatRecog.start();
   _chatMicOn = true;
