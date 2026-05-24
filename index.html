@@ -800,9 +800,20 @@ input[type=date], input[type=time], input[type=datetime-local] {
         <button onclick="openChatPanel('bs')" style="display:flex;align-items:center;gap:5px;padding:7px 12px;background:#1F1A0F;color:#E8A93C;border:none;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
           🤖 BaoBei Khoa
         </button>
-        <button id="wake-toggle-btn" onclick="toggleWakeWord()" style="display:flex;align-items:center;gap:4px;padding:6px 11px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">
-          🎙️ Rảnh tay
-        </button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div style="display:flex;gap:4px;">
+            <button id="wake-toggle-btn" onclick="toggleWakeWord()" style="display:flex;align-items:center;gap:4px;padding:6px 11px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">
+              🎙️ Rảnh tay
+            </button>
+            <button onclick="admToggleWakeConfig()" style="padding:6px 8px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;cursor:pointer;color:#7A6F5C;" title="Cấu hình từ khóa">⚙️</button>
+          </div>
+          <!-- Panel cấu hình wake words -->
+          <div id="wake-config-panel" style="display:none;background:#fff;border:1px solid #F0E7D2;border-radius:12px;padding:12px 14px;min-width:220px;box-shadow:0 4px 16px rgba(0,0,0,.08);z-index:99;position:relative;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:10px;">Từ khóa kích hoạt</div>
+            <div id="wake-config-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="font-size:9px;color:#B0A490;margin-top:10px;font-style:italic;">Bật ít nhất 1 từ khóa</div>
+          </div>
+        </div>
         <div style="background:#FFF8E7;border:1px solid #F0E0B0;border-radius:8px;padding:6px 12px;text-align:right;cursor:pointer;" onclick="confirmLogout()">
           <div class="adm-lora" id="adm-hdr-count" style="font-size:22px;color:#B57A1F;font-weight:400;line-height:1;">—</div>
           <div style="font-size:9px;color:#B0A490;font-weight:300;letter-spacing:.06em;margin-top:1px;">bệnh nhân</div>
@@ -8242,6 +8253,33 @@ function _chatRemoveTyping(id) {
   if (id) document.getElementById(id)?.remove();
 }
 
+function admToggleWakeConfig() {
+  const panel = document.getElementById('wake-config-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none') {
+    admRenderWakeConfig();
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function admRenderWakeConfig() {
+  const list = document.getElementById('wake-config-list');
+  if (!list) return;
+  list.innerHTML = WAKE_WORD_OPTIONS.map(w => `
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;">
+      <input type="checkbox" ${w.active?'checked':''} onchange="admToggleWakeWord('${w.id}',this.checked)"
+        style="width:16px;height:16px;accent-color:#E8A93C;cursor:pointer;">
+      <span style="font-size:12px;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;">${w.label}</span>
+    </label>`).join('');
+}
+
+function admToggleWakeWord(id, active) {
+  const w = WAKE_WORD_OPTIONS.find(x => x.id === id);
+  if (w) w.active = active;
+}
+
 function toggleWakeWord() {
   const btn = document.getElementById('wake-toggle-btn');
   if (_wakeActive) {
@@ -8269,6 +8307,22 @@ let _wakeActive = false;
 let _wakeStartTime = null;
 const WAKE_MAX_MS = 10 * 60 * 1000; // 10 phút tự tắt
 
+// Bộ từ khóa wake word — BS có thể bật/tắt từng cái
+const WAKE_WORD_OPTIONS = [
+  { id:'ww_khoa',   label:'"Khoa ơi"',      variants:['khoa ơi','khoa oi','khoa ui'],           active:true },
+  { id:'ww_baobei', label:'"BaoBei"',        variants:['baobei','bao bei','bao bối','bảo bối'],   active:true },
+  { id:'ww_tuanoi', label:'"Tuấn ơi"',       variants:['tuấn ơi','tuấn oi','tuấn ui','tuần ơi'], active:false },
+  { id:'ww_bsoi',   label:'"Bác sĩ ơi"',     variants:['bác sĩ ơi','bác sỉ ơi','bác si ơi'],    active:false },
+  { id:'ww_heyai',  label:'"Hey AI / Hey em"',variants:['hey ai','hey em','hê ai'],               active:false },
+  { id:'ww_siri',   label:'"Hey Siri / Siri"',variants:['hey siri','siri','xi ri'],               active:false },
+];
+
+function _getActiveWakeVariants() {
+  return WAKE_WORD_OPTIONS
+    .filter(w => w.active)
+    .flatMap(w => w.variants);
+}
+
 function startWakeWord() {
   if (!curUser || curUser.role !== 'admin') return;
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
@@ -8279,7 +8333,8 @@ function startWakeWord() {
   _wakeRecog.interimResults = false;
   _wakeRecog.onresult = (e) => {
     const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
-    if (t.includes('khoa ơi') || t.includes('khoa ui') || t.includes('khoa oi')) {
+    const activeVariants = _getActiveWakeVariants();
+    if (activeVariants.some(v => t.includes(v))) {
       _onWakeWord();
     }
   };
@@ -8333,17 +8388,49 @@ function _onWakeWord() {
       osc.stop(ctx.currentTime + i*0.15 + 0.3);
     });
   } catch(e) {}
-  // Mở chat BS nếu chưa mở
-  if (document.getElementById('s-chat')?.classList.contains('active')) {
-    // Đã mở → bật mic luôn
-    _chatStartMic();
-  } else {
-    openChatPanel('bs');
-    setTimeout(_chatStartMic, 800);
-  }
+
   // Hiện indicator
   const ind = document.getElementById('wake-indicator');
-  if (ind) { ind.style.display = 'block'; setTimeout(() => ind.style.display = 'none', 2000); }
+  if (ind) { ind.style.display = 'block'; setTimeout(() => ind.style.display = 'none', 2500); }
+
+  // TTS chào hỏi ngay lập tức
+  const greeting = 'Dạ, bảo bối nghe đây anh Tuấn!';
+  _wakeSpeakGreeting(greeting, () => {
+    // Sau khi đọc xong → mở chat + bật mic
+    if (document.getElementById('s-chat')?.classList.contains('active')) {
+      _chatStartMic();
+    } else {
+      openChatPanel('bs');
+      setTimeout(_chatStartMic, 500);
+    }
+  });
+}
+
+function _wakeSpeakGreeting(text, callback) {
+  if (!window.speechSynthesis) { callback?.(); return; }
+  window.speechSynthesis.cancel();
+  const speakNow = (voices) => {
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang   = 'vi-VN';
+    utt.rate   = 1.0;
+    utt.pitch  = 1.1;
+    utt.volume = 1;
+    const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
+    if (viVoice) utt.voice = viVoice;
+    utt.onend   = () => callback?.();
+    utt.onerror = () => callback?.();
+    window.speechSynthesis.speak(utt);
+  };
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    speakNow(voices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      speakNow(window.speechSynthesis.getVoices());
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+    setTimeout(() => { if (window.speechSynthesis.speaking === false) speakNow([]); }, 600);
+  }
 }
 
 // ── Smart Intent: nhận diện lệnh tạo lịch ──
