@@ -801,12 +801,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
           🤖 BaoBei Khoa
         </button>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <div style="display:flex;gap:4px;">
-            <button id="wake-toggle-btn" onclick="toggleWakeWord()" style="display:flex;align-items:center;gap:4px;padding:6px 11px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">
-              🎙️ Rảnh tay
-            </button>
-            <button onclick="admToggleWakeConfig()" style="padding:6px 8px;background:#fff;border:1px solid #F0E7D2;border-radius:20px;font-size:10px;cursor:pointer;color:#7A6F5C;" title="Cấu hình từ khóa">⚙️</button>
-          </div>
+          <!-- Rảnh tay tạm ẩn — sẽ build với Google TTS -->
           <!-- Panel cấu hình wake words -->
           <div id="wake-config-panel" style="display:none;background:#fff;border:1px solid #F0E7D2;border-radius:12px;padding:12px 14px;min-width:220px;box-shadow:0 4px 16px rgba(0,0,0,.08);z-index:99;position:relative;">
             <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:10px;">Từ khóa kích hoạt</div>
@@ -8191,9 +8186,7 @@ function _chatAppendMsg(role, text, skipHistory) {
   const now = new Date();
   const ts  = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} ${now.getHours()<12?'SA':'CH'}`;
   const msgId = 'msg-' + Date.now();
-  const ttsBtn = (!isUser)
-    ? `<button class="chat-tts-btn" id="tts-${msgId}" onclick="chatSpeak(this,'${msgId}')" title="Nghe phản hồi">🔊</button>`
-    : '';
+  const ttsBtn = ''; // TTS tạm tắt
   const html = `
   <div style="display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};" id="${msgId}">
     <div class="chat-bubble ${isUser?'chat-bubble-user':'chat-bubble-ai'}">${isUser?_chatEscape(text):_chatMarkdown(text)}</div>
@@ -8202,10 +8195,8 @@ function _chatAppendMsg(role, text, skipHistory) {
   msgs.insertAdjacentHTML('beforeend', html);
   msgs.scrollTop = msgs.scrollHeight;
   // Auto-play cho BN (không auto cho BS)
-  // Auto-play CHỈ khi BS đang ở chế độ Rảnh tay (wake word active)
-  if (!isUser && _chatType === 'bs' && _wakeActive) {
-    setTimeout(() => chatSpeak(document.getElementById('tts-' + msgId), msgId), 400);
-  }
+  // TTS tạm tắt — sẽ build với Google Cloud TTS sau
+  // if (!isUser && _chatType === 'bs' && _wakeActive) { ... }
 }
 
 function chatSpeak(btn, msgId) {
@@ -8701,7 +8692,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;padding-bottom:calc(10px + var(--sab));">
     <textarea id="chat-input" rows="1" placeholder="Nhập câu hỏi..." oninput="chatAutoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
       style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:9px 14px;font-size:13px;color:#fff;resize:none;outline:none;font-family:'IBM Plex Sans',sans-serif;max-height:100px;line-height:1.5;"></textarea>
-    <button id="chat-mic-btn" onclick="chatToggleMic()" style="display:none;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;font-size:16px;">🎤</button>
+    <!-- mic tạm ẩn -->
     <button onclick="chatSend()" id="chat-send-btn"
       style="width:38px;height:38px;border-radius:50%;border:none;background:#E8A93C;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -8709,7 +8700,7 @@ document.body.insertAdjacentHTML('beforeend', `
   </div>
 </div>
 
-  <div id="wake-indicator">🎙️ Khoa đang nghe...</div>
+  <!-- wake indicator tạm ẩn -->
   <div id="fab-sos" class="fab fab-sos hidden" onclick="openSOS()" title="SOS Cấp cứu">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
