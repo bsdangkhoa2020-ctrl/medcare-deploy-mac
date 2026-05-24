@@ -4373,7 +4373,7 @@ async function obLoadHomeData() {
   try {
     // Lịch hẹn tiếp theo
     const { data: appts } = await db.getMyAppointments(curUser.bn_code);
-    const upcoming = (appts || []).filter(a => a.status === 'scheduled' && new Date(a.datetime) >= new Date());
+    const upcoming = (appts || []).filter(a => (a.status === 'scheduled' || a.status === 'confirmed') && new Date(a.datetime) >= new Date());
     const nextAppt = upcoming[0];
     const apptCard = document.getElementById('ob-appt-card');
     if (apptCard) {
@@ -5123,7 +5123,7 @@ async function initObAppts() {
 
   const data = useMock ? MOCK_APPTS : ((await db.getMyAppointments(curUser.bn_code)).data || []);
   const now = new Date();
-  const upcoming = data.filter(a => a.status === 'scheduled' && new Date(a.datetime) >= now);
+  const upcoming = data.filter(a => (a.status === 'scheduled' || a.status === 'confirmed') && new Date(a.datetime) >= now);
   const done     = data.filter(a => a.status === 'completed' || new Date(a.datetime) < now);
 
   // Hero — dùng lịch hẹn gần nhất
@@ -6935,15 +6935,17 @@ async function initGyRecords() {
   gyRecTab('visit', document.querySelector('#s-gy-records .chip'));
 }
 
-function initGyAppts() {
-  const MOCK = [
-    { datetime:'2026-06-02T17:30:00', type:'Khám phụ khoa định kỳ', status:'scheduled', note:'Mang theo kết quả xét nghiệm lần trước.' },
-    { datetime:'2026-05-10T17:30:00', type:'Khám phụ khoa định kỳ', status:'completed', note:'' },
-    { datetime:'2026-03-15T17:30:00', type:'Khám phụ khoa', status:'completed', note:'' },
-  ];
+async function initGyAppts() {
   const now = new Date();
-  const upcoming = MOCK.filter(a => a.status === 'scheduled' && new Date(a.datetime) >= now);
-  const done     = MOCK.filter(a => a.status === 'completed' || new Date(a.datetime) < now);
+  const MOCK = [
+    { datetime:'2026-06-02T17:30:00', appt_type:'Khám phụ khoa định kỳ', status:'scheduled', note:'Mang theo kết quả xét nghiệm lần trước.' },
+    { datetime:'2026-05-10T17:30:00', appt_type:'Khám phụ khoa định kỳ', status:'completed', note:'' },
+    { datetime:'2026-03-15T17:30:00', appt_type:'Khám phụ khoa', status:'completed', note:'' },
+  ];
+  const useMock = !curUser?._supabase;
+  const raw = useMock ? MOCK : ((await db.getMyAppointments(curUser.bn_code)).data || []);
+  const upcoming = raw.filter(a => (a.status === 'scheduled' || a.status === 'confirmed') && new Date(a.datetime) >= now);
+  const done     = raw.filter(a => a.status === 'completed' || new Date(a.datetime) < now);
   const next = upcoming[0] || null;
 
   // Hero
@@ -6952,8 +6954,8 @@ function initGyAppts() {
     const d = new Date(next.datetime);
     _setEl('gy-appt-hero-date', `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`);
     _setEl('gy-appt-hero-time', `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);
-    _setEl('gy-appt-hero-meta', `${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][d.getDay()]} · ${next.type} · BV Hùng Vương`);
-    _setEl('gy-appt-hero-type', next.type);
+    _setEl('gy-appt-hero-meta', `${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][d.getDay()]} · ${next.appt_type||next.type||'Khám phụ khoa'} · BV Hùng Vương`);
+    _setEl('gy-appt-hero-type', next.appt_type||next.type||'Khám phụ khoa');
     if (next.note) {
       const w = document.getElementById('gy-appt-hero-note-wrap');
       if (w) w.style.display = 'block';
@@ -7180,7 +7182,7 @@ async function gyLoadHomeData() {
   try {
     // ── Lịch hẹn tiếp theo ──
     const { data: appts } = await db.getMyAppointments(curUser.bn_code);
-    const upcoming = (appts || []).filter(a => a.status === 'scheduled' && new Date(a.datetime) >= new Date());
+    const upcoming = (appts || []).filter(a => (a.status === 'scheduled' || a.status === 'confirmed') && new Date(a.datetime) >= new Date());
     const next = upcoming[0];
     if (next) {
       const dt = new Date(next.datetime);
