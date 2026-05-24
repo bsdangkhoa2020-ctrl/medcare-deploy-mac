@@ -708,6 +708,8 @@ input[type=date], input[type=time], input[type=datetime-local] {
 .chat-mic-active { background: #D64545 !important; animation: micPulse 1s infinite; }
 @keyframes micPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
+/* Emergency */
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
 /* TTS */
 .chat-tts-btn { background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.5; padding:2px 4px; transition:opacity .15s; }
 .chat-tts-btn:hover { opacity:1; }
@@ -2211,6 +2213,33 @@ input[type=date], input[type=time], input[type=datetime-local] {
    Sửa config: chỉ động vào đây
 ════════════════════════════════════════════════════════════ */
 const APP_VERSION     = '3.0.0';
+
+// ── Error logging → Supabase ──
+window.onerror = async function(message, source, lineno, colno) {
+  try {
+    const log = {
+      user_email: (typeof curUser !== 'undefined' ? curUser?.email : null) || 'anonymous',
+      role: (typeof curUser !== 'undefined' ? curUser?.role : null) || 'unknown',
+      error_msg: String(message).slice(0, 500),
+      location: `${String(source).split('/').pop()}:${lineno}:${colno}`,
+      device: navigator.userAgent.slice(0, 200),
+      app_version: APP_VERSION,
+      created_at: new Date().toISOString()
+    };
+    // Gửi thẳng không dùng RLS client (anonymous insert)
+    await fetch(SUPABASE_URL + '/rest/v1/error_logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(log)
+    });
+  } catch(e) { /* silent */ }
+  return false;
+};
 const SUPABASE_URL    = 'https://tnehhratorbrxjwzqnds.supabase.co';
 const SUPABASE_KEY    = 'sb_publishable_LOy3f6W1wHHYsMIlr_zvxQ_gruUztNP';
 const GEMINI_FN_URL   = SUPABASE_URL + '/functions/v1/gemini-proxy';
@@ -2950,7 +2979,24 @@ function goTo(id) {
   if (id !== 's-chat') chatStopTTS();
   // Cập nhật FAB visibility
   _updateFabs(id);
+  // History API — fix nút Back iOS/Android
+  if (!_isBackNav && !history.state?.screenId === id) {
+    history.pushState({ screenId: id }, '', '#' + id);
+  }
 }
+
+// Lắng nghe nút Back hệ điều hành (iOS swipe / Android back)
+window.addEventListener('popstate', function(e) {
+  if (e.state && e.state.screenId) {
+    // Dùng _isBackNav để goTo không pushState lại
+    _isBackNav = true;
+    goTo(e.state.screenId);
+  } else if (_history.length > 0) {
+    _isBackNav = true;
+    goTo(_history.pop());
+  }
+  // Nếu không có gì → giữ nguyên, không reload
+});
 
 function goBack() {
   if (_history.length === 0) {
@@ -7999,6 +8045,65 @@ function _getChatChips(type) {
   ];
 }
 
+// ── Emergency Modal ──
+function _showEmergencyModal(inputEl) {
+  // Rung SOS
+  if (navigator.vibrate) navigator.vibrate([200,100,200,100,500]);
+
+  // Khóa input chat
+  if (inputEl) {
+    inputEl.blur();
+    inputEl.disabled = true;
+    inputEl.placeholder = 'Hệ thống đang tạm khóa do tình trạng khẩn cấp...';
+  }
+
+  // Modal phủ toàn màn hình
+  const modal = document.getElementById('s-emergency-modal');
+  if (!modal) return;
+  modal.style.pointerEvents = 'all';
+  modal.innerHTML = `
+    <div style="position:fixed;inset:0;background:rgba(180,30,20,.97);z-index:99999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      color:#fff;padding:28px 24px;text-align:center;font-family:'IBM Plex Sans',sans-serif;">
+      <div style="font-size:56px;margin-bottom:16px;animation:pulse 1s infinite;">⚠️</div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:.04em;margin-bottom:12px;
+        text-transform:uppercase;">Cảnh báo khẩn cấp</div>
+      <p style="font-size:14px;line-height:1.7;margin-bottom:32px;opacity:.92;max-width:300px;">
+        Hệ thống phát hiện dấu hiệu nguy hiểm.<br>
+        Vui lòng <b>không tự xử lý tại nhà</b> và liên hệ bác sĩ ngay lập tức!
+      </p>
+      <a href="tel:0938559098"
+        style="display:block;width:85%;max-width:300px;background:#fff;color:#B41E14;
+        text-align:center;padding:16px;border-radius:30px;font-weight:700;font-size:17px;
+        text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.35);margin-bottom:14px;
+        letter-spacing:.03em;">
+        📞 Gọi BS. Tuấn ngay — 0938 559 098
+      </a>
+      <a href="tel:115"
+        style="display:block;width:85%;max-width:300px;background:rgba(255,255,255,.15);
+        border:1px solid rgba(255,255,255,.4);color:#fff;text-align:center;padding:12px;
+        border-radius:30px;font-weight:600;font-size:15px;text-decoration:none;margin-bottom:28px;">
+        🚑 Gọi cấp cứu 115
+      </a>
+      <button onclick="_dismissEmergencyModal()"
+        style="background:transparent;border:none;color:rgba(255,255,255,.6);
+        font-size:13px;cursor:pointer;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;">
+        Tôi đã ổn, quay lại chat
+      </button>
+    </div>`;
+}
+
+function _dismissEmergencyModal() {
+  const modal = document.getElementById('s-emergency-modal');
+  if (modal) { modal.innerHTML = ''; modal.style.pointerEvents = 'none'; }
+  // Mở lại input
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.disabled = false;
+    input.placeholder = 'Nhập câu hỏi...';
+  }
+}
+
 // ── Mở chat ──
 function openChat() {
   const type = curUser?.role === 'admin' ? 'bs' : 'bn';
@@ -8101,6 +8206,7 @@ async function chatSend(customText) {
     const t = text.toLowerCase();
     if (EMERGENCY_KWS.some(kw => t.includes(kw))) {
       document.getElementById('chat-emergency').style.display = 'block';
+      _showEmergencyModal(input);
     }
   }
 
@@ -8701,6 +8807,9 @@ document.body.insertAdjacentHTML('beforeend', `
 </div>
 
   <!-- wake indicator tạm ẩn -->
+  <!-- Emergency Modal -->
+  <div id="s-emergency-modal" style="position:fixed;inset:0;z-index:99999;pointer-events:none;"></div>
+
   <div id="fab-sos" class="fab fab-sos hidden" onclick="openSOS()" title="SOS Cấp cứu">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
