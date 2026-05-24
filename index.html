@@ -8108,40 +8108,57 @@ function _chatAppendMsg(role, text) {
   msgs.insertAdjacentHTML('beforeend', html);
   msgs.scrollTop = msgs.scrollHeight;
   // Auto-play cho BN (không auto cho BS)
-  if (!isUser && _chatType === 'bn') {
-    setTimeout(() => chatSpeak(document.getElementById('tts-' + msgId), msgId), 300);
+  // Auto-play cho cả BN lẫn BS
+  if (!isUser) {
+    setTimeout(() => chatSpeak(document.getElementById('tts-' + msgId), msgId), 400);
   }
 }
 
 function chatSpeak(btn, msgId) {
   if (!window.speechSynthesis) return;
-  // Stop nếu đang phát
+  // Stop nếu đang phát cùng bubble
   if (_ttsUtterance) {
     window.speechSynthesis.cancel();
     document.querySelectorAll('.chat-tts-btn').forEach(b => b.classList.remove('speaking'));
-    if (btn?.dataset.speaking === '1') { btn.dataset.speaking = '0'; return; }
+    if (btn?.dataset.speaking === '1') { btn.dataset.speaking = '0'; _ttsUtterance = null; return; }
+    _ttsUtterance = null;
   }
   const msgEl = document.getElementById(msgId);
   if (!msgEl) return;
-  // Lấy text thuần từ bubble (bỏ HTML tags)
   const bubble = msgEl.querySelector('.chat-bubble-ai');
   if (!bubble) return;
-  const rawText = bubble.innerText || bubble.textContent || '';
-  const cleanText = rawText.replace(/[🔊💝👶🌸🤖]/g,'').trim();
-  if (!cleanText) return;
-  _ttsUtterance = new SpeechSynthesisUtterance(cleanText);
-  _ttsUtterance.lang = 'vi-VN';
-  _ttsUtterance.rate = 0.92;
-  _ttsUtterance.pitch = _chatType === 'bn' ? 1.1 : 0.95;
-  _ttsUtterance.volume = 1;
-  // Chọn giọng vi-VN nếu có
+  const rawText = (bubble.innerText || bubble.textContent || '').replace(/[🔊💝👶🌸🤖🚨]/g,'').trim();
+  if (!rawText) return;
+
+  const speak = (voices) => {
+    const utt = new SpeechSynthesisUtterance(rawText);
+    utt.lang   = 'vi-VN';
+    utt.rate   = 0.92;
+    utt.pitch  = _chatType === 'bn' ? 1.1 : 0.95;
+    utt.volume = 1;
+    const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
+    if (viVoice) utt.voice = viVoice;
+    utt.onstart = () => { if(btn){btn.classList.add('speaking'); btn.dataset.speaking='1';} };
+    utt.onend   = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
+    utt.onerror = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
+    _ttsUtterance = utt;
+    window.speechSynthesis.speak(utt);
+  };
+
+  // Safari: getVoices() có thể rỗng lần đầu
   const voices = window.speechSynthesis.getVoices();
-  const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
-  if (viVoice) _ttsUtterance.voice = viVoice;
-  _ttsUtterance.onstart  = () => { if(btn){btn.classList.add('speaking'); btn.dataset.speaking='1';} };
-  _ttsUtterance.onend    = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
-  _ttsUtterance.onerror  = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
-  window.speechSynthesis.speak(_ttsUtterance);
+  if (voices.length > 0) {
+    speak(voices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      speak(window.speechSynthesis.getVoices());
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+    // Fallback nếu event không fire (một số Safari)
+    setTimeout(() => {
+      if (!_ttsUtterance) speak(window.speechSynthesis.getVoices());
+    }, 500);
+  }
 }
 
 function chatStopTTS() {
