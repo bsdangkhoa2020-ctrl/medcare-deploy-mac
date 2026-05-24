@@ -708,6 +708,13 @@ input[type=date], input[type=time], input[type=datetime-local] {
 .chat-mic-active { background: #D64545 !important; animation: micPulse 1s infinite; }
 @keyframes micPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
+/* TTS */
+.chat-tts-btn { background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.5; padding:2px 4px; transition:opacity .15s; }
+.chat-tts-btn:hover { opacity:1; }
+.chat-tts-btn.speaking { opacity:1; animation:ttsPulse .8s infinite; }
+@keyframes ttsPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* Wake word indicator */
+#wake-indicator { position:fixed; top: calc(var(--sat) + 8px); left:50%; transform:translateX(-50%); background:#D64545; color:#fff; font-size:11px; font-weight:700; padding:6px 16px; border-radius:20px; z-index:9999; display:none; letter-spacing:.06em; }
 /* Status dot */
 .adm-dot-ok { width:7px;height:7px;border-radius:50%;background:#3DAA72;flex-shrink:0; }
 </style>
@@ -2930,6 +2937,8 @@ function goTo(id) {
   // Hiện screen mới
   next.classList.add('active');
 
+  // Stop TTS khi rời chat
+  if (id !== 's-chat') chatStopTTS();
   // Cập nhật FAB visibility
   _updateFabs(id);
 }
@@ -3789,6 +3798,8 @@ async function initAdmin() {
     todayLabel.textContent = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
   }
   admSwitchTab('patients');
+  // Kích hoạt wake word cho Admin
+  setTimeout(startWakeWord, 1500);
 }
 
 // ────────────────────────────────────────
@@ -7846,6 +7857,37 @@ let _chatMicOn   = false;
 let _chatRecog   = null;
 
 // ── System prompts ──
+// ── RAG: Scan knowledge base ──
+function _ragSearch(query) {
+  const q = query.toLowerCase();
+  const results = [];
+  // Scan OB_TIMELINE
+  if (typeof OB_TIMELINE !== 'undefined') {
+    OB_TIMELINE.forEach(item => {
+      const score = (item.title + ' ' + (item.sub||'')).toLowerCase();
+      const words = q.split(/\s+/).filter(w => w.length > 2);
+      if (words.some(w => score.includes(w))) {
+        results.push(`[Lịch khám OB tuần ${item.wk[0]}-${item.wk[1]}] ${item.title}: ${item.sub||''}`);
+      }
+    });
+  }
+  // Scan GY_EDU_ARTICLES
+  if (typeof GY_EDU_ARTICLES !== 'undefined') {
+    Object.entries(GY_EDU_ARTICLES).forEach(([key, articles]) => {
+      if (Array.isArray(articles)) {
+        articles.forEach(a => {
+          const score = (a.title + ' ' + (a.body||'')).toLowerCase();
+          const words = q.split(/\s+/).filter(w => w.length > 2);
+          if (words.some(w => score.includes(w))) {
+            results.push(`[Kiến thức GY: ${key}] ${a.title}: ${(a.body||'').slice(0,120)}`);
+          }
+        });
+      }
+    });
+  }
+  return results.slice(0, 4); // Tối đa 4 kết quả
+}
+
 function _getChatSystemPrompt(type) {
   if (type === 'bs') {
     return `Bạn là BaoBei Khoa - trợ lý trí tuệ nhân tạo chuyên khoa nội bộ của BS. Hoàng Thanh Tuấn, CK1 Sản Phụ khoa, BV Hùng Vương & PK Phụ Sản 315.
@@ -7987,7 +8029,13 @@ async function chatSend(customText) {
   const typingId = _chatShowTyping();
 
   try {
-    const systemInstruction = _getChatSystemPrompt(_chatType);
+    // RAG: tìm kiến thức liên quan
+    const ragResults = _ragSearch(text);
+    let ragContext = '';
+    if (ragResults.length > 0) {
+      ragContext = '\n\n[TÀI LIỆU THAM KHẢO — ưu tiên dùng thông tin này khi trả lời]:\n' + ragResults.join('\n');
+    }
+    const systemInstruction = _getChatSystemPrompt(_chatType) + ragContext;
     const contents = _chatHistory.map(m => ({
       role: m.role === 'user' ? 'user' : 'model',
       parts: [{ text: m.content }]
@@ -8028,6 +8076,8 @@ async function chatSend(customText) {
     } catch(e) {}
 
     _chatHistory.push({ role: 'assistant', content: reply });
+    // Smart Intent (chỉ cho BS)
+    if (_chatType === 'bs') _parseIntent(text, reply);
     _chatAppendMsg('assistant', reply);
 
   } catch(e) {
@@ -8039,19 +8089,65 @@ async function chatSend(customText) {
 }
 
 // ── Append message ──
+let _ttsUtterance = null;
 function _chatAppendMsg(role, text) {
   const msgs = document.getElementById('chat-messages');
   if (!msgs) return;
   const isUser = role === 'user';
   const now = new Date();
   const ts  = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} ${now.getHours()<12?'SA':'CH'}`;
+  const msgId = 'msg-' + Date.now();
+  const ttsBtn = (!isUser)
+    ? `<button class="chat-tts-btn" id="tts-${msgId}" onclick="chatSpeak(this,'${msgId}')" title="Nghe phản hồi">🔊</button>`
+    : '';
   const html = `
-  <div style="display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};">
+  <div style="display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};" id="${msgId}">
     <div class="chat-bubble ${isUser?'chat-bubble-user':'chat-bubble-ai'}">${isUser?_chatEscape(text):_chatMarkdown(text)}</div>
-    <div class="chat-ts ${isUser?'chat-ts-user':''}">${ts}</div>
+    <div class="chat-ts ${isUser?'chat-ts-user':''}" style="display:flex;align-items:center;gap:4px;">${ts}${ttsBtn}</div>
   </div>`;
   msgs.insertAdjacentHTML('beforeend', html);
   msgs.scrollTop = msgs.scrollHeight;
+  // Auto-play cho BN (không auto cho BS)
+  if (!isUser && _chatType === 'bn') {
+    setTimeout(() => chatSpeak(document.getElementById('tts-' + msgId), msgId), 300);
+  }
+}
+
+function chatSpeak(btn, msgId) {
+  if (!window.speechSynthesis) return;
+  // Stop nếu đang phát
+  if (_ttsUtterance) {
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.chat-tts-btn').forEach(b => b.classList.remove('speaking'));
+    if (btn?.dataset.speaking === '1') { btn.dataset.speaking = '0'; return; }
+  }
+  const msgEl = document.getElementById(msgId);
+  if (!msgEl) return;
+  // Lấy text thuần từ bubble (bỏ HTML tags)
+  const bubble = msgEl.querySelector('.chat-bubble-ai');
+  if (!bubble) return;
+  const rawText = bubble.innerText || bubble.textContent || '';
+  const cleanText = rawText.replace(/[🔊💝👶🌸🤖]/g,'').trim();
+  if (!cleanText) return;
+  _ttsUtterance = new SpeechSynthesisUtterance(cleanText);
+  _ttsUtterance.lang = 'vi-VN';
+  _ttsUtterance.rate = 0.92;
+  _ttsUtterance.pitch = _chatType === 'bn' ? 1.1 : 0.95;
+  _ttsUtterance.volume = 1;
+  // Chọn giọng vi-VN nếu có
+  const voices = window.speechSynthesis.getVoices();
+  const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
+  if (viVoice) _ttsUtterance.voice = viVoice;
+  _ttsUtterance.onstart  = () => { if(btn){btn.classList.add('speaking'); btn.dataset.speaking='1';} };
+  _ttsUtterance.onend    = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
+  _ttsUtterance.onerror  = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
+  window.speechSynthesis.speak(_ttsUtterance);
+}
+
+function chatStopTTS() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  document.querySelectorAll('.chat-tts-btn').forEach(b => b.classList.remove('speaking'));
+  _ttsUtterance = null;
 }
 
 function _chatEscape(t) {
@@ -8091,6 +8187,100 @@ function _chatShowTyping() {
 
 function _chatRemoveTyping(id) {
   if (id) document.getElementById(id)?.remove();
+}
+
+// ── Wake Word "Khoa ơi" ──
+let _wakeRecog = null;
+let _wakeActive = false;
+
+function startWakeWord() {
+  if (!curUser || curUser.role !== 'admin') return;
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  _wakeRecog = new SR();
+  _wakeRecog.lang = 'vi-VN';
+  _wakeRecog.continuous = true;
+  _wakeRecog.interimResults = false;
+  _wakeRecog.onresult = (e) => {
+    const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+    if (t.includes('khoa ơi') || t.includes('khoa ui') || t.includes('khoa oi')) {
+      _onWakeWord();
+    }
+  };
+  _wakeRecog.onerror = () => { _wakeActive = false; };
+  _wakeRecog.onend   = () => {
+    // Restart liên tục khi admin đang ở app
+    if (curUser?.role === 'admin') setTimeout(startWakeWord, 1000);
+  };
+  _wakeRecog.start();
+  _wakeActive = true;
+}
+
+function stopWakeWord() {
+  _wakeRecog?.stop();
+  _wakeActive = false;
+}
+
+function _onWakeWord() {
+  // Bính-boong âm báo
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
+      osc.start(ctx.currentTime + i*0.15);
+      osc.stop(ctx.currentTime + i*0.15 + 0.3);
+    });
+  } catch(e) {}
+  // Mở chat BS nếu chưa mở
+  if (document.getElementById('s-chat')?.classList.contains('active')) {
+    // Đã mở → bật mic luôn
+    _chatStartMic();
+  } else {
+    openChatPanel('bs');
+    setTimeout(_chatStartMic, 800);
+  }
+  // Hiện indicator
+  const ind = document.getElementById('wake-indicator');
+  if (ind) { ind.style.display = 'block'; setTimeout(() => ind.style.display = 'none', 2000); }
+}
+
+// ── Smart Intent: nhận diện lệnh tạo lịch ──
+function _parseIntent(text, aiReply) {
+  // Tìm JSON intent trong reply AI
+  try {
+    const m = aiReply.match(/\{[\s\S]*?"action"\s*:[\s\S]*?\}/);
+    if (m) {
+      const intent = JSON.parse(m[0]);
+      if (intent.action === 'create_appt') {
+        // Điền sẵn vào modal tạo lịch hẹn
+        const nameEl  = document.getElementById('adm-appt-name');
+        const dateEl  = document.getElementById('adm-appt-date');
+        const timeEl  = document.getElementById('adm-appt-time');
+        const typeEl  = document.getElementById('adm-appt-type');
+        const noteEl  = document.getElementById('adm-appt-note');
+        if (nameEl && intent.patient_name) nameEl.value = intent.patient_name;
+        if (dateEl && intent.date)         dateEl.value = intent.date;
+        if (timeEl && intent.time)         timeEl.value = intent.time;
+        if (typeEl && intent.appt_type)    typeEl.value = intent.appt_type;
+        if (noteEl && intent.note)         noteEl.value = intent.note || '';
+        // Populate datalist
+        admPopulateApptPatientList();
+        // Mở modal sau 1 giây (để BS đọc phản hồi trước)
+        setTimeout(() => {
+          adm.apptEditId = null;
+          document.getElementById('adm-appt-modal').style.display = 'flex';
+        }, 1200);
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
 }
 
 // ── Voice Dictation (Admin only) ──
@@ -8219,6 +8409,7 @@ document.body.insertAdjacentHTML('beforeend', `
   </div>
 </div>
 
+  <div id="wake-indicator">🎙️ Khoa đang nghe...</div>
   <div id="fab-sos" class="fab fab-sos hidden" onclick="openSOS()" title="SOS Cấp cứu">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
