@@ -7858,9 +7858,18 @@ let _chatRecog   = null;
 
 // ── System prompts ──
 // ── RAG: Scan knowledge base ──
+const VI_STOP_WORDS = new Set([
+  'bị','bị','có','không','thì','mà','và','để','với','của','cho','trong',
+  'là','được','này','kia','đó','thế','vậy','sao','thôi','nhé','ạ','ơi',
+  'nha','nè','à','ừ','cũng','còn','đang','đã','sẽ','rồi','hay','hoặc',
+  'như','vì','nên','nếu','khi','lúc','tuy','dù','mình','tôi','con','chị',
+  'cô','em','anh','bạn','họ','chúng','những','các','một','hai','ba',
+  'biết','thấy','thôi','nhỏ','nhiều','ít','lắm','quá','rất','hơi',
+]);
+
 function _ragSearch(query, chatType, patientType) {
   const q = query.toLowerCase();
-  const words = q.split(/\s+/).filter(w => w.length > 2);
+  const words = q.split(/\s+/).filter(w => w.length > 3 && !VI_STOP_WORDS.has(w));
   if (!words.length) return [];
   const results = [];
   const scanOB = chatType === 'bs' || patientType === 'ob';
@@ -7898,7 +7907,10 @@ Nhiệm vụ:
 - Hỗ trợ tra cứu phác đồ ACOG, RCOG, Bộ Y Tế Việt Nam
 - Phân tích chỉ số thai kỳ, gợi ý xử trí lâm sàng
 - Nhớ lại lịch làm việc của bác sĩ khi được hỏi
-Luôn chuẩn xác về mặt y khoa, hài hước vừa phải.`;
+Luôn chuẩn xác về mặt y khoa, hài hước vừa phải.
+Khi bác sĩ yêu cầu tạo/đặt lịch hẹn, trả lời bình thường rồi thêm ĐÚNG định dạng này ở cuối (không markdown, không backtick):
+[INTENT]{"action":"create_appt","patient_name":"","date":"YYYY-MM-DD","time":"HH:MM","appt_type":"kham_thai","note":""}[/INTENT]
+Điền đầy đủ thông tin vào JSON. Chỉ thêm tag [INTENT] khi bác sĩ rõ ràng yêu cầu đặt lịch.`;
   } else {
     const isGY = curUser?.patient_type === 'gy';
     const name  = (curUser?.name||'').split(' ').pop() || 'Mẹ';
@@ -8254,6 +8266,8 @@ function toggleWakeWord() {
 // ── Wake Word "Khoa ơi" ──
 let _wakeRecog = null;
 let _wakeActive = false;
+let _wakeStartTime = null;
+const WAKE_MAX_MS = 10 * 60 * 1000; // 10 phút tự tắt
 
 function startWakeWord() {
   if (!curUser || curUser.role !== 'admin') return;
@@ -8270,15 +8284,35 @@ function startWakeWord() {
     }
   };
   _wakeRecog.onerror = () => { _wakeActive = false; };
-  _wakeRecog.onend   = () => {
-    // Restart liên tục khi admin đang ở app
-    if (curUser?.role === 'admin') setTimeout(startWakeWord, 1000);
+  _wakeRecog.onend = () => {
+    if (!_wakeActive) return; // Đã tắt chủ động
+    // Kiểm tra timeout 10 phút
+    if (_wakeStartTime && Date.now() - _wakeStartTime > WAKE_MAX_MS) {
+      console.log('[Wake] 10 phút — tự tắt');
+      stopWakeWord();
+      const btn = document.getElementById('wake-toggle-btn');
+      if (btn) {
+        btn.style.background = '#fff';
+        btn.style.color = '#7A6F5C';
+        btn.style.borderColor = '#F0E7D2';
+        btn.innerHTML = '🎙️ Rảnh tay';
+      }
+      return;
+    }
+    // Restart nếu vẫn còn active và user đang ở app
+    if (curUser?.role === 'admin' && document.visibilityState !== 'hidden') {
+      setTimeout(startWakeWord, 1000);
+    } else {
+      _wakeActive = false; // App ẩn → không restart
+    }
   };
   _wakeRecog.start();
   _wakeActive = true;
+  if (!_wakeStartTime) _wakeStartTime = Date.now(); // chỉ set lần đầu
 }
 
 function stopWakeWord() {
+  _wakeStartTime = null;
   _wakeRecog?.stop();
   _wakeActive = false;
 }
@@ -8315,9 +8349,10 @@ function _onWakeWord() {
 // ── Smart Intent: nhận diện lệnh tạo lịch ──
 function _parseIntent(text, aiReply) {
   try {
-    const m = aiReply.match(/\{[\s\S]*?"action"\s*:[\s\S]*?\}/);
-    if (!m) return false;
-    const intent = JSON.parse(m[0]);
+    // Dùng tag [INTENT]...[/INTENT] — tránh nhầm dấu {} trong text thường
+    const tagMatch = aiReply.match(/\[INTENT\]([\s\S]*?)\[\/INTENT\]/);
+    if (!tagMatch) return false;
+    const intent = JSON.parse(tagMatch[1].trim());
     if (intent.action !== 'create_appt') return false;
 
     // Hiện bubble xác nhận thay vì auto-open modal
