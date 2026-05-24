@@ -2987,11 +2987,18 @@ async function _routeAfterLogin(user) {
     // Check consent
     const { data: consent } = await db.getConsent(user.id);
     if (!consent) { goTo('s-consent'); return; }
-    // Cập nhật LMP nếu chưa có
-    if (!user.lmp && user.bn_code) {
+    // Luôn load đủ data từ patients (nguồn sự thật chính)
+    if (user.bn_code) {
       try {
         const { data: pt } = await db.getMyPatient(user.bn_code);
-        if (pt?.lmp) curUser.lmp = pt.lmp;
+        if (pt) {
+          if (pt.lmp)       curUser.lmp    = pt.lmp;
+          if (pt.phone)     curUser.phone  = pt.phone;
+          if (pt.dob)       curUser.dob    = pt.dob;
+          if (pt.name)      curUser.name   = pt.name;
+          if (pt.height_cm) curUser.height_cm = pt.height_cm;
+          if (pt.weight_kg) curUser.weight_kg = pt.weight_kg;
+        }
       } catch(e) {}
     }
     // Vào app
@@ -3287,26 +3294,32 @@ async function regSubmit() {
 
     const uid = authData.user.id;
 
-    // 2. Tạo profiles
+    // 2. Tạo profiles — lưu đủ lmp, phone, dob
     await sb.from('profiles').insert({
-      id:         uid,
-      role:       _regData.specialty === 'gy' ? 'gy_patient' : 'ob_patient',
-      specialty:  _regData.specialty,
+      id:           uid,
+      role:         _regData.specialty === 'gy' ? 'gy_patient' : 'ob_patient',
+      specialty:    _regData.specialty,
       patient_type: _regData.specialty,
-      full_name:  _regData.name,
-      phone:      null,
-      lmp:        null
+      full_name:    _regData.name,
+      phone:        _regData.phone || null,
+      lmp:          _regData.lmp   || null,
+      dob:          _regData.dob   || null,
     });
 
-    // 3. Tạo patients — profile_id = uid NGAY (invariant)
+    // 3. Tạo patients — lưu đầy đủ toàn bộ thông tin từ form
     const { data: allPt } = await db.getAllPatients();
     const bnCode = genBnCode(allPt?.map(p => p.bn_code) || []);
     await sb.from('patients').insert({
-      bn_code:    bnCode,
-      profile_id: uid,
-      name:       _regData.name,
-      specialty:  _regData.specialty,
-      spec:       _regData.specialty,
+      bn_code:      bnCode,
+      profile_id:   uid,
+      name:         _regData.name,
+      specialty:    _regData.specialty,
+      spec:         _regData.specialty,
+      phone:        _regData.phone   || null,
+      dob:          _regData.dob     || null,
+      lmp:          _regData.lmp     || null,
+      height_cm:    _regData.height  || null,
+      weight_kg:    _regData.weight  || null,
     });
 
     // 4. Update profiles bn_code
@@ -3519,13 +3532,28 @@ async function pdSaveEdit() {
   });
   if (updates.height_cm) updates.height_cm = parseFloat(updates.height_cm);
   if (updates.weight_kg) updates.weight_kg = parseFloat(updates.weight_kg);
+
+  // Lưu vào patients (nguồn sự thật chính)
   const { error } = await db.updatePatient(_pdBnCode, updates);
-  if (error) { alert('Lỗi lưu: '+error.message); return; }
-  // Refresh
-  const { data: pt } = await db.getMyPatient(_pdBnCode);
-  _pdPatient = pt;
-  pdRenderInfo(pt);
+  if (error) { alert('Lỗi lưu hồ sơ: '+error.message); return; }
+
+  // Đồng bộ sang profiles — các trường profiles cần: full_name, lmp, phone, dob
+  const pt = _pdPatient;
+  if (pt?.profile_id) {
+    await db.updateProfile(pt.profile_id, {
+      full_name: updates.name   || pt.name,
+      lmp:       updates.lmp    || null,
+      phone:     updates.phone  || null,
+      dob:       updates.dob    || null,
+    });
+  }
+
+  // Refresh local state
+  const { data: fresh } = await db.getMyPatient(_pdBnCode);
+  _pdPatient = fresh;
+  pdRenderInfo(fresh);
   pdCancelEdit();
+
   // Refresh danh sách BN admin
   adm.patients = [];
   admLoadPatients();
