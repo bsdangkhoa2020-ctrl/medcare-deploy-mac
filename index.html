@@ -674,6 +674,74 @@ input[type=date], input[type=time], input[type=datetime-local] {
 .adm-dot-ok { width:7px;height:7px;border-radius:50%;background:#3DAA72;flex-shrink:0; }
 </style>
 
+<!-- ══ PATIENT DETAIL (Admin) ══ -->
+<div class="screen" id="s-patient-detail">
+  <div class="bbar" style="background:#fff;border-bottom:1px solid #F0E7D2;">
+    <div onclick="goBack()" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1A0F" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      <span style="font-size:13px;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Quay lại</span>
+    </div>
+    <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Hồ sơ bệnh nhân</div>
+    <button id="pd-edit-btn" onclick="pdToggleEdit()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #1F1A0F;background:transparent;color:#1F1A0F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa</button>
+  </div>
+  <div class="scroll" style="padding:16px;">
+    <!-- Hero BN -->
+    <div style="background:#FFF8E7;border:1px solid #F0E7D2;border-radius:16px;padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;">
+      <div id="pd-avatar" style="width:52px;height:52px;border-radius:12px;background:#F5F0E8;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:16px;color:#7A6F5C;flex-shrink:0;font-style:italic;font-weight:500;"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="adm-lora" id="pd-name" style="font-size:20px;font-weight:400;color:#1F1A0F;"></div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:3px;" id="pd-meta"></div>
+        <div id="pd-badge" style="display:inline-block;margin-top:6px;font-size:9px;font-weight:700;letter-spacing:.1em;padding:3px 10px;border-radius:4px;"></div>
+      </div>
+    </div>
+
+    <!-- Tabs hồ sơ -->
+    <div style="display:flex;gap:0;border-bottom:1px solid #F0E7D2;margin-bottom:14px;">
+      <div class="pd-tab" data-t="info" onclick="pdSwitchTab('info')" style="flex:1;text-align:center;padding:10px 4px;font-size:10px;font-weight:500;color:#1F1A0F;border-bottom:2px solid #E8A93C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Thông tin</div>
+      <div class="pd-tab" data-t="appts" onclick="pdSwitchTab('appts')" style="flex:1;text-align:center;padding:10px 4px;font-size:10px;font-weight:400;color:#B0A490;border-bottom:2px solid transparent;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lịch hẹn</div>
+      <div class="pd-tab" data-t="visits" onclick="pdSwitchTab('visits')" style="flex:1;text-align:center;padding:10px 4px;font-size:10px;font-weight:400;color:#B0A490;border-bottom:2px solid transparent;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lần khám</div>
+      <div class="pd-tab" data-t="rx" onclick="pdSwitchTab('rx')" style="flex:1;text-align:center;padding:10px 4px;font-size:10px;font-weight:400;color:#B0A490;border-bottom:2px solid transparent;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Đơn thuốc</div>
+    </div>
+
+    <!-- Tab: Thông tin -->
+    <div id="pd-pane-info">
+      <!-- View mode -->
+      <div id="pd-view-mode">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="pd-info-grid"></div>
+      </div>
+      <!-- Edit mode -->
+      <div id="pd-edit-mode" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:10px;" id="pd-edit-fields"></div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button onclick="pdCancelEdit()" style="flex:1;padding:11px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:13px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          <button onclick="pdSaveEdit()" style="flex:1;padding:11px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Lịch hẹn -->
+    <div id="pd-pane-appts" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;">Lịch hẹn</div>
+        <button onclick="pdCreateAppt()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600;">+ Tạo hẹn</button>
+      </div>
+      <div id="pd-appt-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- Tab: Lần khám -->
+    <div id="pd-pane-visits" style="display:none;">
+      <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;margin-bottom:10px;">Lịch sử khám</div>
+      <div id="pd-visit-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- Tab: Đơn thuốc -->
+    <div id="pd-pane-rx" style="display:none;">
+      <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;margin-bottom:10px;">Đơn thuốc</div>
+      <div id="pd-rx-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="s-admin">
   <!-- ── HEADER ── -->
   <div class="adm-ibm" style="background:#fff;padding:20px 20px 0;border-bottom:1px solid #F0E7D2;flex-shrink:0;">
@@ -717,6 +785,53 @@ input[type=date], input[type=time], input[type=datetime-local] {
     </div>
     <!-- Lịch hẹn hôm nay -->
     <div id="adm-today-appts" style="margin-top:16px;"></div>
+
+    <!-- ── MÃ MỜI ── -->
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F0E7D2;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1F1A0F;">Mã mời bệnh nhân</div>
+          <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;">Tạo mã để BN đăng ký tài khoản</div>
+        </div>
+        <button onclick="admCreateInvite()" style="padding:7px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Tạo mã</button>
+      </div>
+      <div id="adm-invite-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-weight:300;font-style:italic;">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Modal tạo mã mời -->
+    <div id="adm-invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:flex-end;">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;">
+        <div class="adm-lora" style="font-size:17px;font-weight:400;margin-bottom:14px;color:#1F1A0F;">Tạo mã mời mới</div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tên bệnh nhân (không bắt buộc)</div>
+          <input id="adm-invite-name" type="text" placeholder="Ví dụ: Nguyễn Thị Lan..."
+            style="width:100%;padding:10px 14px;border:1px solid #F0E7D2;border-radius:12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;outline:none;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Loại bệnh nhân</div>
+          <div style="display:flex;gap:8px;">
+            <button id="adm-inv-ob" onclick="admInvSelectType('ob')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #1F1A0F;background:#FFF8E7;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-weight:600;color:#1F1A0F;">🤰 Sản khoa</button>
+            <button id="adm-inv-gy" onclick="admInvSelectType('gy')" style="flex:1;padding:10px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">🌸 Phụ khoa</button>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Hiệu lực</div>
+          <select id="adm-invite-exp" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;background:#fff;font-family:'IBM Plex Sans',sans-serif;">
+            <option value="7">7 ngày</option>
+            <option value="14">14 ngày</option>
+            <option value="30">30 ngày</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="document.getElementById('adm-invite-modal').style.display='none'"
+            style="flex:1;padding:12px;border-radius:12px;border:1px solid #1F1A0F;background:transparent;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:#1F1A0F;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          <button onclick="admSaveInvite()"
+            style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Tạo mã</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ TAB: LỊCH BS ═══ -->
@@ -2234,6 +2349,9 @@ const db = {
   async insertInviteCode(data) {
     return sb.from('invite_codes').insert(data).select().single();
   },
+  async deleteInviteCode(id) {
+    return sb.from('invite_codes').delete().eq('id', id);
+  },
   async markInviteUsed(code, userId) {
     return sb.from('invite_codes')
       .update({ used_at: new Date().toISOString(), used_by: userId })
@@ -3252,6 +3370,337 @@ function confirmLogout() {
 ════════════════════════════════════════════════════════════ */
 // placeholder — P7
 
+/* ════════════════════════════════════════════════════════════
+   PATIENT DETAIL — Admin xem/sửa hồ sơ BN
+════════════════════════════════════════════════════════════ */
+let _pdBnCode = null;
+let _pdPatient = null;
+let _pdTab = 'info';
+let _pdEditing = false;
+let _pdInvType = 'ob';
+
+async function loadPatientDetail(bnCode) {
+  _pdBnCode = bnCode;
+  _pdEditing = false;
+  _pdTab = 'info';
+  document.getElementById('pd-view-mode').style.display = 'block';
+  document.getElementById('pd-edit-mode').style.display = 'none';
+  document.getElementById('pd-edit-btn').textContent = '✏️ Sửa';
+
+  const { data: pt, error } = await db.getMyPatient(bnCode);
+  if (error || !pt) { alert('Không tìm thấy hồ sơ'); goBack(); return; }
+  _pdPatient = pt;
+  const isOB = pt.specialty === 'ob';
+
+  // Hero
+  const shortName = (pt.name||'BN').split(' ').pop();
+  const avatarEl = document.getElementById('pd-avatar');
+  if (avatarEl) { avatarEl.textContent = shortName; avatarEl.style.background = isOB?'#FEF9EE':'#FEF5F7'; }
+  document.getElementById('pd-name').textContent = pt.name || '—';
+  document.getElementById('pd-meta').textContent = `${pt.bn_code} · ${pt.phone||'Chưa có SĐT'}`;
+  const badge = document.getElementById('pd-badge');
+  if (badge) {
+    badge.textContent = isOB ? 'OB · Sản khoa' : 'GY · Phụ khoa';
+    badge.style.background = isOB ? '#1F1A0F' : '#FFF0F4';
+    badge.style.color = isOB ? '#E8A93C' : '#C96080';
+    if (!isOB) badge.style.border = '1px solid #F5D0DC';
+  }
+
+  // Render info tab
+  pdRenderInfo(pt);
+  pdSwitchTab('info');
+}
+
+function pdSwitchTab(tab) {
+  _pdTab = tab;
+  document.querySelectorAll('.pd-tab').forEach(el => {
+    const active = el.dataset.t === tab;
+    el.style.color = active ? '#1F1A0F' : '#B0A490';
+    el.style.fontWeight = active ? '500' : '400';
+    el.style.borderBottomColor = active ? '#E8A93C' : 'transparent';
+  });
+  ['info','appts','visits','rx'].forEach(t => {
+    const pane = document.getElementById('pd-pane-'+t);
+    if (pane) pane.style.display = t===tab?'block':'none';
+  });
+  if (tab === 'appts')  pdLoadAppts();
+  if (tab === 'visits') pdLoadVisits();
+  if (tab === 'rx')     pdLoadRx();
+}
+
+function pdRenderInfo(pt) {
+  const grid = document.getElementById('pd-info-grid');
+  if (!grid) return;
+  const isOB = pt.specialty === 'ob';
+  const fields = [
+    { label:'Họ tên', value: pt.name },
+    { label:'Mã BN', value: pt.bn_code },
+    { label:'Ngày sinh', value: pt.dob ? new Date(pt.dob).toLocaleDateString('vi-VN') : '—' },
+    { label:'Điện thoại', value: pt.phone || '—' },
+    { label:'Nhóm máu', value: pt.blood_type || '—' },
+    { label:'Dị ứng', value: pt.allergy || 'Chưa ghi nhận' },
+    { label:'Chiều cao', value: pt.height_cm ? pt.height_cm + ' cm' : '—' },
+    { label:'Cân nặng', value: pt.weight_kg ? pt.weight_kg + ' kg' : '—' },
+    ...(isOB ? [
+      { label:'Ngày KCC (LMP)', value: pt.lmp || '—' },
+      { label:'Dự sinh (EDD)', value: pt.edd || '—' },
+    ] : [
+      { label:'Chu kỳ gần nhất', value: pt.lmp || '—' },
+    ]),
+    { label:'Địa chỉ', value: pt.address || '—', full: true },
+    { label:'Tiền sử', value: pt.medical_history || '—', full: true },
+  ];
+  grid.innerHTML = fields.map(f => `
+    <div style="${f.full?'grid-column:span 2;':''}background:#FAFAF8;border:1px solid #F0E7D2;border-radius:10px;padding:10px 12px;">
+      <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#B0A490;font-weight:400;margin-bottom:4px;">${f.label}</div>
+      <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${f.value||'—'}</div>
+    </div>`).join('');
+}
+
+function pdToggleEdit() {
+  _pdEditing = !_pdEditing;
+  document.getElementById('pd-view-mode').style.display = _pdEditing?'none':'block';
+  document.getElementById('pd-edit-mode').style.display = _pdEditing?'block':'none';
+  document.getElementById('pd-edit-btn').textContent = _pdEditing?'Huỷ':'✏️ Sửa';
+  if (_pdEditing) pdRenderEditFields();
+}
+
+function pdCancelEdit() {
+  _pdEditing = false;
+  document.getElementById('pd-view-mode').style.display = 'block';
+  document.getElementById('pd-edit-mode').style.display = 'none';
+  document.getElementById('pd-edit-btn').textContent = '✏️ Sửa';
+}
+
+function pdRenderEditFields() {
+  const pt = _pdPatient;
+  const isOB = pt?.specialty === 'ob';
+  const fields = [
+    { key:'name', label:'Họ tên', type:'text', val: pt?.name||'' },
+    { key:'phone', label:'Điện thoại', type:'tel', val: pt?.phone||'' },
+    { key:'dob', label:'Ngày sinh', type:'date', val: pt?.dob||'' },
+    { key:'blood_type', label:'Nhóm máu', type:'text', val: pt?.blood_type||'' },
+    { key:'allergy', label:'Dị ứng', type:'text', val: pt?.allergy||'' },
+    { key:'height_cm', label:'Chiều cao (cm)', type:'number', val: pt?.height_cm||'' },
+    { key:'weight_kg', label:'Cân nặng (kg)', type:'number', val: pt?.weight_kg||'' },
+    ...(isOB?[{ key:'lmp', label:'Ngày KCC (LMP)', type:'date', val: pt?.lmp||'' }]
+           :[{ key:'lmp', label:'Chu kỳ gần nhất', type:'date', val: pt?.lmp||'' }]),
+    { key:'address', label:'Địa chỉ', type:'text', val: pt?.address||'' },
+    { key:'medical_history', label:'Tiền sử bệnh', type:'textarea', val: pt?.medical_history||'' },
+  ];
+  const el = document.getElementById('pd-edit-fields');
+  if (!el) return;
+  el.innerHTML = fields.map(f => `
+    <div>
+      <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:5px;">${f.label}</div>
+      ${f.type==='textarea'
+        ? `<textarea id="pd-f-${f.key}" rows="2" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:none;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">${f.val}</textarea>`
+        : `<input id="pd-f-${f.key}" type="${f.type}" value="${f.val}" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">`
+      }
+    </div>`).join('');
+}
+
+async function pdSaveEdit() {
+  const keys = ['name','phone','dob','blood_type','allergy','height_cm','weight_kg','lmp','address','medical_history'];
+  const updates = {};
+  keys.forEach(k => {
+    const el = document.getElementById('pd-f-'+k);
+    if (el) updates[k] = el.value.trim() || null;
+  });
+  if (updates.height_cm) updates.height_cm = parseFloat(updates.height_cm);
+  if (updates.weight_kg) updates.weight_kg = parseFloat(updates.weight_kg);
+  const { error } = await db.updatePatient(_pdBnCode, updates);
+  if (error) { alert('Lỗi lưu: '+error.message); return; }
+  // Refresh
+  const { data: pt } = await db.getMyPatient(_pdBnCode);
+  _pdPatient = pt;
+  pdRenderInfo(pt);
+  pdCancelEdit();
+  // Refresh danh sách BN admin
+  adm.patients = [];
+  admLoadPatients();
+}
+
+async function pdLoadAppts() {
+  const list = document.getElementById('pd-appt-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-style:italic;">Đang tải...</div>';
+  const { data } = await db.getMyAppointments(_pdBnCode);
+  const appts = (data||[]).sort((a,b)=>(b.datetime||'').localeCompare(a.datetime||''));
+  if (!appts.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:#B0A490;font-size:12px;font-style:italic;">Chưa có lịch hẹn nào</div>'; return; }
+  const typeLabel = {kham_thai:'Khám thai',sieu_am:'Siêu âm',xet_nghiem:'Xét nghiệm',phu_khoa:'Phụ khoa',tu_van:'Tư vấn',khac:'Khác'};
+  const statusColor = {scheduled:'#F59E0B',confirmed:'#10B981',completed:'#6B7280',cancelled:'#EF4444'};
+  const statusLabel = {scheduled:'Chờ',confirmed:'Xác nhận',completed:'Xong',cancelled:'Huỷ'};
+  list.innerHTML = appts.map(a => {
+    const dt = new Date(a.datetime);
+    const sc = statusColor[a.status]||'#888';
+    return `<div style="background:#fff;border:1px solid #F0E7D2;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+      <div style="text-align:center;min-width:40px;">
+        <div style="font-family:'Lora',serif;font-size:18px;color:#B57A1F;">${dt.getDate()}</div>
+        <div style="font-size:9px;color:#B0A490;">${dt.getMonth()+1}/${dt.getFullYear()}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${typeLabel[a.appt_type]||a.appt_type||'Khám'}</div>
+        <div style="font-size:11px;color:#B0A490;margin-top:2px;">${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}${a.notes?' · '+a.notes:''}</div>
+      </div>
+      <span style="background:${sc}22;color:${sc};font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;">${statusLabel[a.status]||a.status}</span>
+    </div>`;
+  }).join('');
+}
+
+function pdCreateAppt() {
+  // Mở modal tạo hẹn với BN này
+  adm.apptEditId = null;
+  document.getElementById('adm-appt-modal-title').textContent = 'Tạo lịch hẹn';
+  document.getElementById('adm-appt-name').value = _pdPatient?.name||'';
+  document.getElementById('adm-appt-phone').value = _pdPatient?.phone||'';
+  document.getElementById('adm-appt-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('adm-appt-time').value = '08:00';
+  document.getElementById('adm-appt-type').value = _pdPatient?.specialty==='gy'?'phu_khoa':'kham_thai';
+  document.getElementById('adm-appt-note').value = '';
+  document.getElementById('adm-appt-modal').style.display = 'flex';
+}
+
+async function pdLoadVisits() {
+  const list = document.getElementById('pd-visit-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-style:italic;">Đang tải...</div>';
+  const { data } = await db.getVisits(_pdBnCode);
+  if (!data?.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:#B0A490;font-size:12px;font-style:italic;">Chưa có lần khám nào</div>'; return; }
+  list.innerHTML = data.map(v => `
+    <div style="background:#fff;border:1px solid #F0E7D2;border-radius:12px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:600;color:#1F1A0F;">${v.visit_type||'Lần khám'}</div>
+        <div style="font-size:10px;color:#B0A490;">${v.visit_date?new Date(v.visit_date).toLocaleDateString('vi-VN'):''}</div>
+      </div>
+      ${v.diagnosis?`<div style="font-size:12px;color:#1F1A0F;margin-bottom:4px;">${v.diagnosis}</div>`:''}
+      ${v.notes?`<div style="font-size:11px;color:#B0A490;font-style:italic;">${v.notes}</div>`:''}
+      <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:#B0A490;">
+        ${v.weight?`<span>⚖️ ${v.weight} kg</span>`:''}
+        ${v.bp_systolic?`<span>💓 ${v.bp_systolic}/${v.bp_diastolic} mmHg</span>`:''}
+        ${v.pulse?`<span>❤️ ${v.pulse} lần/ph</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function pdLoadRx() {
+  const list = document.getElementById('pd-rx-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-style:italic;">Đang tải...</div>';
+  const { data } = await db.getPrescriptions(_pdBnCode);
+  if (!data?.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:#B0A490;font-size:12px;font-style:italic;">Chưa có đơn thuốc nào</div>'; return; }
+  list.innerHTML = data.map(r => {
+    const meds = Array.isArray(r.medications)?r.medications:[];
+    return `<div style="background:#fff;border:1px solid #F0E7D2;border-radius:12px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:#1F1A0F;">${r.diagnosis||'Đơn thuốc'}</div>
+        <div style="font-size:10px;color:#B0A490;">${r.rx_date?new Date(r.rx_date).toLocaleDateString('vi-VN'):''}</div>
+      </div>
+      ${meds.map(m=>`<div style="font-size:12px;color:#1F1A0F;padding:4px 0;border-bottom:1px solid #F5F0E8;">
+        <span style="font-weight:500;">${m.name||m}</span>
+        ${m.dose?`<span style="color:#B0A490;"> · ${m.dose}</span>`:''}
+      </div>`).join('')}
+      ${r.instructions?`<div style="font-size:11px;color:#B57A1F;margin-top:8px;font-style:italic;">${r.instructions}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   INVITE CODES — Admin tạo mã mời
+════════════════════════════════════════════════════════════ */
+async function admLoadInvites() {
+  const list = document.getElementById('adm-invite-list');
+  if (!list) return;
+  const { data } = await db.getInviteCodes();
+  const codes = (data||[]).slice(0, 20);
+  if (!codes.length) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-style:italic;">Chưa có mã mời nào</div>';
+    return;
+  }
+  const now = new Date();
+  list.innerHTML = codes.map(c => {
+    const isUsed = !!c.used_at;
+    const exp = new Date(c.expires_at);
+    const isExp = exp < now && !isUsed;
+    const status = isUsed?'Đã dùng':isExp?'Hết hạn':'Còn hiệu lực';
+    const statusColor = isUsed?'#10B981':isExp?'#EF4444':'#E8A93C';
+    return `<div style="background:#fff;border:1px solid ${isUsed||isExp?'#F0E7D2':'#E8C96A'};border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;opacity:${isUsed||isExp?.6:1};">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <div style="font-family:monospace;font-size:15px;font-weight:700;color:#1F1A0F;letter-spacing:.1em;">${c.code}</div>
+          <span style="font-size:9px;background:${statusColor}22;color:${statusColor};padding:2px 7px;border-radius:10px;font-weight:700;">${status}</span>
+        </div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;">
+          ${c.assigned_name?c.assigned_name+' · ':''}Hết hạn ${exp.toLocaleDateString('vi-VN')}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${!isUsed?`<button onclick="admCopyInvite('${c.code}')" style="font-size:10px;padding:5px 10px;border:1px solid #F0E7D2;background:#fff;border-radius:8px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Copy</button>`:''}
+        ${!isUsed?`<button onclick="admDeleteInvite('${c.id}')" style="font-size:10px;padding:5px 10px;border:1px solid #FFD0D0;background:#FFF5F5;border-radius:8px;cursor:pointer;color:#D64545;font-family:'IBM Plex Sans',sans-serif;">Xoá</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function admCreateInvite() {
+  _pdInvType = 'ob';
+  document.getElementById('adm-invite-name').value = '';
+  admInvSelectType('ob');
+  document.getElementById('adm-invite-modal').style.display = 'flex';
+}
+
+function admInvSelectType(type) {
+  _pdInvType = type;
+  const obBtn = document.getElementById('adm-inv-ob');
+  const gyBtn = document.getElementById('adm-inv-gy');
+  obBtn.style.borderColor = type==='ob'?'#1F1A0F':'#F0E7D2';
+  obBtn.style.borderWidth  = type==='ob'?'2px':'1px';
+  obBtn.style.background   = type==='ob'?'#FFF8E7':'#fff';
+  obBtn.style.color        = type==='ob'?'#1F1A0F':'#7A6F5C';
+  obBtn.style.fontWeight   = type==='ob'?'600':'400';
+  gyBtn.style.borderColor  = type==='gy'?'#C96080':'#F0E7D2';
+  gyBtn.style.borderWidth  = type==='gy'?'2px':'1px';
+  gyBtn.style.background   = type==='gy'?'#FFF0F4':'#fff';
+  gyBtn.style.color        = type==='gy'?'#C96080':'#7A6F5C';
+  gyBtn.style.fontWeight   = type==='gy'?'600':'400';
+}
+
+function _genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+async function admSaveInvite() {
+  const name = document.getElementById('adm-invite-name').value.trim();
+  const days = parseInt(document.getElementById('adm-invite-exp').value) || 7;
+  const exp  = new Date(Date.now() + days*86400000).toISOString();
+  const code = _genCode();
+  const { error } = await db.insertInviteCode({
+    code, expires_at: exp,
+    assigned_name: name || null,
+    patient_type: _pdInvType,
+    created_by: curUser?.id || null
+  });
+  if (error) { alert('Lỗi tạo mã: '+error.message); return; }
+  document.getElementById('adm-invite-modal').style.display = 'none';
+  admLoadInvites();
+}
+
+function admCopyInvite(code) {
+  navigator.clipboard?.writeText(code).then(() => {
+    alert(`Đã copy mã: ${code}`);
+  }).catch(() => {
+    prompt('Copy mã mời:', code);
+  });
+}
+
+async function admDeleteInvite(id) {
+  if (!confirm('Xoá mã mời này?')) return;
+  await db.deleteInviteCode(id);
+  admLoadInvites();
+}
+
+
 /* ── ADMIN STATE ── */
 const adm = {
   tab: 'patients',
@@ -3309,6 +3758,7 @@ async function admLoadPatients() {
   if (error) { console.error(error); return; }
   adm.patients = data || [];
   admRenderPatients();
+  admLoadInvites();
 }
 
 function admSetPtFilter(f) {
