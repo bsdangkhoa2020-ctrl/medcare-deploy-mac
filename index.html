@@ -7878,6 +7878,49 @@ const VI_STOP_WORDS = new Set([
   'biết','thấy','thôi','nhỏ','nhiều','ít','lắm','quá','rất','hơi',
 ]);
 
+// ── Inject lịch BS vào system prompt ──
+function _getBsScheduleContext() {
+  try {
+    const today = new Date();
+    const dow = today.getDay() || 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dow + 1);
+    monday.setHours(0,0,0,0);
+    const DOW_VN = ['CN','T2','T3','T4','T5','T6','T7'];
+    const lines = [];
+
+    // HV shifts
+    if (typeof _hvShifts !== 'undefined' && Object.keys(_hvShifts).length > 0) {
+      const hvLines = [];
+      for (let i=0; i<7; i++) {
+        const d = new Date(monday); d.setDate(monday.getDate()+i);
+        const ds = d.toISOString().slice(0,10);
+        const shift = _hvShifts[ds];
+        if (shift && shift !== 'OFF') {
+          hvLines.push(`${DOW_VN[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}: ${shift}`);
+        }
+      }
+      if (hvLines.length) lines.push('BV Hùng Vương tuần này: ' + hvLines.join(', '));
+    }
+    // PK shifts
+    if (typeof _pkShifts !== 'undefined' && Object.keys(_pkShifts).length > 0) {
+      const pkLines = [];
+      for (let i=0; i<7; i++) {
+        const d = new Date(monday); d.setDate(monday.getDate()+i);
+        const ds = d.toISOString().slice(0,10);
+        const shift = _pkShifts[ds];
+        if (shift && shift !== 'Nghỉ') {
+          pkLines.push(`${DOW_VN[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}: ${shift}`);
+        }
+      }
+      if (pkLines.length) lines.push('PK 315 tuần này: ' + pkLines.join(', '));
+    }
+
+    if (!lines.length) return '';
+    return '\n\n[LỊCH LÀM VIỆC TUẦN NÀY]:\n' + lines.join('\n');
+  } catch(e) { return ''; }
+}
+
 function _ragSearch(query, chatType, patientType) {
   const q = query.toLowerCase();
   const words = q.split(/\s+/).filter(w => w.length > 3 && !VI_STOP_WORDS.has(w));
@@ -8043,10 +8086,15 @@ function chatAutoResize(el) {
 
 // ── Gửi tin nhắn ──
 async function chatSend(customText) {
-  if (_chatLoading) return;
   const input = document.getElementById('chat-input');
   const text  = (customText || input?.value || '').trim();
   if (!text) return;
+  if (_chatLoading) {
+    // Không bỏ text — giữ trong input để BS biết
+    const sendBtn = document.getElementById('chat-send-btn');
+    if (sendBtn) { sendBtn.style.background = '#888'; setTimeout(() => sendBtn.style.background = '#E8A93C', 600); }
+    return;
+  }
   if (input && !customText) { input.value = ''; input.style.height = 'auto'; }
 
   // Ẩn chips sau lần gửi đầu
@@ -8119,10 +8167,7 @@ async function chatSend(customText) {
     // Smart Intent (chỉ cho BS)
     if (_chatType === 'bs') _parseIntent(text, reply);
     _chatAppendMsg('assistant', reply);
-    // Rảnh tay: restart mic sau khi AI trả lời xong
-    if (_wakeActive && _chatType === 'bs') {
-      setTimeout(() => { if (!_chatMicOn) _chatStartMic(); }, 800);
-    }
+    // Mic restart được handle trong TTS onend (Fix 3 — tránh xung đột iOS)
 
   } catch(e) {
     _chatRemoveTyping(typingId);
@@ -8188,8 +8233,16 @@ function chatSpeak(btn, msgId) {
     const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
     if (viVoice) utt.voice = viVoice;
     utt.onstart = () => { if(btn){btn.classList.add('speaking'); btn.dataset.speaking='1';} };
-    utt.onend   = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
-    utt.onerror = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null; };
+    utt.onend   = () => {
+      if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null;
+      // Sau TTS xong: bật mic nếu đang rảnh tay (Fix 3)
+      if (_wakeActive && _chatType === 'bs' && !_chatMicOn && !_chatLoading) {
+        setTimeout(_chatStartMic, 300);
+      }
+    };
+    utt.onerror = () => { if(btn){btn.classList.remove('speaking'); btn.dataset.speaking='0';} _ttsUtterance=null;
+      if (_wakeActive && _chatType === 'bs' && !_chatMicOn) setTimeout(_chatStartMic, 300);
+    };
     _ttsUtterance = utt;
     window.speechSynthesis.speak(utt);
   };
@@ -8305,7 +8358,9 @@ function toggleWakeWord() {
 let _wakeRecog = null;
 let _wakeActive = false;
 let _wakeStartTime = null;
+let _wakeLastTrigger = 0; // cooldown chống double trigger
 const WAKE_MAX_MS = 10 * 60 * 1000; // 10 phút tự tắt
+const WAKE_COOLDOWN_MS = 3000; // 3 giây cooldown sau mỗi trigger
 
 // Bộ từ khóa wake word — BS có thể bật/tắt từng cái
 const WAKE_WORD_OPTIONS = [
@@ -8334,7 +8389,10 @@ function startWakeWord() {
   _wakeRecog.onresult = (e) => {
     const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
     const activeVariants = _getActiveWakeVariants();
-    if (activeVariants.some(v => t.includes(v))) {
+    const now = Date.now();
+    // Cooldown: bỏ qua nếu vừa trigger trong 3 giây
+    if (activeVariants.some(v => t.includes(v)) && now - _wakeLastTrigger > WAKE_COOLDOWN_MS) {
+      _wakeLastTrigger = now;
       _onWakeWord();
     }
   };
@@ -8417,8 +8475,8 @@ function _wakeSpeakGreeting(text, callback) {
     utt.volume = 1;
     const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi'));
     if (viVoice) utt.voice = viVoice;
-    utt.onend   = () => callback?.();
-    utt.onerror = () => callback?.();
+    utt.onend   = () => { _ttsUtterance = null; callback?.(); };
+    utt.onerror = () => { _ttsUtterance = null; callback?.(); };
     window.speechSynthesis.speak(utt);
   };
   const voices = window.speechSynthesis.getVoices();
@@ -8449,13 +8507,18 @@ function _parseIntent(text, aiReply) {
       tu_van:'Tư vấn', khac:'Khác'
     };
     const intentId = 'intent-' + Date.now();
+    // Lưu intent vào global map — tránh escape JSON phức tạp trong onclick
+    if (!window._pendingIntents) window._pendingIntents = {};
+    window._pendingIntents[intentId] = intent;
+
     const confirmBubble = `<div id="${intentId}" style="background:#FFF8E7;border:1px solid #E8A93C;border-radius:14px;padding:12px 14px;margin-top:6px;">
       <div style="font-size:11px;font-weight:700;color:#B57A1F;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">📅 Tạo lịch hẹn?</div>
       <div style="font-size:13px;color:#1F1A0F;margin-bottom:4px;"><b>${intent.patient_name||'?'}</b></div>
-      <div style="font-size:12px;color:#7A6F5C;">${intent.date||''} ${intent.time||''} · ${typeLabel[intent.appt_type]||intent.appt_type||''}</div>
+      <div style="font-size:12px;color:#7A6F5C;">${intent.date||''} · ${intent.time||''} · ${typeLabel[intent.appt_type]||intent.appt_type||''}</div>
+      ${intent.note ? `<div style="font-size:11px;color:#B0A490;margin-top:3px;font-style:italic;">${intent.note}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="_intentConfirm('${intentId}',${JSON.stringify(intent).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})" style="flex:1;padding:8px;border-radius:10px;border:none;background:#1F1A0F;color:#E8A93C;font-size:12px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✅ Xác nhận tạo lịch</button>
-        <button onclick="document.getElementById('${intentId}').remove()" style="padding:8px 12px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+        <button onclick="_intentConfirm('${intentId}')" style="flex:1;padding:8px;border-radius:10px;border:none;background:#1F1A0F;color:#E8A93C;font-size:12px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✅ Xác nhận tạo lịch</button>
+        <button onclick="_intentDismiss('${intentId}')" style="padding:8px 12px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">✕</button>
       </div>
     </div>`;
 
@@ -8466,7 +8529,10 @@ function _parseIntent(text, aiReply) {
   return false;
 }
 
-function _intentConfirm(bubbleId, intent) {
+function _intentConfirm(bubbleId) {
+  const intent = window._pendingIntents?.[bubbleId];
+  if (!intent) return;
+  delete window._pendingIntents[bubbleId];
   document.getElementById(bubbleId)?.remove();
   const nameEl = document.getElementById('adm-appt-name');
   const dateEl = document.getElementById('adm-appt-date');
@@ -8477,10 +8543,15 @@ function _intentConfirm(bubbleId, intent) {
   if (dateEl && intent.date)         dateEl.value = intent.date;
   if (timeEl && intent.time)         timeEl.value = intent.time;
   if (typeEl && intent.appt_type)    typeEl.value = intent.appt_type;
-  if (noteEl && intent.note)         noteEl.value = intent.note || '';
+  if (noteEl)                        noteEl.value = intent.note || '';
   if (typeof admPopulateApptPatientList === 'function') admPopulateApptPatientList();
   adm.apptEditId = null;
   document.getElementById('adm-appt-modal').style.display = 'flex';
+}
+
+function _intentDismiss(bubbleId) {
+  delete window._pendingIntents?.[bubbleId];
+  document.getElementById(bubbleId)?.remove();
 }
 
 // ── Voice Dictation (Admin only) ──
@@ -8500,6 +8571,10 @@ let _chatAutoSendTimer = null;
 
 function _chatStartMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  // Tạm dừng wake word khi bắt đầu dictation (tránh nhận nhầm)
+  if (_wakeActive && _wakeRecog) {
+    try { _wakeRecog.stop(); } catch(e) {}
+  }
   _chatRecog = new SR();
   _chatRecog.lang = 'vi-VN';
   _chatRecog.continuous = true;
@@ -8528,9 +8603,9 @@ function _chatStartMic() {
   _chatRecog.onend = () => {
     _chatMicOn = false;
     _chatUpdateMicBtn();
-    // Ở chế độ rảnh tay → restart mic sau khi AI xong
-    if (_wakeActive && !_chatLoading) {
-      setTimeout(_chatStartMic, 500);
+    // Restart wake word sau khi dictation xong
+    if (_wakeActive) {
+      setTimeout(startWakeWord, 300);
     }
   };
   _chatRecog.onerror = (e) => {
