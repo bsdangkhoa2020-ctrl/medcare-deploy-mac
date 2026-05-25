@@ -5950,8 +5950,18 @@ Trả về JSON thuần không chứa markdown:
 async function aiscanSave() {
   const bnCode = document.getElementById('aiscan-bn-select')?.value;
   const notes  = document.getElementById('aiscan-notes')?.value?.trim()||null;
-  if (!bnCode) { toast('Vui lòng chọn BN để lưu','err'); return; }
   if (!_aiscanLastResult) { toast('Chưa có kết quả để lưu','err'); return; }
+
+  // Nếu chưa chọn BN → hỏi có muốn tạo BN mới không
+  if (!bnCode) {
+    aicptOpenFromScan();
+    return;
+  }
+  await _aiscanDoSave(bnCode, notes);
+}
+
+// Thực hiện lưu scan vào DB
+async function _aiscanDoSave(bnCode, notes) {
   try {
     const {error} = await sb.from('attachments').insert({
       bn_code: bnCode, file_name: _aiscanFileData?.name||'scan_'+Date.now(),
@@ -5959,12 +5969,111 @@ async function aiscanSave() {
       mime_type: _aiscanFileData?.mimeType||'image/jpeg',
       doctype:_aiscanType, scan_type:_aiscanType, status:'ai_processed',
       ai_extracted:{result:_aiscanLastResult,parsed:_aiscanParsed||null,type:_aiscanType,scanned_at:new Date().toISOString()},
-      doctor_notes:notes, is_saved_to_emr:true, uploaded_by:curUser?.id||null
+      doctor_notes:notes||null, is_saved_to_emr:true, uploaded_by:curUser?.id||null
     });
     if (error) throw error;
     toast('✓ Đã lưu vào hồ sơ BN','ok');
     aiscanClear();
+    // Refresh BN list và dropdown
+    if (typeof admLoadPatients === 'function') await admLoadPatients();
+    aiscanTabInit();
   } catch(e) { toast('Lỗi lưu: '+e.message,'err'); }
+}
+
+// ── Tạo BN mới từ data AI ──
+let _aicptSpecialty = 'ob';
+
+function aicptOpenFromScan() {
+  const parsed = _aiscanParsed;
+  _aicptSpecialty = 'ob';
+
+  // Auto-fill từ parsed data
+  const nameEl    = document.getElementById('aicpt-name');
+  const dobEl     = document.getElementById('aicpt-dob');
+  const allergyEl = document.getElementById('aicpt-allergy');
+  const historyEl = document.getElementById('aicpt-history');
+
+  if (nameEl)    nameEl.value    = parsed?.patientName || '';
+  if (allergyEl) allergyEl.value = '';
+  if (historyEl) historyEl.value = parsed?.diagnosis   || '';
+
+  // Parse dob nếu có (dạng "1993" hoặc "15/05/1993")
+  if (dobEl && parsed?.dob) {
+    const dobStr = parsed.dob;
+    if (/^\d{4}$/.test(dobStr)) {
+      dobEl.value = dobStr + '-01-01';
+    } else if (/\d{2}\/\d{2}\/\d{4}/.test(dobStr)) {
+      const [d,m,y] = dobStr.split('/');
+      dobEl.value = y+'-'+m+'-'+d;
+    } else {
+      dobEl.value = '';
+    }
+  }
+
+  // Trích xuất dị ứng từ prescriptions nếu có
+  if (parsed?.prescriptions?.length) {
+    const drugNames = parsed.prescriptions.map(p => p.drug_name).filter(Boolean).join(', ');
+    if (historyEl && drugNames) historyEl.value = (historyEl.value ? historyEl.value+'\n' : '') + 'Đơn thuốc: '+drugNames;
+  }
+
+  // Reset specialty buttons
+  aicptSetSpecialty('ob', document.getElementById('aicpt-btn-ob'));
+  document.getElementById('aiscan-create-pt-modal').style.display = 'flex';
+}
+
+function aicptSetSpecialty(spec, btn) {
+  _aicptSpecialty = spec;
+  ['ob','gy'].forEach(s => {
+    const b = document.getElementById('aicpt-btn-'+s);
+    if (!b) return;
+    const active = s === spec;
+    b.style.background = active ? '#1F1A0F' : '#fff';
+    b.style.color = active ? '#E8A93C' : '#7A6F5C';
+    b.style.borderColor = active ? '#1F1A0F' : '#E0D0B0';
+  });
+  // Hiện/ẩn LMP row
+  const lmpRow = document.getElementById('aicpt-lmp-row');
+  if (lmpRow) lmpRow.style.display = spec === 'ob' ? 'block' : 'none';
+}
+
+async function aicptConfirmCreate() {
+  const name    = document.getElementById('aicpt-name')?.value?.trim();
+  const dob     = document.getElementById('aicpt-dob')?.value || null;
+  const phone   = document.getElementById('aicpt-phone')?.value?.trim() || null;
+  const lmp     = _aicptSpecialty === 'ob' ? (document.getElementById('aicpt-lmp')?.value || null) : null;
+  const allergy = document.getElementById('aicpt-allergy')?.value?.trim() || null;
+  const history = document.getElementById('aicpt-history')?.value?.trim() || null;
+
+  if (!name) { toast('Vui lòng nhập họ tên BN','err'); return; }
+
+  // Tạo mã BN tự động
+  const now = Date.now();
+  const bnCode = 'BN-' + String(now).slice(-6);
+
+  try {
+    const {error} = await sb.from('patients').insert({
+      bn_code:        bnCode,
+      specialty:      _aicptSpecialty,
+      name,
+      dob:            dob || null,
+      phone:          phone || null,
+      lmp:            lmp || null,
+      allergy:        allergy || null,
+      medical_history:history || null,
+      created_by:     curUser?.id || null
+    });
+    if (error) throw error;
+
+    toast('✓ Đã tạo hồ sơ '+name+' ('+bnCode+')','ok');
+    document.getElementById('aiscan-create-pt-modal').style.display = 'none';
+
+    // Lưu scan vào hồ sơ BN vừa tạo
+    const notes = document.getElementById('aiscan-notes')?.value?.trim()||null;
+    await _aiscanDoSave(bnCode, notes);
+
+  } catch(e) {
+    toast('Lỗi tạo BN: '+e.message,'err');
+  }
 }
 
 function drugcheckAutoFill(bnCode) {
@@ -9932,6 +10041,61 @@ document.body.insertAdjacentHTML('beforeend', `
       <div style="display:flex;gap:10px;">
         <button onclick="document.getElementById('drug-check-modal').style.display='none'" style="flex:1;padding:13px;border-radius:12px;border:1px solid #E0D0B0;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Đóng</button>
         <button id="drug-check-btn" onclick="drugCheckRun()" style="flex:2;padding:13px;border-radius:12px;border:none;background:#7B5EA7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💊 Kiểm tra ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal tạo BN từ AI Scan -->
+  <div id="aiscan-create-pt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9995;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-height:88vh;overflow-y:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom));box-sizing:border-box;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:28px;margin-bottom:6px;">👤</div>
+        <div style="font-family:'Lora',serif;font-size:18px;color:#1F1A0F;margin-bottom:4px;">Tạo hồ sơ bệnh nhân mới</div>
+        <div style="font-size:12px;color:#B0A490;">AI đã trích xuất được thông tin — kiểm tra và bổ sung trước khi lưu</div>
+      </div>
+
+      <!-- Chuyên khoa -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Chuyên khoa *</div>
+        <div style="display:flex;gap:8px;">
+          <button id="aicpt-btn-ob" onclick="aicptSetSpecialty('ob',this)" style="flex:1;padding:10px;border-radius:10px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🤰 Sản khoa</button>
+          <button id="aicpt-btn-gy" onclick="aicptSetSpecialty('gy',this)" style="flex:1;padding:10px;border-radius:10px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🌸 Phụ khoa</button>
+        </div>
+      </div>
+
+      <!-- Form fields -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Họ và tên *</div>
+          <input id="aicpt-name" type="text" placeholder="Nguyễn Thị A" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Ngày sinh</div>
+            <input id="aicpt-dob" type="date" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Số điện thoại</div>
+            <input id="aicpt-phone" type="tel" placeholder="09xxxxxxxx" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+          </div>
+        </div>
+        <div id="aicpt-lmp-row" style="display:none;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Ngày kinh cuối (LMP)</div>
+          <input id="aicpt-lmp" type="date" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Dị ứng</div>
+          <input id="aicpt-allergy" type="text" placeholder="Để trống nếu không có" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:4px;">Chẩn đoán / Tiền sử</div>
+          <textarea id="aicpt-history" rows="2" placeholder="Thông tin từ hồ sơ (nếu có)" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;resize:none;box-sizing:border-box;"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('aiscan-create-pt-modal').style.display='none'" style="flex:1;padding:13px;border-radius:12px;border:1px solid #E0D0B0;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Bỏ qua</button>
+        <button onclick="aicptConfirmCreate()" style="flex:2;padding:13px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✅ Tạo hồ sơ & lưu scan</button>
       </div>
     </div>
   </div>
