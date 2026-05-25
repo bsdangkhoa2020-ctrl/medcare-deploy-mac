@@ -3909,16 +3909,23 @@ const adm = {
 // INIT ADMIN
 // ────────────────────────────────────────
 async function initAdmin() {
-  adm.apptDate = new Date().toISOString().slice(0,10);
-  // Label hôm nay
-  const todayLabel = document.getElementById('adm-appt-today-label');
-  if (todayLabel) {
-    const d = new Date();
-    todayLabel.textContent = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+  showLoading('Đang tải dữ liệu quản trị...');
+  try {
+    adm.apptDate = new Date().toISOString().slice(0,10);
+    const todayLabel = document.getElementById('adm-appt-today-label');
+    if (todayLabel) {
+      const d = new Date();
+      todayLabel.textContent = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    }
+    await admLoadPatients();
+    admSwitchTab('patients');
+  } catch(err) {
+    console.error('[Admin Init Error]:', err);
+    toast('Lỗi khởi tạo dữ liệu quản trị', 'err');
+  } finally {
+    hideLoading();
   }
-  admSwitchTab('patients');
   // KHÔNG auto-start wake word — Safari iOS cần user gesture
-  // BS bấm nút "🎙️ Rảnh tay" để kích hoạt
 }
 
 // ────────────────────────────────────────
@@ -3947,11 +3954,19 @@ function admSwitchTab(tab) {
 // TAB 1: BỆNH NHÂN
 // ────────────────────────────────────────
 async function admLoadPatients() {
-  const { data, error } = await db.getAllPatients();
-  if (error) { console.error(error); return; }
-  adm.patients = data || [];
-  admRenderPatients();
-  admLoadInvites();
+  try {
+    const { data, error } = await db.getAllPatients();
+    if (error) throw error;
+    adm.patients = data || [];
+    // Cập nhật badge số BN trên header
+    const hdrCount = document.getElementById('adm-hdr-count');
+    if (hdrCount) hdrCount.textContent = adm.patients.length;
+    admRenderPatients();
+    admLoadInvites();
+  } catch(err) {
+    console.error('[Load Patients Error]:', err);
+    toast('Không thể tải danh sách bệnh nhân', 'err');
+  }
 }
 
 function admSetPtFilter(f) {
