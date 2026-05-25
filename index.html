@@ -709,8 +709,7 @@ input, textarea, select {
     </div>
     <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Hồ sơ bệnh nhân</div>
     <button onclick="pdExportPdf()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #E8A93C;background:#FFF8E7;color:#B57A1F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📄 PDF</button>
-    <button onclick="pdOpenScanAI()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #3A7D5C;background:#F0F7F4;color:#3A7D5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🔬 Scan AI</button>
-    <button onclick="pdOpenDrugCheck()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #7B5EA7;background:#F5F0FA;color:#7B5EA7;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💊 Tương tác thuốc</button>
+
     <button id="pd-edit-btn" onclick="pdToggleEdit()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #1F1A0F;background:transparent;color:#1F1A0F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa</button>
   </div>
   <div class="scroll" style="padding:16px;">
@@ -807,6 +806,7 @@ input, textarea, select {
       <div class="adm-tab adm-tab-active adm-ibm" data-tab="patients" onclick="admSwitchTab('patients')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#1F1A0F;cursor:pointer;border-bottom:2px solid #E8A93C;font-weight:500;letter-spacing:.04em;">Bệnh nhân</div>
       <div class="adm-tab adm-ibm" data-tab="schedule" onclick="admSwitchTab('schedule')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Lịch &amp; Ca</div>
       <div class="adm-tab adm-ibm" data-tab="articles" onclick="admSwitchTab('articles')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">Tạp chí</div>
+      <div class="adm-tab adm-ibm" data-tab="aiscan" onclick="admSwitchTab('aiscan')" style="flex:1;padding:12px 2px;text-align:center;font-size:10px;color:#B0A490;cursor:pointer;border-bottom:2px solid transparent;font-weight:400;letter-spacing:.04em;">🔬 AI Scan</div>
     </div>
   </div>
 
@@ -1040,6 +1040,123 @@ input, textarea, select {
     </div>
   </div>
 
+
+  <!-- AI Scan Pane -->
+  <div id="adm-pane-aiscan" class="adm-pane adm-ibm" style="display:none;padding:16px;">
+
+    <!-- Header -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'Lora',serif;font-size:22px;font-weight:400;color:#1F1A0F;margin-bottom:4px;">Cộng tác viên AI Scan</div>
+      <div style="font-size:12px;color:#B0A490;font-style:italic;">Trí tuệ nhân tạo phân tích tài liệu, bệnh án và đơn thuốc tự động</div>
+    </div>
+
+    <!-- Chọn BN -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Bệnh nhân (tuỳ chọn)</div>
+      <select id="aiscan-bn-select" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;background:#fff;">
+        <option value="">-- Không liên kết BN --</option>
+      </select>
+    </div>
+
+    <!-- Upload area -->
+    <input type="file" id="aiscan-file-input" accept="image/*,.pdf" style="display:none" onchange="aiscanLoadFile(this)">
+    <div id="aiscan-upload-area" onclick="document.getElementById('aiscan-file-input').click()"
+      style="border:2px dashed #E0D0B0;border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;margin-bottom:16px;background:#FEFCF7;transition:border-color .2s;"
+      onmouseover="this.style.borderColor='#E8A93C'" onmouseout="this.style.borderColor='#E0D0B0'">
+      <div style="width:52px;height:52px;border-radius:50%;background:#F5EFE6;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;">⬆️</div>
+      <div style="font-size:14px;font-weight:600;color:#1F1A0F;margin-bottom:6px;">Tải ảnh hoặc phiếu PDF lên để scan</div>
+      <div style="font-size:12px;color:#B0A490;">Hỗ trợ kết quả siêu âm, phiếu xét nghiệm, PDF dài nhiều trang v.v</div>
+    </div>
+
+    <!-- File preview -->
+    <div id="aiscan-preview" style="display:none;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;background:#F5EFE6;border-radius:10px;padding:10px 14px;">
+        <span style="font-size:20px;">📄</span>
+        <span id="aiscan-file-name" style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1F1A0F;font-weight:500;"></span>
+        <button onclick="aiscanClear()" style="background:none;border:none;color:#B0A490;cursor:pointer;font-size:18px;padding:0;">×</button>
+      </div>
+    </div>
+
+    <!-- Loại tài liệu -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Loại tài liệu</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="aiscanSetType(this,'xetnghiem')" class="aiscan-type-btn aiscan-type-active"
+          style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🧪 Xét nghiệm</button>
+        <button onclick="aiscanSetType(this,'hosogay')" class="aiscan-type-btn"
+          style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📋 Hồ sơ giấy</button>
+        <button onclick="aiscanSetType(this,'doanthuoc')" class="aiscan-type-btn"
+          style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💊 Đơn thuốc</button>
+        <button onclick="aiscanSetType(this,'khac')" class="aiscan-type-btn"
+          style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📄 Khác</button>
+      </div>
+    </div>
+
+    <!-- Nút phân tích -->
+    <button id="aiscan-run-btn" onclick="aiscanRun()"
+      style="width:100%;padding:14px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-bottom:16px;">
+      🔬 Phân tích tài liệu
+    </button>
+
+    <!-- Kết quả -->
+    <div id="aiscan-result" style="display:none;background:#F8F6F2;border-radius:14px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:10px;">Kết quả phân tích AI</div>
+      <div id="aiscan-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;"></div>
+    </div>
+
+    <!-- Ghi chú + lưu -->
+    <div id="aiscan-save-area" style="display:none;">
+      <textarea id="aiscan-notes" rows="2" placeholder="Ghi chú của bác sĩ (tuỳ chọn)..."
+        style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;resize:none;color:#1F1A0F;box-sizing:border-box;margin-bottom:10px;"></textarea>
+      <button onclick="aiscanSave()"
+        style="width:100%;padding:13px;border-radius:12px;border:none;background:#3A7D5C;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+        💾 Lưu vào hồ sơ BN
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid #F0E7D2;margin:24px 0;"></div>
+
+    <!-- Drug Check section -->
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Lora',serif;font-size:18px;font-weight:400;color:#1F1A0F;margin-bottom:4px;">💊 Kiểm tra tương tác thuốc</div>
+      <div style="font-size:12px;color:#B0A490;margin-bottom:14px;">Phát hiện tương tác nguy hại và an toàn thai kỳ</div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Bệnh nhân</div>
+        <select id="drugcheck-bn-select" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;background:#fff;" onchange="drugcheckAutoFill(this.value)">
+          <option value="">-- Không liên kết BN --</option>
+        </select>
+      </div>
+
+      <div id="drugcheck-pt-info" style="display:none;background:#FFF8E7;border:1px solid #F0E0B0;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#7A6F5C;">
+        <span style="font-weight:600;color:#B57A1F;">Dị ứng:</span> <span id="drugcheck-allergy-show"></span>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Danh sách thuốc</div>
+        <textarea id="drugcheck-input" rows="4" placeholder="Ví dụ:&#10;- Amoxicillin 500mg&#10;- Paracetamol 500mg&#10;- Metformin 850mg"
+          style="width:100%;border:1px solid #E0D0B0;border-radius:12px;padding:10px 14px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;resize:none;color:#1F1A0F;box-sizing:border-box;line-height:1.6;"></textarea>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Dị ứng / Thuốc thêm</div>
+        <input id="drugcheck-allergy-input" type="text" placeholder="VD: Penicillin, Sulfa..."
+          style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+      </div>
+
+      <button id="drugcheck-run-btn" onclick="drugcheckRun()"
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:#7B5EA7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-bottom:14px;">
+        💊 Kiểm tra tương tác
+      </button>
+
+      <div id="drugcheck-result" style="display:none;background:#F8F6F2;border-radius:14px;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Kết quả kiểm tra</div>
+        <div id="drugcheck-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
   <!-- ═══ TAB: TẠP CHÍ ═══ -->
   <div id="adm-pane-articles" class="adm-pane adm-ibm" style="display:none;padding:16px;">
@@ -3891,6 +4008,7 @@ function admSwitchTab(tab) {
   if (tab === 'patients' && adm.patients.length === 0) admLoadPatients();
   if (tab === 'schedule') { admRenderSchedule(); admLoadQuickAppts(); admRenderCalStrip(); }
   if (tab === 'articles' && adm.articles.length === 0) admLoadArticles();
+  if (tab === 'aiscan') aiscanTabInit();
 }
 
 // ────────────────────────────────────────
@@ -5623,6 +5741,206 @@ let _currentRx = [];
 // ══════════════════════════════════════
 let _scanAIFileData = null; // {mimeType, base64}
 let _scanAIType = 'xetnghiem';
+
+// ══════════════════════════════════════
+// TAB AI SCAN — Admin Dashboard
+// ══════════════════════════════════════
+let _aiscanFileData = null;
+let _aiscanType = 'xetnghiem';
+let _aiscanLastResult = null;
+let _aiscanParsed = null;
+
+function aiscanTabInit() {
+  // Populate BN select dropdowns
+  ['aiscan-bn-select','drugcheck-bn-select'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Không liên kết BN --</option>' +
+      (adm.patients||[]).map(p => `<option value="${p.bn_code}">${p.name} (${p.bn_code})</option>`).join('');
+  });
+}
+
+function aiscanSetType(btn, type) {
+  _aiscanType = type;
+  document.querySelectorAll('.aiscan-type-btn').forEach(b => {
+    b.style.background='#fff'; b.style.color='#7A6F5C'; b.style.borderColor='#E0D0B0';
+  });
+  btn.style.background='#1F1A0F'; btn.style.color='#E8A93C'; btn.style.borderColor='#1F1A0F';
+}
+
+function aiscanLoadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { toast('File tối đa 5MB','err'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    _aiscanFileData = { mimeType: file.type||'image/jpeg', base64: e.target.result.split(',')[1], name: file.name };
+    document.getElementById('aiscan-upload-area').style.display = 'none';
+    document.getElementById('aiscan-preview').style.display = 'block';
+    document.getElementById('aiscan-file-name').textContent = file.name;
+    document.getElementById('aiscan-result').style.display = 'none';
+    document.getElementById('aiscan-save-area').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function aiscanClear() {
+  _aiscanFileData = null;
+  document.getElementById('aiscan-upload-area').style.display = 'block';
+  document.getElementById('aiscan-preview').style.display = 'none';
+  document.getElementById('aiscan-result').style.display = 'none';
+  document.getElementById('aiscan-save-area').style.display = 'none';
+}
+
+async function aiscanRun() {
+  if (!_aiscanFileData) { toast('Vui lòng chọn file trước','err'); return; }
+  const btn = document.getElementById('aiscan-run-btn');
+  const resultDiv  = document.getElementById('aiscan-result');
+  const resultText = document.getElementById('aiscan-result-text');
+  btn.disabled=true; btn.textContent='⏳ Đang phân tích...';
+
+  const JSON_SYSTEM = `Bạn là một trợ lý y khoa lâm sàng chuyên nghiệp độc lập tại phòng khám chuyên khoa.
+Phân tích cực kỳ cẩn thận hình ảnh/PDF kết quả cận lâm sàng đính kèm và trích xuất thông tin chính xác theo cấu trúc JSON quy định.
+Yêu cầu: Không bịa đặt thông tin. Chỉ ghi nhận dữ liệu hiển thị rõ trên phiếu. Status: "high"/"low"/"normal".
+Trả về JSON thuần không chứa markdown:
+{"patientName":"","dob":"","diagnosis":"","extractedTables":[{"test":"","value":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":""}]}`;
+
+  const typeHints = {
+    xetnghiem:'File là kết quả xét nghiệm máu/nước tiểu/sinh hóa.',
+    hosogay:  'File là hồ sơ bệnh án giấy.',
+    doanthuoc:'File là đơn thuốc. extractedTables để trống nếu không có chỉ số.',
+    khac:     'File là tài liệu y tế tổng quát.'
+  };
+
+  try {
+    const resp = await fetch(GEMINI_FN_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
+      body: JSON.stringify({
+        model:'gemini-2.5-flash',
+        contents:[{role:'user',parts:[
+          {text: JSON_SYSTEM+'
+
+'+typeHints[_aiscanType]},
+          {inlineData:{mimeType:_aiscanFileData.mimeType,data:_aiscanFileData.base64}}
+        ]}],
+        generationConfig:{temperature:0.1,maxOutputTokens:1500}
+      })
+    });
+    if (!resp.ok) throw new Error('Lỗi AI: '+resp.status);
+    const data = await resp.json();
+    const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    _aiscanLastResult = raw;
+
+    // Parse JSON
+    let html = '';
+    try {
+      const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      _aiscanParsed = parsed;
+      if (parsed.patientName) html += `<div style="margin-bottom:8px"><b>👤</b> ${parsed.patientName}${parsed.dob?' · '+parsed.dob:''}</div>`;
+      if (parsed.diagnosis)   html += `<div style="margin-bottom:12px"><b>🏥</b> ${parsed.diagnosis}</div>`;
+      if (parsed.extractedTables?.length) {
+        html += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
+          <tr style="background:#F0E7D2;"><th style="padding:5px 8px;text-align:left;">Chỉ số</th><th style="padding:5px 8px;">Giá trị</th><th style="padding:5px 8px;">Tham chiếu</th><th style="padding:5px 8px;">KQ</th></tr>`;
+        parsed.extractedTables.forEach(r => {
+          const icon = r.status==='high'?'🔴':r.status==='low'?'🔵':'🟢';
+          const bg   = r.status==='high'?'#FFF0F0':r.status==='low'?'#F0F0FF':'';
+          html += `<tr style="background:${bg};border-bottom:1px solid #F0E7D2;">
+            <td style="padding:5px 8px;">${r.test||''}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:600;">${r.value||''}</td>
+            <td style="padding:5px 8px;text-align:center;color:#7A6F5C;">${r.ref||''}</td>
+            <td style="padding:5px 8px;text-align:center;">${icon}</td></tr>`;
+        });
+        html += `</table>`;
+      }
+      if (parsed.prescriptions?.length) {
+        parsed.prescriptions.forEach(p => {
+          html += `<div style="padding:6px 0;border-bottom:1px solid #F0E7D2;font-size:12px;"><b>${p.drug_name||''}</b>${p.dosage?'<br><span style="color:#7A6F5C;">'+p.dosage+'</span>':''}</div>`;
+        });
+      }
+      resultText.innerHTML = html||'<div style="color:#7A6F5C;font-style:italic;">Không trích xuất được dữ liệu</div>';
+    } catch(e) {
+      resultText.textContent = raw||'Không phân tích được.';
+      _aiscanParsed = null;
+    }
+    resultDiv.style.display = 'block';
+    document.getElementById('aiscan-save-area').style.display = 'block';
+  } catch(e) { toast('Lỗi: '+e.message,'err'); }
+  finally { btn.disabled=false; btn.textContent='🔬 Phân tích lại'; }
+}
+
+async function aiscanSave() {
+  const bnCode = document.getElementById('aiscan-bn-select')?.value;
+  const notes  = document.getElementById('aiscan-notes')?.value?.trim()||null;
+  if (!bnCode) { toast('Vui lòng chọn BN để lưu','err'); return; }
+  if (!_aiscanLastResult) { toast('Chưa có kết quả để lưu','err'); return; }
+  try {
+    const {error} = await sb.from('attachments').insert({
+      bn_code: bnCode, file_name: _aiscanFileData?.name||'scan_'+Date.now(),
+      storage_path:'scan_ai/'+bnCode+'/'+Date.now(), file_size:0,
+      mime_type: _aiscanFileData?.mimeType||'image/jpeg',
+      doctype:_aiscanType, scan_type:_aiscanType, status:'ai_processed',
+      ai_extracted:{result:_aiscanLastResult,parsed:_aiscanParsed||null,type:_aiscanType,scanned_at:new Date().toISOString()},
+      doctor_notes:notes, is_saved_to_emr:true, uploaded_by:curUser?.id||null
+    });
+    if (error) throw error;
+    toast('✓ Đã lưu vào hồ sơ BN','ok');
+    aiscanClear();
+  } catch(e) { toast('Lỗi lưu: '+e.message,'err'); }
+}
+
+function drugcheckAutoFill(bnCode) {
+  const pt = (adm.patients||[]).find(p => p.bn_code===bnCode);
+  const infoDiv = document.getElementById('drugcheck-pt-info');
+  const allergyShow = document.getElementById('drugcheck-allergy-show');
+  const allergyInput = document.getElementById('drugcheck-allergy-input');
+  if (pt?.allergy) {
+    if (allergyShow) allergyShow.textContent = pt.allergy;
+    if (allergyInput) allergyInput.value = pt.allergy;
+    if (infoDiv) infoDiv.style.display = 'block';
+  } else {
+    if (infoDiv) infoDiv.style.display = 'none';
+  }
+}
+
+async function drugcheckRun() {
+  const drugs = document.getElementById('drugcheck-input')?.value?.trim();
+  if (!drugs) { toast('Vui lòng nhập danh sách thuốc','err'); return; }
+  const allergy = document.getElementById('drugcheck-allergy-input')?.value?.trim();
+  const bnCode  = document.getElementById('drugcheck-bn-select')?.value;
+  const pt = (adm.patients||[]).find(p => p.bn_code===bnCode);
+  const isPregnant = pt?.specialty==='ob';
+  const btn = document.getElementById('drugcheck-run-btn');
+  const resultDiv  = document.getElementById('drugcheck-result');
+  const resultText = document.getElementById('drugcheck-result-text');
+  btn.disabled=true; btn.textContent='⏳ Đang kiểm tra...';
+
+  const prompt = `Bạn là dược sĩ lâm sàng chuyên khoa Sản Phụ khoa. Kiểm tra tương tác thuốc:
+${drugs}
+${allergy?'Dị ứng/Thuốc thêm: '+allergy:''}
+${pt?'Bệnh nhân: '+pt.name+', '+(isPregnant?'đang mang thai':'phụ khoa'):''}
+
+Phân tích:
+1. Tương tác giữa các thuốc (🔴 Nghiêm trọng / 🟡 Trung bình / 🟢 Nhẹ) + cơ chế + khuyến nghị
+2. An toàn thai kỳ nếu bệnh nhân mang thai (phân loại FDA)
+3. Tương tác với dị ứng (nếu có)
+4. Kết luận + điều chỉnh cần thiết
+Trả lời tiếng Việt, rõ ràng, có cấu trúc.`;
+
+  try {
+    const resp = await fetch(GEMINI_FN_URL,{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
+      body:JSON.stringify({model:'gemini-2.5-flash',contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:1200}})
+    });
+    if (!resp.ok) throw new Error('Lỗi AI: '+resp.status);
+    const data = await resp.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text||'Không kiểm tra được.';
+    resultText.textContent = text;
+    resultDiv.style.display = 'block';
+  } catch(e) { toast('Lỗi: '+e.message,'err'); }
+  finally { btn.disabled=false; btn.textContent='💊 Kiểm tra lại'; }
+}
 
 function pdOpenScanAI() {
   if (curUser?.role !== 'admin') { toast('Tính năng chỉ dành cho Bác sĩ', 'err'); return; }
