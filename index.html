@@ -1143,6 +1143,9 @@ input, textarea, select {
       <div id="aiscan-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;"></div>
     </div>
 
+    <!-- Match suggestion -->
+    <div id="aiscan-match-suggest" style="display:none;background:#FFF8E7;border:1px solid #F0E0B0;border-radius:12px;padding:12px 14px;margin-bottom:12px;"></div>
+
     <!-- Ghi chú + lưu -->
     <div id="aiscan-save-area" style="display:none;">
       <textarea id="aiscan-notes" rows="2" placeholder="Ghi chú của bác sĩ (tuỳ chọn)..."
@@ -5829,6 +5832,68 @@ let _aiscanType = 'xetnghiem';
 let _aiscanLastResult = null;
 let _aiscanParsed = null;
 
+// ── Smart match BN từ parsed AI data ──
+function _aiscanMatchPatient(parsed) {
+  const sel = document.getElementById('aiscan-bn-select');
+  const suggBox = document.getElementById('aiscan-match-suggest');
+  if (!parsed?.patientName || !sel || !adm?.patients?.length) return;
+
+  const normName = s => (s||'').toLowerCase().trim()
+    .replace(/\s+/g,' ')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  const queryName = normName(parsed.patientName);
+  const queryDob  = parsed.dob || '';
+
+  // Tìm BN khớp tên (normalize)
+  const nameMatches = adm.patients.filter(p => {
+    return normName(p.name).includes(queryName) || queryName.includes(normName(p.name));
+  });
+
+  if (!nameMatches.length) return;
+
+  let best = null;
+  if (nameMatches.length === 1) {
+    best = nameMatches[0];
+  } else {
+    // Nhiều BN trùng tên → ưu tiên người có DOB khớp
+    const dobMatch = nameMatches.find(p => {
+      if (!p.dob || !queryDob) return false;
+      const pdob = p.dob.replace(/-/g,'');
+      const qdob = queryDob.replace(/[\/\-\.]/g,'');
+      return pdob === qdob || pdob.includes(qdob) || qdob.includes(pdob);
+    });
+    best = dobMatch || nameMatches[0];
+  }
+
+  if (!best) return;
+
+  // Hiện suggestion box
+  if (!suggBox) return;
+  const dobStr = best.dob ? new Date(best.dob+'T00:00:00').toLocaleDateString('vi-VN') : '';
+  suggBox.style.display = 'block';
+  suggBox.innerHTML = '<div style="font-size:11px;color:#B57A1F;font-weight:600;margin-bottom:6px;">🔍 AI tìm thấy bệnh nhân phù hợp</div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #E8A93C;">' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:600;color:#1F1A0F;">' + best.name + '</div>' +
+        '<div style="font-size:11px;color:#7A6F5C;">' + best.bn_code + (dobStr?' · '+dobStr:'') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;">' +
+        '<button onclick="_aiscanApplyMatch(\''+best.bn_code+'\')" style="padding:6px 14px;border-radius:20px;border:none;background:#E8A93C;color:#1F1A0F;font-size:12px;font-weight:700;cursor:pointer;font-family:\'IBM Plex Sans\',sans-serif;">✓ Chọn</button>' +
+        '<button onclick="document.getElementById(\'aiscan-match-suggest\').style.display=\'none\'" style="padding:6px 10px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;font-size:12px;cursor:pointer;">Bỏ qua</button>' +
+      '</div>' +
+    '</div>' +
+    (nameMatches.length > 1 ? '<div style="font-size:10px;color:#B0A490;margin-top:5px;">⚠️ Có '+nameMatches.length+' BN trùng tên — đã ưu tiên theo ngày sinh</div>' : '');
+}
+
+function _aiscanApplyMatch(bnCode) {
+  const sel = document.getElementById('aiscan-bn-select');
+  if (sel) sel.value = bnCode;
+  const suggBox = document.getElementById('aiscan-match-suggest');
+  if (suggBox) suggBox.style.display = 'none';
+  toast('✓ Đã chọn BN: ' + bnCode);
+}
+
 function aiscanTabInit() {
   // Populate BN select dropdowns
   ['aiscan-bn-select','drugcheck-bn-select'].forEach(id => {
@@ -5943,6 +6008,8 @@ Trả về JSON thuần không chứa markdown:
     }
     resultDiv.style.display = 'block';
     document.getElementById('aiscan-save-area').style.display = 'block';
+    // Smart match: gợi ý BN từ parsed data
+    _aiscanMatchPatient(_aiscanParsed);
   } catch(e) { toast('Lỗi: '+e.message,'err'); }
   finally { btn.disabled=false; btn.textContent='🔬 Phân tích lại'; }
 }
