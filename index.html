@@ -3121,27 +3121,38 @@ async function _routeAfterLogin(user) {
 }
 
 function _enterApp(user) {
+  // Nhánh 1: Admin / Bác sĩ
+  if (user.role === 'admin') {
+    goTo('s-admin');
+    if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
+    return;
+  }
+
+  // Nhánh 2: Bệnh nhân Phụ khoa (GY)
   if (user.patient_type === 'gy') {
     const el = document.getElementById('gy-name');
     if (el) el.textContent = 'Chị ' + (user.name || '').split(' ').pop();
     goTo('s-gy-home');
-  } else {
-    const el = document.getElementById('ob-name');
-    if (el) el.textContent = (user.name || 'Mẹ').split(' ').pop();
-    // Cập nhật tuổi thai
-    if (user.lmp) {
-      const ga = calcGA(user.lmp);
-      if (ga) {
-        const weeksEl  = document.getElementById('ob-ga-weeks');
-        const daysEl   = document.getElementById('ob-ga-days');
-        const remainEl = document.getElementById('ob-week-remaining');
-        if (weeksEl)  weeksEl.textContent  = ga.weeks;
-        if (daysEl)   daysEl.textContent   = ga.days;
-        if (remainEl) remainEl.textContent = `Còn ${40 - ga.weeks} tuần đến ngày dự sinh`;
-      }
-    }
-    goTo('s-ob-home');
+    return;
   }
+
+  // Nhánh 3: Bệnh nhân Sản khoa (OB) — default
+  const el = document.getElementById('ob-name');
+  if (el) el.textContent = (user.name || 'Mẹ').split(' ').pop();
+  if (user.lmp) {
+    const ga = calcGA(user.lmp);
+    if (ga) {
+      const weeksEl  = document.getElementById('ob-ga-weeks');
+      const daysEl   = document.getElementById('ob-ga-days');
+      const remainEl = document.getElementById('ob-week-remaining');
+      const trimEl   = document.getElementById('ob-trimester');
+      if (weeksEl)  weeksEl.textContent  = ga.weeks;
+      if (daysEl)   daysEl.textContent   = ga.days;
+      if (remainEl) remainEl.textContent = `Còn ${40 - ga.weeks} tuần đến ngày dự sinh`;
+      if (trimEl)   trimEl.textContent   = `Tam cá nguyệt thứ ${ga.trimester}`;
+    }
+  }
+  goTo('s-ob-home');
 }
 
 // Toggle hiển thị mật khẩu
