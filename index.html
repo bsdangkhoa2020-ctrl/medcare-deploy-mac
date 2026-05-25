@@ -8193,20 +8193,6 @@ function _showEmergencyModal(inputEl) {
   // Rung SOS
   if (navigator.vibrate) navigator.vibrate([200,100,200,100,500]);
 
-  // Gửi alert đến BS Tuấn qua Edge Function
-  try {
-    fetch(SUPABASE_URL + '/functions/v1/send-emergency-alert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-      body: JSON.stringify({
-        patient_name: curUser?.name || 'Không rõ',
-        bn_code:      curUser?.bn_code || '',
-        message:      document.getElementById('chat-input')?.value || '(Từ khoá nguy hiểm phát hiện)',
-        patient_type: curUser?.patient_type || 'ob'
-      })
-    });
-  } catch(e) { /* silent — không block UI */ }
-
   // Khóa input chat
   if (inputEl) {
     inputEl.blur();
