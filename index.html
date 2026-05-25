@@ -2212,7 +2212,7 @@ window.onerror = async function(message, source, lineno, colno) {
   return false;
 };
 const SUPABASE_URL    = 'https://tnehhratorbrxjwzqnds.supabase.co';
-const SUPABASE_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuZWhocmF0b3Jicnhqd3pxbmRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwMDE4NzUsImV4cCI6MjA2MTU3Nzg3NX0.3Pz8nyv_mDuAW8D_WxW2-87OtSuJHEn_jMzR4Ej_5B8'; // anon JWT key
+const SUPABASE_KEY    = 'sb_publishable_LOy3f6W1wHHYsMIlr_zvxQ_gruUztNP';
 const GEMINI_FN_URL   = SUPABASE_URL + '/functions/v1/gemini-proxy';
 const GEMINI_MODEL    = 'gemini-2.5-flash';
 const HOTLINE         = '0938559098';
@@ -3156,9 +3156,6 @@ async function doLoginFromLanding() {
       if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
       return;
     }
-    if (data.session) {
-      await sb.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
-    }
     const { data: profile } = await db.getProfile(data.user.id);
     const user = _resolveUser(data.user, profile);
     await _routeAfterLogin(user);
@@ -3192,9 +3189,6 @@ async function doLogin() {
       const msg = error.message.includes('Invalid') ? 'Email hoặc mật khẩu không đúng' : error.message;
       if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
       return;
-    }
-    if (data.session) {
-      await sb.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
     }
     const { data: profile } = await db.getProfile(data.user.id);
     const user = _resolveUser(data.user, profile);
@@ -8993,11 +8987,6 @@ async function initApp() {
     const { data: { session } } = await db.getSession();
     if (session?.user) {
       showLoading('Đang đăng nhập...');
-      // Set session vào client trước khi query (đảm bảo auth.uid() có giá trị)
-      await sb.auth.setSession({
-        access_token:  session.access_token,
-        refresh_token: session.refresh_token
-      });
       const { data: profile } = await db.getProfile(session.user.id);
       const user = _resolveUser(session.user, profile);
       await _routeAfterLogin(user);
