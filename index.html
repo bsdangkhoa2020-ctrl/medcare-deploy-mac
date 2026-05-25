@@ -471,7 +471,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
     </div>
 
     <!-- Bước 1: Mã mời (disabled) -->
-    <div id="reg-s1" style="display:none;visibility:hidden;height:0;overflow:hidden">
+    <div id="reg-s1" style="display:block">
       <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Mã mời</div>
       <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Nhập mã được phòng khám cung cấp</div>
       <div class="input-group">
@@ -490,7 +490,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
     </div>
 
     <!-- Bước 2: Thông tin -->
-    <div id="reg-s2" style="display:block">
+    <div id="reg-s2" style="display:none">
       <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Thông tin <em style="color:var(--gold-dk)">của bạn</em></div>
       <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:24px">Điền đầy đủ để bắt đầu hành trình sức khoẻ</div>
       <!-- Chọn loại bệnh nhân -->
@@ -2547,6 +2547,16 @@ const db = {
   async deleteInviteCode(id) {
     return sb.from('invite_codes').delete().eq('id', id);
   },
+  async checkInviteCode(code) {
+    const now = new Date().toISOString();
+    const { data, error } = await sb.from('invite_codes')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .is('used_by', null)
+      .gt('expires_at', now)
+      .single();
+    return { data, error };
+  },
   async markInviteUsed(code, userId) {
     return sb.from('invite_codes')
       .update({ used_at: new Date().toISOString(), used_by: userId })
@@ -3362,7 +3372,33 @@ function regCalcBMI() {
 }
 
 async function regStep1() {
-  // Không còn dùng — bỏ bước mã mời
+  const code  = document.getElementById('reg-code')?.value?.trim().toUpperCase();
+  const errEl = document.getElementById('reg-err1');
+  if (!code) {
+    if (errEl) { errEl.textContent = 'Vui lòng nhập mã mời'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+
+  // Validate mã mời với DB
+  try {
+    const { data, error } = await db.checkInviteCode(code);
+    if (error || !data) {
+      if (errEl) { errEl.textContent = 'Mã mời không hợp lệ hoặc đã hết hạn'; errEl.style.display = 'block'; }
+      return;
+    }
+    // Lưu code và specialty vào _regData
+    _regData.inviteCode = code;
+    _regData.specialty  = data.specialty || 'ob';
+    // Hiện form đăng ký
+    document.getElementById('reg-s1').style.display = 'none';
+    document.getElementById('reg-s2').style.display = '';
+    document.getElementById('reg-step-label').textContent = 'Bước 1 / 2';
+    // Pre-select specialty từ invite code
+    regSelectType(_regData.specialty);
+  } catch(e) {
+    if (errEl) { errEl.textContent = 'Lỗi kiểm tra mã mời. Thử lại.'; errEl.style.display = 'block'; }
+  }
 }
 
 function regSelectType(type) {
