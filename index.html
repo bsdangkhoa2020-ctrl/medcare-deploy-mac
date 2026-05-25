@@ -476,8 +476,8 @@ input[type=date], input[type=time], input[type=datetime-local] {
       <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Nhập mã được phòng khám cung cấp</div>
       <div class="input-group">
         <label class="input-label">Mã mời</label>
-        <input class="input" id="reg-code" type="text" placeholder="AB12CD34"
-          autocomplete="off" maxlength="8"
+        <input class="input" id="reg-code" type="text" placeholder="TEST-OB-2026"
+          autocomplete="off" maxlength="14"
           style="text-transform:uppercase;letter-spacing:.2em;font-size:22px;font-weight:600;text-align:center;color:var(--gold-dk);font-family:var(--sans)"
           oninput="this.value=this.value.toUpperCase()"
           onkeydown="if(event.key==='Enter')regStep1()">
@@ -2390,8 +2390,8 @@ const db = {
   async updatePassword(newPass) {
     return sb.auth.updateUser({ password: newPass });
   },
-  async signUp(email, password) {
-    return sb.auth.signUp({ email, password });
+  async signUp(email, password, metadata = {}) {
+    return sb.auth.signUp({ email, password, options: { data: metadata } });
   },
 
   // ── PROFILES ──
@@ -3497,9 +3497,13 @@ async function regSubmit() {
   showLoading('Đang tạo tài khoản...');
 
   try {
-    // 1. Tạo auth user — xử lý orphaned user nếu email đã tồn tại
+    // 1. Tạo auth user — truyền specialty và full_name để trigger đọc đúng role
     let uid = null;
-    const { data: authData, error: authErr } = await db.signUp(_regData.email, _regData.pass);
+    const signUpMeta = {
+      specialty:  _regData.specialty || 'ob',
+      full_name:  _regData.name || '',
+    };
+    const { data: authData, error: authErr } = await db.signUp(_regData.email, _regData.pass, signUpMeta);
     if (authErr) {
       const isExisting = authErr.message?.toLowerCase().includes('already registered')
                       || authErr.message?.toLowerCase().includes('already been registered')
@@ -3530,8 +3534,8 @@ async function regSubmit() {
       if (!uid) { if (errEl) { errEl.textContent = 'Lỗi tạo tài khoản'; errEl.style.display = 'block'; } return; }
     }
 
-    // 2. Tạo profiles — lưu đủ lmp, phone, dob
-    await sb.from('profiles').insert({
+    // 2. Upsert profiles — ghi đè trigger với đầy đủ data từ form
+    await sb.from('profiles').upsert({
       id:           uid,
       role:         _regData.specialty === 'gy' ? 'gy_patient' : 'ob_patient',
       specialty:    _regData.specialty,
@@ -3540,7 +3544,7 @@ async function regSubmit() {
       phone:        _regData.phone || null,
       lmp:          _regData.lmp   || null,
       dob:          _regData.dob   || null,
-    });
+    }, { onConflict: 'id' });
 
     // 3. Tạo patients — bn_code do DB sinh (tránh duplicate race condition)
     const { data: bnCodeResult } = await sb.rpc('generate_bn_code', {
