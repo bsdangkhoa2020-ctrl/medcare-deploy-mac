@@ -3051,7 +3051,6 @@ function goHomeScreen() {
 function _updateFabs(screenId) {
   const fabAI   = document.getElementById('fab-ai');
   const fabSOS  = document.getElementById('fab-sos');
-  const fabZalo = document.getElementById('fab-zalo');
   if (!fabAI || !fabSOS) return;
 
   // Ẩn FAB ở auth screens
@@ -3063,11 +3062,7 @@ function _updateFabs(screenId) {
   const showSOS = OB_SCREENS.includes(screenId);
   fabSOS.classList.toggle('hidden', !showSOS || hideFab);
 
-  // Zalo hiện ở cả OB + GY screens (không hiện ở admin, auth)
-  if (fabZalo) {
-    const showZalo = (OB_SCREENS.includes(screenId) || GY_SCREENS.includes(screenId)) && !hideFab && screenId !== 's-chat';
-    fabZalo.style.display = showZalo ? 'flex' : 'none';
-  }
+
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -8975,16 +8970,7 @@ document.body.insertAdjacentHTML('beforeend', `
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
     </svg>
   </div>
-  <!-- Zalo FAB — nhắn BS -->
-  <a id="fab-zalo" href="https://zalo.me/0938559098" target="_blank" rel="noopener"
-    class="fab hidden"
-    style="background:#0068FF;bottom:214px;box-shadow:0 3px 14px rgba(0,104,255,.4);text-decoration:none;display:none;align-items:center;justify-content:center;"
-    title="Nhắn BS qua Zalo">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
-      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      <line x1="9" y1="10" x2="9" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/>
-    </svg>
-  </a>
+
   <div id="fab-ai" class="fab fab-ai hidden" onclick="openChat()" title="Chat AI 24/7">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
