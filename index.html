@@ -3523,11 +3523,20 @@ async function saveConsent() {
 // ── LOGOUT ──
 async function doLogout() {
   showLoading('Đang đăng xuất...');
-  try {
-    await db.signOut();
-  } catch(e) {}
+  try { await db.signOut(); } catch(e) {}
   curUser = null;
   _history = [];
+  _ciState = { mood: null, symptoms: new Set(), weight: null, kick: null };
+
+  // Clear DOM để tránh rò rỉ dữ liệu giữa các phiên
+  [
+    'ob-name','ob-ga-weeks','ob-ga-days','ob-week-remaining','ob-trimester',
+    'ob-appt-day','ob-appt-month','ob-appt-time',
+    'gy-name','gy-day-big','gy-cycle-label',
+    'rec-ga-big','rec-name-hero','rec-sub-hero','rec-edd-hero','rec-content',
+    'adm-hdr-count','adm-pt-list','adm-today-appts'
+  ].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+
   hideLoading();
   goTo('s-landing');
 }
@@ -5402,7 +5411,9 @@ async function recLoadTab(tab) {
       _currentVisits = data;
       cont.innerHTML = _renderVisits(data);
     } else if (tab === 'rx') {
-      cont.innerHTML = _renderFileTab('rx');
+      const data = useMock ? [] : (await db.getPrescriptions(curUser.bn_code)).data || [];
+      _currentRx = data;
+      cont.innerHTML = _renderRx(data);
     }
   } catch(e) { cont.innerHTML = '<div class="empty"><p>Lỗi tải dữ liệu</p></div>'; }
 }
