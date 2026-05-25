@@ -8240,8 +8240,57 @@ function _dismissEmergencyModal() {
 
 // ── Mở chat ──
 function openChat() {
-  const type = curUser?.role === 'admin' ? 'bs' : 'bn';
-  openChatPanel(type);
+  if (curUser?.role === 'admin') { openChatPanel('bs'); return; }
+  // BN → hiện triage modal trước
+  _showTriageModal();
+}
+
+function _showTriageModal() {
+  const isGY = curUser?.patient_type === 'gy';
+  const name  = (curUser?.name||'').split(' ').pop();
+
+  // Cập nhật tiêu đề
+  const title = document.getElementById('triage-title');
+  const avatar = document.getElementById('triage-avatar');
+  if (title) title.textContent = isGY ? `Chị ${name} đang thế nào?` : `Hôm nay mẹ ${name} thế nào?`;
+  if (avatar) avatar.textContent = isGY ? '🌸' : '💝';
+
+  // Render chips
+  const chips = isGY ? [
+    { emoji:'😌', label:'Bình thường, muốn hỏi thông tin',   prompt:'Con không có triệu chứng gì bất thường, chỉ muốn hỏi thông tin thôi cô ơi.' },
+    { emoji:'🩸', label:'Ra máu bất thường',                  prompt:'Con bị ra máu bất thường ngoài kỳ kinh.' },
+    { emoji:'🤕', label:'Đau bụng dưới',                      prompt:'Con bị đau bụng dưới, đau âm ỉ hoặc quặn từng cơn.' },
+    { emoji:'🌡️', label:'Sốt, khí hư bất thường',            prompt:'Con bị sốt và khí hư có màu hoặc mùi bất thường.' },
+    { emoji:'😰', label:'Đau nhiều, lo lắng cần tư vấn gấp', prompt:'Con đang đau và rất lo lắng, cần tư vấn gấp.' },
+  ] : [
+    { emoji:'😊', label:'Bình thường, muốn hỏi thông tin',   prompt:'Con không có triệu chứng gì bất thường, chỉ muốn hỏi thông tin về thai kỳ thôi.' },
+    { emoji:'🤢', label:'Buồn nôn, mệt mỏi',                 prompt:'Con đang bị buồn nôn và mệt mỏi nhiều.' },
+    { emoji:'🤕', label:'Đau bụng, gò tử cung',              prompt:'Con bị đau bụng hoặc gò tử cung.' },
+    { emoji:'🩸', label:'Ra máu hoặc rỉ ối',                  prompt:'Con bị ra máu hoặc thấy có dịch chảy ra.' },
+    { emoji:'😰', label:'Bé ít đạp, lo lắng cần tư vấn gấp', prompt:'Con thấy bé đạp ít hơn bình thường và đang rất lo.' },
+  ];
+
+  const el = document.getElementById('triage-chips');
+  if (el) el.innerHTML = chips.map(ch => `
+    <button onclick="_triagePick(${JSON.stringify(ch.prompt).replace(/'/g,'&#39;')})"
+      style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;
+      border:1px solid #F0E7D2;background:#FEFCF7;cursor:pointer;text-align:left;width:100%;
+      font-family:'IBM Plex Sans',sans-serif;transition:background .1s;"
+      onmouseover="this.style.background='#FFF8E7'" onmouseout="this.style.background='#FEFCF7'">
+      <span style="font-size:22px;flex-shrink:0;">${ch.emoji}</span>
+      <span style="font-size:13px;font-weight:500;color:#1F1A0F;">${ch.label}</span>
+    </button>`).join('');
+
+  document.getElementById('triage-modal').style.display = 'flex';
+}
+
+function _triagePick(prompt) {
+  // Đóng modal
+  document.getElementById('triage-modal').style.display = 'none';
+  // Mở chat với tin nhắn đã chọn
+  openChatPanel('bn');
+  // Gửi sau khi chat load xong
+  setTimeout(() => chatSend(prompt), 600);
 }
 
 async function openChatPanel(type) {
@@ -8988,6 +9037,18 @@ document.body.insertAdjacentHTML('beforeend', `
   <!-- wake indicator tạm ẩn -->
   <!-- Emergency Modal -->
   <div id="s-emergency-modal" style="position:fixed;inset:0;z-index:99999;pointer-events:none;"></div>
+
+  <!-- Triage Modal -->
+  <div id="triage-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px;width:100%;padding-bottom:calc(24px + env(safe-area-inset-bottom));">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div id="triage-avatar" style="font-size:36px;margin-bottom:8px;">💝</div>
+        <div style="font-family:'Lora',serif;font-size:18px;font-weight:400;color:#1F1A0F;" id="triage-title">Hôm nay mẹ thế nào?</div>
+        <div style="font-size:12px;color:#B0A490;margin-top:4px;">Bấm chọn để Cô Hương hỗ trợ ngay</div>
+      </div>
+      <div id="triage-chips" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
 
   <div id="fab-ai" class="fab fab-ai hidden" onclick="openChat()" title="Chat AI 24/7">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
