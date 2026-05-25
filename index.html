@@ -3019,9 +3019,10 @@ function _updateFabs(screenId) {
   const fabAI   = document.getElementById('fab-ai');
   if (!fabAI) return;
 
-  // Ẩn FAB ở auth screens
+  // Ẩn FAB ở auth screens và admin screens (admin có nút BaoBei Khoa riêng trên header)
   const authScreens = ['s-landing', 's-login', 's-register', 's-consent'];
-  const hideFab = authScreens.includes(screenId);
+  const adminScreens = ['s-admin', 's-patient-detail', 's-admin-add-patient'];
+  const hideFab = authScreens.includes(screenId) || adminScreens.includes(screenId);
   fabAI.classList.toggle('hidden', hideFab);
 
 
