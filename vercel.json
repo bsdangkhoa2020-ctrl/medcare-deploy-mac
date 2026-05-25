@@ -1,12 +1,14 @@
 {
+  "rewrites": [
+    { "source": "/manifest.json", "destination": "/manifest.json" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/manifest.json",
       "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "img-src * data: blob:; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
-        }
+        { "key": "Content-Type", "value": "application/manifest+json" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
       ]
     }
   ]
