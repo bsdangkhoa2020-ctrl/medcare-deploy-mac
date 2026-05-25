@@ -1039,9 +1039,48 @@ input, textarea, select {
       </div>
     </div>
   </div>
+</div>
+  <!-- ═══ TAB: TẠP CHÍ ═══ -->
+  <div id="adm-pane-articles" class="adm-pane adm-ibm" style="display:none;padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div>
+        <div class="adm-lora" style="font-size:18px;font-weight:400;">Tạp chí sức khoẻ</div>
+        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;" id="adm-art-count"></div>
+      </div>
+      <button onclick="admArtCreate()" style="padding:8px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Bài mới</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button class="adm-art-filter adm-art-filter-active" data-f="all" onclick="admSetArtFilter('all')" style="padding:5px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Tất cả</button>
+      <button class="adm-art-filter" data-f="ob" onclick="admSetArtFilter('ob')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Sản khoa</button>
+      <button class="adm-art-filter" data-f="gy" onclick="admSetArtFilter('gy')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Phụ khoa</button>
+    </div>
+    <div id="adm-art-list" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
+    </div>
+    <div id="adm-art-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;">
+        <div class="adm-lora" id="adm-art-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Bài viết mới</div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tiêu đề *</div>
+          <input id="adm-art-title" type="text" placeholder="Tiêu đề bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:8px;">Đối tượng</div>
+          <div style="display:flex;gap:8px;">
+            <button id="adm-art-cat-ob" onclick="admArtSelectCat('ob')" style="flex:1;padding:9px;border-radius:10px;border:2px solid #1F1A0F;background:#FFF8E7;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;font-weight:500;">Sản khoa</button>
+            <button id="adm-art-cat-gy" onclick="admArtSelectCat('gy')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Phụ khoa</button>
+            <button id="adm-art-cat-both" onclick="admArtSelectCat('both')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Cả hai</button>
+          </div></div>
+        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ảnh thumbnail (URL)</div>
+          <input id="adm-art-img" type="url" placeholder="https://..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
+        <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Nội dung *</div>
+          <textarea id="adm-art-content" rows="6" placeholder="Nội dung bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="admArtModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
+          <button onclick="admArtSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Đăng bài</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-  <!-- AI Scan Pane -->
+<!-- AI Scan Pane -->
   <div id="adm-pane-aiscan" class="adm-pane adm-ibm" style="display:none;padding:16px;">
 
     <!-- Header -->
@@ -1157,46 +1196,7 @@ input, textarea, select {
     </div>
 
   </div>
-</div>
-  <!-- ═══ TAB: TẠP CHÍ ═══ -->
-  <div id="adm-pane-articles" class="adm-pane adm-ibm" style="display:none;padding:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <div>
-        <div class="adm-lora" style="font-size:18px;font-weight:400;">Tạp chí sức khoẻ</div>
-        <div style="font-size:11px;color:#B0A490;font-weight:300;margin-top:2px;" id="adm-art-count"></div>
-      </div>
-      <button onclick="admArtCreate()" style="padding:8px 16px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">+ Bài mới</button>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:14px;">
-      <button class="adm-art-filter adm-art-filter-active" data-f="all" onclick="admSetArtFilter('all')" style="padding:5px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Tất cả</button>
-      <button class="adm-art-filter" data-f="ob" onclick="admSetArtFilter('ob')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Sản khoa</button>
-      <button class="adm-art-filter" data-f="gy" onclick="admSetArtFilter('gy')" style="padding:5px 14px;border-radius:20px;border:1px solid #EDE7D8;background:#fff;color:#7A6F5C;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Phụ khoa</button>
-    </div>
-    <div id="adm-art-list" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="text-align:center;padding:30px;color:#B0A490;font-size:13px;font-weight:300;">Đang tải...</div>
-    </div>
-    <div id="adm-art-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:flex-end;">
-      <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;">
-        <div class="adm-lora" id="adm-art-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Bài viết mới</div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tiêu đề *</div>
-          <input id="adm-art-title" type="text" placeholder="Tiêu đề bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:8px;">Đối tượng</div>
-          <div style="display:flex;gap:8px;">
-            <button id="adm-art-cat-ob" onclick="admArtSelectCat('ob')" style="flex:1;padding:9px;border-radius:10px;border:2px solid #1F1A0F;background:#FFF8E7;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;font-weight:500;">Sản khoa</button>
-            <button id="adm-art-cat-gy" onclick="admArtSelectCat('gy')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Phụ khoa</button>
-            <button id="adm-art-cat-both" onclick="admArtSelectCat('both')" style="flex:1;padding:9px;border-radius:10px;border:1px solid #F0E7D2;background:#fff;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:#7A6F5C;">Cả hai</button>
-          </div></div>
-        <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Ảnh thumbnail (URL)</div>
-          <input id="adm-art-img" type="url" placeholder="https://..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
-        <div style="margin-bottom:16px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Nội dung *</div>
-          <textarea id="adm-art-content" rows="6" placeholder="Nội dung bài viết..." style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea></div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="admArtModalClose()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
-          <button onclick="admArtSave()" style="flex:1;padding:12px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Đăng bài</button>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
@@ -9959,3 +9959,4 @@ document.body.insertAdjacentHTML('beforeend', `
 
 </script>
 </html>
+
