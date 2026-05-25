@@ -5988,7 +5988,7 @@ async function aiscanRun() {
 Phân tích cực kỳ cẩn thận hình ảnh/PDF kết quả cận lâm sàng đính kèm và trích xuất thông tin chính xác theo cấu trúc JSON quy định.
 Yêu cầu: Không bịa đặt thông tin. Chỉ ghi nhận dữ liệu hiển thị rõ trên phiếu. Status: "high"/"low"/"normal".
 Trả về JSON thuần không chứa markdown:
-{"patientName":"","dob":"","diagnosis":"","extractedTables":[{"test":"","value":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":""}]}`;
+{"patientName":"","dob":"","gender":"","address":"","phone":"","weight":"","height":"","bmi":"","pulse":"","bloodPressure":"","diagnosis":"","examDate":"","nextVisitDate":"","allergies":"","extractedTables":[{"test":"","value":"","unit":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":"","quantity":"","duration":""}]}`;
 
   const typeHints = {
     xetnghiem:'File là kết quả xét nghiệm máu/nước tiểu/sinh hóa.',
@@ -6036,22 +6036,41 @@ Trả về JSON thuần không chứa markdown:
       if (parsed.patientName || parsed.dob || parsed.diagnosis) {
         html += '<div style="background:#fff;border-radius:12px;border:1px solid #E0D0B0;padding:14px 16px;margin-bottom:12px;">';
         html += '<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#B57A1F;margin-bottom:10px;">Thông tin bệnh nhân</div>';
-        if (parsed.patientName) {
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;">Họ tên</div>'
-                + '<div style="font-size:14px;font-weight:700;color:#1F1A0F;">'+parsed.patientName+'</div>'
+
+        const row = (label, val) => val
+          ? '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">'
+          + '<div style="font-size:11px;color:#7A6F5C;min-width:90px;padding-top:1px;">'+label+'</div>'
+          + '<div style="font-size:13px;color:#1F1A0F;font-weight:500;line-height:1.5;">'+val+'</div>'
+          + '</div>' : '';
+
+        html += row('Họ tên',       parsed.patientName ? '<b style="font-size:14px;">'+parsed.patientName+'</b>' : '');
+        html += row('Ngày sinh',    parsed.dob);
+        html += row('Giới tính',    parsed.gender);
+        html += row('Địa chỉ',     parsed.address);
+        html += row('Điện thoại',  parsed.phone);
+
+        // Sinh hiệu trên 1 hàng nếu có
+        const vitals = [
+          parsed.weight    ? 'Cân nặng: <b>'+parsed.weight+'</b>' : '',
+          parsed.height    ? 'Chiều cao: <b>'+parsed.height+'</b>' : '',
+          parsed.bmi       ? 'BMI: <b>'+parsed.bmi+'</b>' : '',
+          parsed.pulse     ? 'Mạch: <b>'+parsed.pulse+'</b>' : '',
+          parsed.bloodPressure ? 'HA: <b>'+parsed.bloodPressure+'</b>' : '',
+        ].filter(Boolean);
+        if (vitals.length) {
+          html += '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px;font-size:12px;color:#1F1A0F;">'
+                + vitals.map(v => '<span>'+v+'</span>').join('')
                 + '</div>';
         }
-        if (parsed.dob) {
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;">Ngày sinh</div>'
-                + '<div style="font-size:13px;color:#1F1A0F;">'+parsed.dob+'</div>'
-                + '</div>';
-        }
+
+        html += row('Dị ứng thuốc', parsed.allergies);
+        html += row('Ngày khám',    parsed.examDate);
+        html += row('Tái khám',     parsed.nextVisitDate);
+
         if (parsed.diagnosis) {
-          html += '<div style="display:flex;align-items:flex-start;gap:8px;">'
-                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;padding-top:2px;">Chẩn đoán</div>'
-                + '<div style="font-size:13px;color:#1F1A0F;font-weight:500;line-height:1.5;">'+parsed.diagnosis+'</div>'
+          html += '<div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">'
+                + '<div style="font-size:11px;color:#7A6F5C;min-width:90px;padding-top:2px;">Chẩn đoán</div>'
+                + '<div style="font-size:13px;color:#1F1A0F;font-weight:600;line-height:1.5;">'+parsed.diagnosis+'</div>'
                 + '</div>';
         }
         html += '</div>';
@@ -6112,7 +6131,9 @@ Trả về JSON thuần không chứa markdown:
         parsed.prescriptions.forEach((p, i) => {
           html += '<div style="'+(i<parsed.prescriptions.length-1?'border-bottom:1px solid #F5EFE6;':'')+'padding:'+(i===0?'0':'10px')+'0 '+(i===parsed.prescriptions.length-1?'0':'10px')+';">'
                 + '<div style="font-size:13px;font-weight:700;color:#1F1A0F;margin-bottom:3px;">💊 '+p.drug_name+'</div>'
-                + (p.dosage ? '<div style="font-size:12px;color:#7A6F5C;line-height:1.5;">'+p.dosage+'</div>' : '')
+                + (p.dosage   ? '<div style="font-size:12px;color:#7A6F5C;line-height:1.5;">'+p.dosage+'</div>' : '')
+                + (p.quantity ? '<div style="font-size:12px;color:#7A6F5C;">Số lượng: '+p.quantity+'</div>' : '')
+                + (p.duration ? '<div style="font-size:12px;color:#7A6F5C;">'+p.duration+'</div>' : '')
                 + '</div>';
         });
         html += '</div>';
@@ -6497,7 +6518,7 @@ Yêu cầu nghiêm ngặt:
 2. Dịch các giá trị chỉ số học thuật chuẩn xác theo thuật ngữ y tế tiếng Việt chuẩn của Bộ Y tế.
 3. Phân loại status từng chỉ số dựa trên khoảng tham chiếu ghi bên cạnh: "high" / "low" / "normal".
 Trả về JSON thuần không chứa markdown, khớp hoàn toàn cấu trúc sau:
-{"patientName":"","dob":"","diagnosis":"","extractedTables":[{"test":"","value":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":""}]}`;
+{"patientName":"","dob":"","gender":"","address":"","phone":"","weight":"","height":"","bmi":"","pulse":"","bloodPressure":"","diagnosis":"","examDate":"","nextVisitDate":"","allergies":"","extractedTables":[{"test":"","value":"","unit":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":"","quantity":"","duration":""}]}`;
 
   const typePrompts = {
     xetnghiem: JSON_SYSTEM + `
