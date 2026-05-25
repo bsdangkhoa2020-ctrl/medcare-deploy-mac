@@ -505,6 +505,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
     <div class="step-bar" style="margin-bottom:36px">
       <div class="step-seg done" id="seg1"></div>
       <div class="step-seg" id="seg2"></div>
+      <div class="step-seg" id="seg3"></div>
     </div>
 
     <!-- Bước 1: Mã mời (disabled) -->
@@ -2997,7 +2998,7 @@ function goTo(id) {
   // Cập nhật FAB visibility
   _updateFabs(id);
   // History API — fix nút Back iOS/Android
-  if (!_isBackNav && !history.state?.screenId === id) {
+  if (!_isBackNav && history.state?.screenId !== id) {
     history.pushState({ screenId: id }, '', '#' + id);
   }
 }
@@ -3131,10 +3132,12 @@ function _enterApp(user) {
     if (user.lmp) {
       const ga = calcGA(user.lmp);
       if (ga) {
-        const gaEl  = document.getElementById('ob-ga-display');
-        const eddEl = document.getElementById('ob-edd-display');
-        if (gaEl)  gaEl.textContent  = ga.display;
-        if (eddEl) eddEl.textContent = 'Dự sinh: ' + ga.edd;
+        const weeksEl  = document.getElementById('ob-ga-weeks');
+        const daysEl   = document.getElementById('ob-ga-days');
+        const remainEl = document.getElementById('ob-week-remaining');
+        if (weeksEl)  weeksEl.textContent  = ga.weeks;
+        if (daysEl)   daysEl.textContent   = ga.days;
+        if (remainEl) remainEl.textContent = `Còn ${40 - ga.weeks} tuần đến ngày dự sinh`;
       }
     }
     goTo('s-ob-home');
@@ -5234,9 +5237,9 @@ async function recSavePw() {
 
   if (curUser._supabase) {
     try {
-      await db.changePassword(oldPw, newPw);
+      await db.updatePassword(newPw);
       recClosePw();
-      showToast('Đổi mật khẩu thành công ✓');
+      toast('Đổi mật khẩu thành công ✓');
     } catch(e) {
       showErr('Mật khẩu hiện tại không đúng');
     }
@@ -5244,7 +5247,7 @@ async function recSavePw() {
     // Mock — kiểm tra pass cũ = "123456"
     if (oldPw !== '123456') return showErr('Mật khẩu hiện tại không đúng');
     recClosePw();
-    showToast('Đổi mật khẩu thành công ✓');
+    toast('Đổi mật khẩu thành công ✓');
   }
 }
 
@@ -5288,7 +5291,7 @@ async function recSaveEdit() {
   _setEl('rec-phone',     phone || '—');
   const nameEl = document.getElementById('ob-name');
   if (nameEl) nameEl.textContent = name.split(' ').pop();
-  showToast('Đã lưu thay đổi ✓');
+  toast('Đã lưu thay đổi ✓');
 }
 
 function recSwitchTab(tab, el) {
@@ -5443,7 +5446,7 @@ function tabFileUpload(kind, input) {
   });
   input.value = '';
   document.getElementById('rec-content').innerHTML = _renderFileTab(kind);
-  showToast('Đã thêm file ✓');
+  toast('Đã thêm file ✓');
 }
 
 function tabFileView(kind, idx) {
@@ -5620,7 +5623,7 @@ function _renderRx(rxs) {
 // Placeholder — sẽ build PDF thật ở P9
 let _currentRx = [];
 function rxDownloadPdf(idx) {
-  showToast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo');
+  toast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo');
 }
 
 // ── OB APPOINTMENTS ──
@@ -7149,7 +7152,7 @@ function gyEduRenderTopic(id, bodyEl) {
     <div style="padding-top:16px">
       <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gy-muted);margin-bottom:14px">${topic?.label || ''}</div>
       ${articles.map((a, i) => `
-      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="showToast('Bài viết đầy đủ sẽ có trong phiên bản tiếp theo')">
+      <div style="background:#fff;border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="toast('Bài viết đầy đủ sẽ có trong phiên bản tiếp theo')">
         <div style="font-family:var(--serif);font-size:17px;color:var(--gy-ink);line-height:1.35;margin-bottom:8px">${a.title}</div>
         <div style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--gy-muted);line-height:1.6;margin-bottom:10px">${a.sub}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:.5px solid var(--gy-md)">
@@ -7234,16 +7237,16 @@ async function saveGyCheckin() {
   };
   try {
     if (curUser?._supabase) {
-      await db._sb.from('gy_checkins').upsert(payload, { onConflict: 'bn_code,checkin_date' });
+      await sb.from('gy_checkins').upsert(payload, { onConflict: 'bn_code,checkin_date' });
     }
     const streak = parseInt(localStorage.getItem('gy_streak') || '0') + 1;
     localStorage.setItem('gy_streak', streak);
     localStorage.setItem('gy_last_checkin', payload.checkin_date);
     closeGyCheckin();
-    showToast('✓ Check-in hôm nay đã lưu!');
+    toast('✓ Check-in hôm nay đã lưu!');
     _setEl('gy-checkin-streak', `${streak} ngày liên tiếp`);
   } catch(e) {
-    showToast('Lỗi lưu check-in, thử lại sau');
+    toast('Lỗi lưu check-in, thử lại sau');
   }
 }
 
@@ -7350,7 +7353,7 @@ function gyRecTab(tab, el) {
             <div style="font-size:13px;font-weight:600;color:var(--gy-ink);margin-bottom:3px">${x.name}</div>
             <div style="font-size:11px;color:var(--gy-muted)">${new Date(x.date).toLocaleDateString('vi-VN')}</div>
           </div>
-          <button onclick="showToast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
+          <button onclick="toast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
             style="display:flex;align-items:center;gap:5px;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--gy-dk);font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             PDF
