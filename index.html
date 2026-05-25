@@ -6147,36 +6147,37 @@ async function initDocSchedule() {
   const body = document.getElementById('doc-sched-body');
   if (!body) return;
   try {
-    const { data } = await db.getSchedule();
-    if (!data || !data.length) {
-      body.innerHTML = '<div class="empty"><p>BS chưa cập nhật lịch tuần này</p></div>';
+    const today = _localDateStr(new Date());
+    const { data } = await db.getScheduleFrom(today, 'ob');
+    const rows = (data || []).filter(r => r.location === 'pk315').slice(0, 14);
+
+    if (!rows.length) {
+      body.innerHTML = '<div class="empty"><p>BS chưa cập nhật lịch PK 315 tuần này</p></div>';
       return;
     }
-    // Render 2 tuần
-    let html = '';
-    [0, 1].forEach(wo => {
-      const weekLabel = wo === 0 ? 'Tuần này' : 'Tuần sau';
-      const weekRows = data.filter(r => r.week_offset === wo && r.on);
-      html += `<div style="margin-bottom:20px">
-        <div class="eyebrow" style="margin-bottom:10px">${weekLabel}</div>`;
-      if (!weekRows.length) {
-        html += `<div style="font-size:13px;color:var(--hint);font-family:var(--serif);font-style:italic">Chưa có lịch</div>`;
-      } else {
-        // Group by day
-        const byDay = {};
-        weekRows.forEach(r => { if (!byDay[r.day_key]) byDay[r.day_key] = []; byDay[r.day_key].push(r); });
-        html += `<div class="card" style="margin-bottom:0">`;
-        Object.entries(byDay).forEach(([day, rows], i, arr) => {
-          html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;${i < arr.length-1 ? 'border-bottom:0.5px solid var(--border)' : ''}">
-            <div style="font-size:13px;font-weight:600;color:var(--ink)">${day}</div>
-            <div style="font-size:12px;color:var(--muted);text-align:right">${rows.map(r => `${DOC_LOC[r.location]||r.location}${r.time_range?' '+r.time_range:''}`).join('<br>')}</div>
-          </div>`;
-        });
-        html += `</div>`;
-      }
-      html += `</div>`;
+
+    const DOW = ['CN','T2','T3','T4','T5','T6','T7'];
+    let html = '<div class="card" style="margin-bottom:16px">';
+    rows.forEach((r, i) => {
+      const d = new Date(r.date + 'T00:00:00');
+      const isToday = r.date === today;
+      const dateStr = `${DOW[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;
+          padding:11px 14px;${i < rows.length-1?'border-bottom:0.5px solid var(--border)':''}
+          ${isToday?'background:var(--gold-lt);':''}">
+          <div>
+            <div style="font-size:13px;font-weight:${isToday?'600':'500'};color:var(--ink)">${dateStr}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">PK Phụ Sản 315</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;font-weight:600;color:var(--gold-dk)">${r.shift_name}</div>
+            <div style="font-size:11px;color:var(--muted)">${r.start_time}–${r.end_time}</div>
+          </div>
+        </div>`;
     });
-    // CTA gọi ngay
+    html += '</div>';
+
     html += `<a href="tel:0938559098" class="btn btn-ghost" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 12 19.79 19.79 0 01.9 3.38 2 2 0 012.88 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
       Gọi BS. Tuấn — 0938 559 098
@@ -7927,8 +7928,8 @@ async function gyLoadHomeData() {
       const dow = now.getDay() || 7;
       const monday = new Date(now); monday.setDate(now.getDate() - dow + 1); monday.setHours(0,0,0,0);
       const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-      const { data: sched } = await db.getScheduleWeek(monday.toISOString().slice(0,10), sunday.toISOString().slice(0,10), 'gy');
-      const todayStr = now.toISOString().slice(0,10);
+      const { data: sched } = await db.getScheduleWeek(_localDateStr(monday), _localDateStr(sunday), 'gy');
+      const todayStr = _localDateStr(now);
       const DOW2 = ['CN','T2','T3','T4','T5','T6','T7'];
       if (!sched || !sched.length) {
         schedEl.innerHTML = `<div style="font-size:10px;color:var(--gy-muted);font-style:italic;">BS chưa cập nhật lịch tuần này</div>`;
