@@ -3601,7 +3601,7 @@ async function pdExportPdf() {
   if (bnCode) exportPatientPdf(bnCode);
 }
 
-function pdSaveEdit() {
+async function pdSaveEdit() {
   const keys = ['name','phone','dob','blood_type','allergy','height_cm','weight_kg','lmp','address','medical_history'];
   const updates = {};
   keys.forEach(k => {
@@ -8494,7 +8494,7 @@ async function chatSend(customText) {
 
 // ── Chat persistence ──
 let _chatSaveTimer = null;
-function _chatDebounceSave() {
+async function _chatDebounceSave() {
   clearTimeout(_chatSaveTimer);
   _chatSaveTimer = setTimeout(async () => {
     if (!curUser?.id || !_chatHistory.length || curUser?._supabase === false) return;
