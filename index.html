@@ -5543,12 +5543,12 @@ function _renderFileTab(kind, selectedDate) {
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px">${f.status==='ai_processed'?'✅ Đã phân tích AI':'📎 File đính kèm'}</div>
-            ${f.notes?`<div style="font-size:11px;color:var(--gold-dk);margin-top:2px;font-style:italic;">📝 ${f.notes}</div>`:''}
+            ${f.notes?'<div style="font-size:11px;color:var(--gold-dk);margin-top:2px;font-style:italic;">📝 '+f.notes+'</div>':''}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            ${f.aiResult ? `<button onclick="tabFileViewAI('${kind}',${files.indexOf(f)})" style="font-size:11px;color:#3A7D5C;background:#F0F7F4;border:.5px solid #3A7D5C;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">🔬 KQ AI</button>` : ''}
+            ${f.aiResult ? '<button onclick="tabFileViewAI(\''+kind+'\','+files.indexOf(f)+')" style="font-size:11px;color:#3A7D5C;background:#F0F7F4;border:.5px solid #3A7D5C;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">🔬 KQ AI</button>' : ''}
             <button onclick="tabFileView('${kind}',${files.indexOf(f)})" style="font-size:11px;color:var(--gold-dk);background:var(--gold-lt);border:.5px solid var(--gold-md);border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">Xem</button>
-            ${isStaff ? `<button onclick="tabFileDelete('${kind}',${files.indexOf(f)})" style="font-size:11px;color:var(--danger);background:none;border:.5px solid rgba(192,48,48,.3);border-radius:6px;padding:6px 10px;cursor:pointer">Xoá</button>` : ''}
+            ${isStaff ? '<button onclick="tabFileDelete(\''+kind+'\','+files.indexOf(f)+')" style="font-size:11px;color:var(--danger);background:none;border:.5px solid rgba(192,48,48,.3);border-radius:6px;padding:6px 10px;cursor:pointer">Xoá</button>' : ''}
           </div>
         </div>`;}).join('')
     : `<div style="text-align:center;padding:28px 0">
