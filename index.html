@@ -5001,7 +5001,17 @@ function obRenderSupplement(suppData) {
 }
 
 async function obLoadHomeData() {
-  if (!curUser?.bn_code) return;
+  if (!curUser?.bn_code) {
+    // BN mới đăng ký chưa có bn_code — hiện hướng dẫn thay vì để trắng
+    const apptCard = document.getElementById('ob-appt-card');
+    if (apptCard) apptCard.innerHTML = `
+      <div style="padding:16px;text-align:center;background:rgba(255,255,255,.08);border-radius:12px;">
+        <div style="font-size:28px;margin-bottom:8px;">👋</div>
+        <div style="font-family:var(--serif);font-size:15px;color:rgba(255,255,255,.9);margin-bottom:6px;">Chào mừng đến với BaoBei!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;">Bác sĩ Tuấn sẽ kích hoạt hồ sơ của bạn sau lần khám đầu tiên. Trong thời gian chờ, bạn có thể dùng tính năng Chat AI.</div>
+      </div>`;
+    return;
+  }
   try {
     // Lịch hẹn tiếp theo
     const { data: appts } = await db.getMyAppointments(curUser.bn_code);
