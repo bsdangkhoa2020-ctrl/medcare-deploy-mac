@@ -6281,15 +6281,16 @@ async function aicptConfirmCreate() {
 
     // Lưu đơn thuốc nếu có
     if (parsed?.prescriptions?.length) {
-      const items = parsed.prescriptions.map(p => ({
+      const medications = parsed.prescriptions.map(p => ({
         name: p.drug_name, dose: p.dosage, days: ''
       }));
       await sb.from('prescriptions').insert({
-        bn_code:   bnCode,
-        diagnosis: diag || '',
-        items,
-        doctor:    'BS. CK1 Hoàng Thanh Tuấn',
-        created_by: curUser?.id || null
+        bn_code:      bnCode,
+        diagnosis:    diag || '',
+        medications,
+        notes:        'BS. CK1 Hoàng Thanh Tuấn',
+        rx_date:      new Date().toISOString().slice(0,10),
+        created_by:   curUser?.id || null
       });
     }
 
