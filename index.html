@@ -5975,36 +5975,108 @@ Trả về JSON thuần không chứa markdown:
     const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     _aiscanLastResult = raw;
 
-    // Parse JSON
-    let html = '';
+    // Parse JSON → render đẹp cho BS
     try {
       const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
       _aiscanParsed = parsed;
-      if (parsed.patientName) html += `<div style="margin-bottom:8px"><b>👤</b> ${parsed.patientName}${parsed.dob?' · '+parsed.dob:''}</div>`;
-      if (parsed.diagnosis)   html += `<div style="margin-bottom:12px"><b>🏥</b> ${parsed.diagnosis}</div>`;
+
+      let html = '';
+
+      // ── CARD: Thông tin bệnh nhân ──
+      if (parsed.patientName || parsed.dob || parsed.diagnosis) {
+        html += '<div style="background:#fff;border-radius:12px;border:1px solid #E0D0B0;padding:14px 16px;margin-bottom:12px;">';
+        html += '<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#B57A1F;margin-bottom:10px;">Thông tin bệnh nhân</div>';
+        if (parsed.patientName) {
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;">Họ tên</div>'
+                + '<div style="font-size:14px;font-weight:700;color:#1F1A0F;">'+parsed.patientName+'</div>'
+                + '</div>';
+        }
+        if (parsed.dob) {
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;">Ngày sinh</div>'
+                + '<div style="font-size:13px;color:#1F1A0F;">'+parsed.dob+'</div>'
+                + '</div>';
+        }
+        if (parsed.diagnosis) {
+          html += '<div style="display:flex;align-items:flex-start;gap:8px;">'
+                + '<div style="font-size:11px;color:#7A6F5C;min-width:70px;padding-top:2px;">Chẩn đoán</div>'
+                + '<div style="font-size:13px;color:#1F1A0F;font-weight:500;line-height:1.5;">'+parsed.diagnosis+'</div>'
+                + '</div>';
+        }
+        html += '</div>';
+      }
+
+      // ── CARD: Chỉ số xét nghiệm ──
       if (parsed.extractedTables?.length) {
-        html += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
-          <tr style="background:#F0E7D2;"><th style="padding:5px 8px;text-align:left;">Chỉ số</th><th style="padding:5px 8px;">Giá trị</th><th style="padding:5px 8px;">Tham chiếu</th><th style="padding:5px 8px;">KQ</th></tr>`;
-        parsed.extractedTables.forEach(r => {
-          const icon = r.status==='high'?'🔴':r.status==='low'?'🔵':'🟢';
-          const bg   = r.status==='high'?'#FFF0F0':r.status==='low'?'#F0F0FF':'';
-          html += `<tr style="background:${bg};border-bottom:1px solid #F0E7D2;">
-            <td style="padding:5px 8px;">${r.test||''}</td>
-            <td style="padding:5px 8px;text-align:center;font-weight:600;">${r.value||''}</td>
-            <td style="padding:5px 8px;text-align:center;color:#7A6F5C;">${r.ref||''}</td>
-            <td style="padding:5px 8px;text-align:center;">${icon}</td></tr>`;
-        });
-        html += `</table>`;
+        const abnormal = parsed.extractedTables.filter(r => r.status !== 'normal');
+        const normal   = parsed.extractedTables.filter(r => r.status === 'normal');
+
+        html += '<div style="background:#fff;border-radius:12px;border:1px solid #E0D0B0;padding:14px 16px;margin-bottom:12px;">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+              + '<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#B57A1F;">Chỉ số xét nghiệm</div>'
+              + '<div style="font-size:11px;color:#7A6F5C;">'+parsed.extractedTables.length+' chỉ số</div>'
+              + '</div>';
+
+        // Hiện bất thường trước với nền màu
+        if (abnormal.length) {
+          html += '<div style="font-size:10px;font-weight:600;color:#D64545;margin-bottom:6px;letter-spacing:.06em;">⚠️ CẦN CHÚ Ý ('+abnormal.length+' chỉ số)</div>';
+          abnormal.forEach(r => {
+            const isHigh = r.status === 'high';
+            const bg     = isHigh ? '#FFF0F0' : '#F0F0FF';
+            const badge  = isHigh ? '<span style="font-size:10px;background:#D64545;color:#fff;border-radius:4px;padding:1px 5px;">CAO</span>'
+                                  : '<span style="font-size:10px;background:#4A6FD4;color:#fff;border-radius:4px;padding:1px 5px;">THẤP</span>';
+            html += '<div style="background:'+bg+';border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+                  + '<div style="display:flex;align-items:center;justify-content:space-between;">'
+                  + '<div style="font-size:13px;font-weight:600;color:#1F1A0F;">'+r.test+'</div>'
+                  + badge
+                  + '</div>'
+                  + '<div style="display:flex;gap:16px;margin-top:4px;">'
+                  + '<div><span style="font-size:10px;color:#7A6F5C;">Kết quả: </span><span style="font-size:13px;font-weight:700;color:#1F1A0F;">'+r.value+'</span></div>'
+                  + (r.ref ? '<div><span style="font-size:10px;color:#7A6F5C;">Tham chiếu: </span><span style="font-size:11px;color:#7A6F5C;">'+r.ref+'</span></div>' : '')
+                  + '</div>'
+                  + '</div>';
+          });
+        }
+
+        // Bình thường — dạng list gọn
+        if (normal.length) {
+          html += '<div style="font-size:10px;font-weight:600;color:#2E6E50;margin-bottom:6px;letter-spacing:.06em;'+(abnormal.length?'margin-top:10px;':'')+'">✅ BÌNH THƯỜNG ('+normal.length+' chỉ số)</div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+          normal.forEach(r => {
+            html += '<div style="background:#F0F7F0;border-radius:8px;padding:6px 10px;">'
+                  + '<div style="font-size:11px;color:#2E6E50;font-weight:600;">'+r.test+'</div>'
+                  + '<div style="font-size:12px;font-weight:700;color:#1F1A0F;">'+r.value+'</div>'
+                  + (r.ref ? '<div style="font-size:9px;color:#7A6F5C;">'+r.ref+'</div>' : '')
+                  + '</div>';
+          });
+          html += '</div>';
+        }
+        html += '</div>';
       }
+
+      // ── CARD: Đơn thuốc ──
       if (parsed.prescriptions?.length) {
-        parsed.prescriptions.forEach(p => {
-          html += `<div style="padding:6px 0;border-bottom:1px solid #F0E7D2;font-size:12px;"><b>${p.drug_name||''}</b>${p.dosage?'<br><span style="color:#7A6F5C;">'+p.dosage+'</span>':''}</div>`;
+        html += '<div style="background:#fff;border-radius:12px;border:1px solid #E0D0B0;padding:14px 16px;">';
+        html += '<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#B57A1F;margin-bottom:10px;">Đơn thuốc ('+parsed.prescriptions.length+' thuốc)</div>';
+        parsed.prescriptions.forEach((p, i) => {
+          html += '<div style="'+(i<parsed.prescriptions.length-1?'border-bottom:1px solid #F5EFE6;':'')+'padding:'+(i===0?'0':'10px')+'0 '+(i===parsed.prescriptions.length-1?'0':'10px')+';">'
+                + '<div style="font-size:13px;font-weight:700;color:#1F1A0F;margin-bottom:3px;">💊 '+p.drug_name+'</div>'
+                + (p.dosage ? '<div style="font-size:12px;color:#7A6F5C;line-height:1.5;">'+p.dosage+'</div>' : '')
+                + '</div>';
         });
+        html += '</div>';
       }
-      resultText.innerHTML = html||'<div style="color:#7A6F5C;font-style:italic;">Không trích xuất được dữ liệu</div>';
+
+      if (!html) html = '<div style="font-size:13px;color:#7A6F5C;font-style:italic;text-align:center;padding:16px;">AI không trích xuất được dữ liệu từ tài liệu này</div>';
+      resultText.innerHTML = html;
+
     } catch(e) {
-      resultText.textContent = raw||'Không phân tích được.';
+      // Fallback khi không parse được JSON — hiện text gọn
       _aiscanParsed = null;
+      const cleaned = (raw||'').replace(/[{}"]/g,'').replace(/,(?=\s*[a-z])/gi, '
+').trim();
+      resultText.innerHTML = '<div style="font-size:12px;color:#1F1A0F;line-height:1.8;white-space:pre-wrap;">'+cleaned+'</div>';
     }
     resultDiv.style.display = 'block';
     document.getElementById('aiscan-save-area').style.display = 'block';
