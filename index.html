@@ -3954,11 +3954,11 @@ function admSwitchTab(tab) {
 // TAB 1: BỆNH NHÂN
 // ────────────────────────────────────────
 async function admLoadPatients() {
+  showLoading('Đang tải danh sách bệnh nhân...');
   try {
     const { data, error } = await db.getAllPatients();
     if (error) throw error;
     adm.patients = data || [];
-    // Cập nhật badge số BN trên header
     const hdrCount = document.getElementById('adm-hdr-count');
     if (hdrCount) hdrCount.textContent = adm.patients.length;
     admRenderPatients();
@@ -3966,6 +3966,8 @@ async function admLoadPatients() {
   } catch(err) {
     console.error('[Load Patients Error]:', err);
     toast('Không thể tải danh sách bệnh nhân', 'err');
+  } finally {
+    hideLoading();
   }
 }
 
@@ -4028,23 +4030,25 @@ async function admLoadTodayAppts() {
   const container = document.getElementById('adm-today-appts');
   if (!container) return;
   const today = new Date().toISOString().slice(0,10);
-  const { data } = await db.getAllAppointments();
-  const todayList = (data||[])
-    .filter(a => (a.datetime||'').slice(0,10) === today && a.status !== 'cancelled')
-    .sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
-  if (!todayList.length) { container.innerHTML = ''; return; }
-  const typeLabel = { kham_thai:'Khám thai', sieu_am:'Siêu âm', xet_nghiem:'Xét nghiệm', phu_khoa:'Phụ khoa', tu_van:'Tư vấn', khac:'Khác' };
-  container.innerHTML = `
-    <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;font-weight:300;margin-bottom:8px;">Lịch hẹn hôm nay</div>
-    ${todayList.map(a => `
-    <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;border:1px solid #F0E7D2;border-radius:12px;margin-bottom:6px;">
-      <div style="font-family:'Lora',serif;font-size:20px;color:#B57A1F;font-weight:400;min-width:48px;">${(a.datetime||'').slice(11,16)}</div>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${a.patients?.name || a.patient_name || 'Khách vãng lai'}</div>
-        <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:2px;">${typeLabel[a.appt_type]||a.appt_type||''}</div>
-      </div>
-      <div class="adm-dot-ok"></div>
-    </div>`).join('')}`;
+  try {
+    const { data } = await db.getAllAppointments();
+    const todayList = (data||[])
+      .filter(a => (a.datetime||'').slice(0,10) === today && a.status !== 'cancelled')
+      .sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+    if (!todayList.length) { container.innerHTML = ''; return; }
+    const typeLabel = { kham_thai:'Khám thai', sieu_am:'Siêu âm', xet_nghiem:'Xét nghiệm', phu_khoa:'Phụ khoa', tu_van:'Tư vấn', khac:'Khác' };
+    container.innerHTML = `
+      <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#B0A490;font-weight:300;margin-bottom:8px;">Lịch hẹn hôm nay</div>
+      ${todayList.map(a => `
+      <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;border:1px solid #F0E7D2;border-radius:12px;margin-bottom:6px;">
+        <div style="font-family:'Lora',serif;font-size:20px;color:#B57A1F;font-weight:400;min-width:48px;">${(a.datetime||'').slice(11,16)}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:#1F1A0F;">${a.patients?.name || a.patient_name || 'Khách vãng lai'}</div>
+          <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-top:2px;">${typeLabel[a.appt_type]||a.appt_type||''}</div>
+        </div>
+        <div class="adm-dot-ok"></div>
+      </div>`).join('')}`;
+  } catch(err) { console.error('[TodayAppts]', err); }
 }
 
 function admViewPatient(bnCode) {
@@ -4361,7 +4365,8 @@ let _calSelDate = new Date().toISOString().slice(0,10);
 
 async function admLoadQuickAppts() {
   const today = new Date().toISOString().slice(0,10);
-  const { data } = await db.getAllAppointments();
+  try {
+    const { data } = await db.getAllAppointments();
   const todayList = (data||[]).filter(a =>
     (a.datetime||'').slice(0,10) === today && a.status !== 'cancelled'
   );
@@ -4392,6 +4397,7 @@ async function admLoadQuickAppts() {
         color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Hồ sơ →</button>
     </div>`;
   }).join('');
+  } catch(err) { console.error('[admLoadQuickAppts]', err); }
 }
 
 function admRenderCalStrip() {
@@ -4433,7 +4439,8 @@ async function admCalLoadAppts() {
   const DOW2 = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
   labelEl.textContent = `${_calSelDate} · Danh sách khám hẹn`;
   listEl.innerHTML = `<div style="text-align:center;padding:16px;font-family:'Lora',serif;font-style:italic;color:#B0A490;font-size:13px;">Đang tải...</div>`;
-  const { data } = await db.getAllAppointments();
+  try {
+    const { data } = await db.getAllAppointments();
   const dayList = (data||[]).filter(a =>
     (a.datetime||'').slice(0,10) === _calSelDate && a.status !== 'cancelled'
   ).sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
@@ -4458,6 +4465,7 @@ async function admCalLoadAppts() {
         color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;">Hồ sơ →</button>
     </div>`;
   }).join('');
+  } catch(err) { console.error('[admCalLoadAppts]', err); }
 }
 
 // ────────────────────────────────────────
