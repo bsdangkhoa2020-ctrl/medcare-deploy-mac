@@ -5442,10 +5442,42 @@ const MOCK_RECORDS = {
 async function recLoadTab(tab) {
   const cont = document.getElementById('rec-content');
   if (!cont) return;
-  cont.innerHTML = ''; // Xóa sạch trước
+  cont.innerHTML = '';
 
+  // xn / sa / tc: load từ DB attachments (có AI scan data)
   if (tab === 'xn' || tab === 'sa' || tab === 'tc') {
-    cont.innerHTML = _renderFileTab(tab);
+    const bnCode = curUser?.bn_code;
+    if (!bnCode || curUser?._supabase === false) {
+      // Mock user hoặc chưa có bn_code — dùng local array
+      cont.innerHTML = _renderFileTab(tab);
+      return;
+    }
+    try {
+      const { data } = await sb.from('attachments')
+        .select('*')
+        .eq('bn_code', bnCode)
+        .eq('doctype', tab)
+        .order('uploaded_at', { ascending: false });
+
+      if (!data || !data.length) {
+        cont.innerHTML = `<div class="empty"><p>${_TAB_META[tab]?.emptyNote||'Chưa có dữ liệu'}</p></div>`;
+        return;
+      }
+
+      // Populate _tabFiles để _renderFileTab dùng
+      _tabFiles[tab] = data.map(r => ({
+        id:       r.id,
+        name:     r.file_name,
+        dateISO:  (r.uploaded_at||r.attached_at||'').slice(0,10),
+        type:     r.mime_type,
+        aiResult: r.ai_extracted || null,
+        notes:    r.doctor_notes || null,
+        status:   r.status
+      }));
+      cont.innerHTML = _renderFileTab(tab);
+    } catch(e) {
+      cont.innerHTML = `<div class="empty"><p>Không tải được dữ liệu</p></div>`;
+    }
     return;
   }
 
@@ -5510,11 +5542,13 @@ function _renderFileTab(kind, selectedDate) {
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">${(f.size/1024).toFixed(0)} KB</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${f.status==='ai_processed'?'✅ Đã phân tích AI':'📎 File đính kèm'}</div>
+            ${f.notes?`<div style="font-size:11px;color:var(--gold-dk);margin-top:2px;font-style:italic;">📝 ${f.notes}</div>`:''}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button onclick="tabFileView('${kind}',${realIdx})" style="font-size:11px;color:var(--gold-dk);background:var(--gold-lt);border:.5px solid var(--gold-md);border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">Xem</button>
-            ${isStaff ? `<button onclick="tabFileDelete('${kind}',${realIdx})" style="font-size:11px;color:var(--danger);background:none;border:.5px solid rgba(192,48,48,.3);border-radius:6px;padding:6px 10px;cursor:pointer">Xoá</button>` : ''}
+            ${f.aiResult ? `<button onclick="tabFileViewAI('${kind}',${files.indexOf(f)})" style="font-size:11px;color:#3A7D5C;background:#F0F7F4;border:.5px solid #3A7D5C;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">🔬 KQ AI</button>` : ''}
+            <button onclick="tabFileView('${kind}',${files.indexOf(f)})" style="font-size:11px;color:var(--gold-dk);background:var(--gold-lt);border:.5px solid var(--gold-md);border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600">Xem</button>
+            ${isStaff ? `<button onclick="tabFileDelete('${kind}',${files.indexOf(f)})" style="font-size:11px;color:var(--danger);background:none;border:.5px solid rgba(192,48,48,.3);border-radius:6px;padding:6px 10px;cursor:pointer">Xoá</button>` : ''}
           </div>
         </div>`;}).join('')
     : `<div style="text-align:center;padding:28px 0">
@@ -5561,6 +5595,51 @@ function tabFileUpload(kind, input) {
   input.value = '';
   document.getElementById('rec-content').innerHTML = _renderFileTab(kind);
   toast('Đã thêm file ✓');
+}
+
+function tabFileViewAI(kind, idx) {
+  const f = _tabFiles[kind]?.[idx];
+  if (!f?.aiResult) return;
+  const parsed = f.aiResult.parsed;
+  const raw    = f.aiResult.result || '';
+  let html = `<div style="padding:16px;">
+    <div style="font-family:'Lora',serif;font-size:18px;margin-bottom:4px;">Kết quả AI Scan</div>
+    <div style="font-size:11px;color:#B0A490;margin-bottom:16px;">${new Date(f.aiResult.scanned_at||'').toLocaleDateString('vi-VN')} · ${f.name}</div>`;
+
+  if (parsed) {
+    if (parsed.patientName) html += `<div style="margin-bottom:8px;font-size:13px;"><b>👤</b> ${parsed.patientName}${parsed.dob?' · '+parsed.dob:''}</div>`;
+    if (parsed.diagnosis)   html += `<div style="margin-bottom:12px;font-size:13px;"><b>🏥</b> ${parsed.diagnosis}</div>`;
+    if (parsed.extractedTables?.length) {
+      html += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
+        <tr style="background:#F0E7D2;"><th style="padding:5px 8px;text-align:left;">Chỉ số</th><th style="padding:5px 8px;">Giá trị</th><th style="padding:5px 8px;">Tham chiếu</th><th style="padding:5px 8px;">KQ</th></tr>`;
+      parsed.extractedTables.forEach(r => {
+        const icon = r.status==='high'?'🔴':r.status==='low'?'🔵':'🟢';
+        const bg   = r.status==='high'?'#FFF0F0':r.status==='low'?'#F0F0FF':'';
+        html += `<tr style="background:${bg};border-bottom:1px solid #F0E7D2;">
+          <td style="padding:5px 8px;">${r.test||''}</td>
+          <td style="padding:5px 8px;text-align:center;font-weight:600;">${r.value||''}</td>
+          <td style="padding:5px 8px;text-align:center;color:#7A6F5C;">${r.ref||''}</td>
+          <td style="padding:5px 8px;text-align:center;">${icon}</td></tr>`;
+      });
+      html += `</table>`;
+    }
+    if (parsed.prescriptions?.length) {
+      parsed.prescriptions.forEach(p => {
+        html += `<div style="padding:6px 0;border-bottom:1px solid #F0E7D2;font-size:12px;"><b>${p.drug_name||''}</b>${p.dosage?'<br><span style="color:#7A6F5C;">'+p.dosage+'</span>':''}</div>`;
+      });
+    }
+  } else {
+    html += `<div style="font-size:13px;white-space:pre-wrap;line-height:1.7;">${raw}</div>`;
+  }
+  if (f.notes) html += `<div style="margin-top:14px;padding:10px 12px;background:#FFF8E7;border-radius:10px;font-size:12px;color:#7A6F5C;"><b>📝 Ghi chú BS:</b> ${f.notes}</div>`;
+  html += '</div>';
+
+  const cont = document.getElementById('rec-content');
+  if (cont) {
+    cont.innerHTML = `<div style="margin-bottom:12px;padding:0 16px;">
+      <button onclick="recLoadTab('${kind}')" style="font-size:12px;color:#7A6F5C;background:none;border:none;cursor:pointer;padding:0;">← Quay lại</button>
+    </div>` + html;
+  }
 }
 
 function tabFileView(kind, idx) {
