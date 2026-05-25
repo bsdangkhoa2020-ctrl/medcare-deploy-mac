@@ -3001,6 +3001,17 @@ function goTo(id) {
   if (!_isBackNav && history.state?.screenId !== id) {
     history.pushState({ screenId: id }, '', '#' + id);
   }
+  // Auto-init theo màn hình
+  if (id === 's-ob-home')    setTimeout(initObHome, 50);
+  if (id === 's-ob-records') setTimeout(initObRecords, 50);
+  if (id === 's-ob-appts')   setTimeout(initObAppts, 50);
+  if (id === 's-ob-kick')    setTimeout(initKickCounter, 50);
+  if (id === 's-ob-journey') setTimeout(initEducation, 50);
+  if (id === 's-ob-doctor')  setTimeout(initDocSchedule, 50);
+  if (id === 's-gy-home')    setTimeout(initGyHome, 50);
+  if (id === 's-gy-records') setTimeout(initGyRecords, 50);
+  if (id === 's-gy-appts')   setTimeout(initGyAppts, 50);
+  if (id === 's-gy-journey') setTimeout(initGyJourney, 50);
 }
 
 // Lắng nghe nút Back hệ điều hành (iOS swipe / Android back)
@@ -4160,7 +4171,8 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
     const shiftKey = shifts[ds] || (type==='hv'?'OFF':'Nghỉ');
     const ca = caMap[shiftKey] || Object.values(caMap)[0];
     const isOff = shiftKey==='OFF' || shiftKey==='Nghỉ';
-    return `<div onclick="${isPast?'':(`admSchDayEdit('${ds}','${type}')`)};"
+    const clickHandler = isPast ? '' : `admSchDayEdit('${ds}','${type}')`;
+    return `<div onclick="${clickHandler}"
       style="padding:6px 4px;text-align:center;border-radius:12px;min-height:76px;
       display:flex;flex-direction:column;justify-content:space-between;
       cursor:${isPast?'default':'pointer'};
@@ -7029,7 +7041,7 @@ function initEducation() {
   // Gán workshop hiện tại
   const wsDate  = document.getElementById('edu-ws-date');
   const wsTitle = document.getElementById('edu-ws-title');
-  const wsLink  = document.getElementById('edu-banner-link');
+  const wsLink  = document.getElementById('ob-banner-link2');
   const wsImg   = document.getElementById('edu-banner-img');
   if (wsDate)  wsDate.textContent  = WORKSHOP_CURRENT.date;
   if (wsTitle) wsTitle.textContent = WORKSHOP_CURRENT.title;
@@ -7045,20 +7057,7 @@ function initEducation() {
 
 
 // Hook vào goTo để auto-init
-const _origGoToOb = goTo;
-goTo = function(id) {
-  _origGoToOb(id);
-  if (id === 's-ob-home')    setTimeout(initObHome, 50);
-  if (id === 's-ob-records') setTimeout(initObRecords, 50);
-  if (id === 's-ob-appts')   setTimeout(initObAppts, 50);
-  if (id === 's-ob-kick')    setTimeout(initKickCounter, 50);
-  if (id === 's-ob-journey') setTimeout(initEducation, 50);
-  if (id === 's-ob-doctor')  setTimeout(initDocSchedule, 50);
-  if (id === 's-gy-home')    setTimeout(initGyHome, 50);
-  if (id === 's-gy-records') setTimeout(initGyRecords, 50);
-  if (id === 's-gy-appts')   setTimeout(initGyAppts, 50);
-  if (id === 's-gy-journey') setTimeout(initGyJourney, 50);
-};
+// auto-init đã được tích hợp vào goTo() gốc ở BLOCK 13
 
 /* ════════════════════════════════════════════════════════════
    BLOCK 17: JS — PHỤ KHOA (GY)
