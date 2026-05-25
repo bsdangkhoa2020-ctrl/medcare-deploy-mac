@@ -2231,20 +2231,9 @@ window.onerror = async function(message, source, lineno, colno) {
       error_msg: String(message).slice(0, 500),
       location: `${String(source).split('/').pop()}:${lineno}:${colno}`,
       device: navigator.userAgent.slice(0, 200),
-      app_version: APP_VERSION,
-      created_at: new Date().toISOString()
+      app_version: APP_VERSION
     };
-    // Gửi thẳng không dùng RLS client (anonymous insert)
-    await fetch(SUPABASE_URL + '/rest/v1/error_logs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(log)
-    });
+    if (typeof sb !== 'undefined') await sb.from('error_logs').insert(log);
   } catch(e) { /* silent */ }
   return false;
 };
@@ -8270,9 +8259,11 @@ function _showTriageModal() {
     { emoji:'😰', label:'Bé ít đạp, lo lắng cần tư vấn gấp', prompt:'Con thấy bé đạp ít hơn bình thường và đang rất lo.' },
   ];
 
+  // Lưu chips vào global để tránh escape issue trong onclick
+  window._triageChips = chips;
   const el = document.getElementById('triage-chips');
-  if (el) el.innerHTML = chips.map(ch => `
-    <button onclick="_triagePick(${JSON.stringify(ch.prompt).replace(/'/g,'&#39;')})"
+  if (el) el.innerHTML = chips.map((ch, i) => `
+    <button onclick="_triagePick(${i})"
       style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;
       border:1px solid #F0E7D2;background:#FEFCF7;cursor:pointer;text-align:left;width:100%;
       font-family:'IBM Plex Sans',sans-serif;transition:background .1s;"
@@ -8284,16 +8275,18 @@ function _showTriageModal() {
   document.getElementById('triage-modal').style.display = 'flex';
 }
 
-async function _triagePick(prompt) {
+async function _triagePick(idx) {
+  const chip = window._triageChips?.[idx];
+  if (!chip) return;
   // Đóng modal
   document.getElementById('triage-modal').style.display = 'none';
-  // Reset để chat mở fresh (không load history cũ)
+  // Reset để chat mở fresh
   _chatType    = 'bn';
   _chatHistory = [];
   // Mở chat và chờ load xong
   await openChatPanel('bn');
   // Gửi sau khi welcome message đã render
-  setTimeout(() => chatSend(prompt), 500);
+  setTimeout(() => chatSend(chip.prompt), 500);
 }
 
 async function openChatPanel(type) {
