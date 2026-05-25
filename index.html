@@ -710,6 +710,7 @@ input, textarea, select {
     <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Hồ sơ bệnh nhân</div>
     <button onclick="pdExportPdf()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #E8A93C;background:#FFF8E7;color:#B57A1F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📄 PDF</button>
     <button onclick="pdOpenScanAI()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #3A7D5C;background:#F0F7F4;color:#3A7D5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🔬 Scan AI</button>
+    <button onclick="pdOpenDrugCheck()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #7B5EA7;background:#F5F0FA;color:#7B5EA7;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💊 Tương tác thuốc</button>
     <button id="pd-edit-btn" onclick="pdToggleEdit()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #1F1A0F;background:transparent;color:#1F1A0F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa</button>
   </div>
   <div class="scroll" style="padding:16px;">
@@ -5653,6 +5654,84 @@ function scanAILoadFile(input) {
   input.value = '';
 }
 
+// ══════════════════════════════════════
+// DRUG INTERACTION CHECK
+// ══════════════════════════════════════
+function pdOpenDrugCheck() {
+  // Auto fill thông tin BN hiện tại
+  const pt = adm?.patients?.find(p => p.bn_code === window._adminViewBnCode);
+  const infoDiv  = document.getElementById('drug-check-patient-info');
+  const ptName   = document.getElementById('drug-check-pt-name');
+  const allergyEl = document.getElementById('drug-check-allergy');
+  const allergyInput = document.getElementById('drug-check-allergy-input');
+
+  if (pt) {
+    if (ptName)  ptName.textContent  = pt.name || '—';
+    if (allergyEl) allergyEl.textContent = pt.allergy || 'Không có';
+    if (allergyInput && pt.allergy) allergyInput.value = pt.allergy;
+    if (infoDiv) infoDiv.style.display = 'block';
+  } else {
+    if (infoDiv) infoDiv.style.display = 'none';
+  }
+
+  // Reset
+  const input = document.getElementById('drug-check-input');
+  const result = document.getElementById('drug-check-result');
+  if (input) input.value = '';
+  if (result) result.style.display = 'none';
+  document.getElementById('drug-check-modal').style.display = 'flex';
+}
+
+async function drugCheckRun() {
+  const drugs   = document.getElementById('drug-check-input')?.value?.trim();
+  const allergy = document.getElementById('drug-check-allergy-input')?.value?.trim();
+  if (!drugs) { toast('Vui lòng nhập danh sách thuốc', 'err'); return; }
+
+  const btn = document.getElementById('drug-check-btn');
+  const resultDiv  = document.getElementById('drug-check-result');
+  const resultText = document.getElementById('drug-check-result-text');
+  btn.disabled = true; btn.textContent = '⏳ Đang kiểm tra...';
+
+  const pt = adm?.patients?.find(p => p.bn_code === window._adminViewBnCode);
+  const isPregnant = pt?.specialty === 'ob';
+  const ptContext  = pt ? `Bệnh nhân: ${pt.name}, ${isPregnant ? 'đang mang thai' : 'phụ khoa'}, ${pt.lmp ? 'LMP: ' + pt.lmp : ''}` : '';
+
+  const prompt = `Bạn là dược sĩ lâm sàng chuyên khoa Sản Phụ khoa. Kiểm tra tương tác thuốc cho danh sách sau:
+
+${drugs}
+
+${allergy ? `Dị ứng / Thuốc đang dùng thêm: ${allergy}` : ''}
+${ptContext}
+
+Hãy phân tích:
+1. **Tương tác giữa các thuốc** (nếu có): tên cặp, mức độ (🔴 Nghiêm trọng / 🟡 Trung bình / 🟢 Nhẹ), cơ chế, khuyến nghị
+2. **An toàn thai kỳ** (nếu bệnh nhân đang mang thai): phân loại FDA/ADEC, lưu ý
+3. **Tương tác với dị ứng** đã khai (nếu có)
+4. **Kết luận tổng thể**: có thể kê phối hợp không, cần điều chỉnh gì
+Trả lời tiếng Việt, rõ ràng, có cấu trúc.`;
+
+  try {
+    const resp = await fetch(GEMINI_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+SUPABASE_KEY, 'apikey':SUPABASE_KEY },
+      body: JSON.stringify({
+        model: 'gemini-2.5-flash',
+        contents: [{ role:'user', parts:[{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 1200 }
+      })
+    });
+    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
+    const data = await resp.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Không kiểm tra được.';
+    resultText.textContent = text;
+    resultDiv.style.display = 'block';
+  } catch(e) {
+    toast('Lỗi kiểm tra: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '💊 Kiểm tra lại';
+  }
+}
+
 function scanAIClear() {
   _scanAIFileData = null;
   const up = document.getElementById('scan-ai-upload-area');
@@ -5730,10 +5809,52 @@ Trả lời bằng tiếng Việt.`
 
     resultText.textContent = text;
     resultDiv.style.display = 'block';
+    // Hiện nút lưu và ô ghi chú
+    const saveBtn = document.getElementById('scan-ai-save-btn');
+    const notesArea = document.getElementById('scan-ai-notes-area');
+    if (saveBtn) saveBtn.style.display = 'block';
+    if (notesArea) notesArea.style.display = 'block';
+    // Lưu kết quả để dùng khi save
+    window._scanAILastResult = text;
   } catch(e) {
     toast('Lỗi phân tích: ' + e.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '🔬 Phân tích lại';
+  }
+}
+
+// Lưu kết quả scan vào DB
+async function scanAISave() {
+  if (!window._scanAILastResult) return;
+  const bnCode = window._adminViewBnCode || curUser?.bn_code;
+  if (!bnCode) { toast('Không xác định được BN', 'err'); return; }
+
+  const saveBtn = document.getElementById('scan-ai-save-btn');
+  const notes   = document.getElementById('scan-ai-notes')?.value?.trim() || null;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Đang lưu...'; }
+
+  try {
+    const { error } = await sb.from('attachments').insert({
+      bn_code:          bnCode,
+      file_name:        _scanAIFileData?.name || 'scan_ai_' + Date.now(),
+      storage_path:     'scan_ai/' + bnCode + '/' + Date.now(),
+      file_size:        0,
+      mime_type:        _scanAIFileData?.mimeType || 'image/jpeg',
+      doctype:          _scanAIType,
+      scan_type:        _scanAIType,
+      status:           'ai_processed',
+      ai_extracted:     { result: window._scanAILastResult, type: _scanAIType, scanned_at: new Date().toISOString() },
+      doctor_notes:     notes,
+      is_saved_to_emr:  true,
+      uploaded_by:      curUser?.id || null
+    });
+    if (error) throw error;
+    toast('✓ Đã lưu kết quả scan vào hồ sơ BN', 'ok');
+    document.getElementById('scan-ai-modal').style.display = 'none';
+  } catch(e) {
+    toast('Lỗi lưu: ' + e.message, 'err');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Lưu vào hồ sơ BN'; }
   }
 }
 
@@ -8263,6 +8384,13 @@ function _ragSearch(query, chatType, patientType) {
 function _getChatSystemPrompt(type) {
   if (type === 'bs') {
     return `Bạn là BaoBei Khoa - trợ lý trí tuệ nhân tạo chuyên khoa nội bộ của BS. Hoàng Thanh Tuấn, CK1 Sản Phụ khoa, BV Hùng Vương & PK Phụ Sản 315.
+Khi được hỏi về **tương tác thuốc**, hãy:
+1. Liệt kê rõ từng cặp thuốc có tương tác ⚠️
+2. Mức độ: Nghiêm trọng 🔴 / Trung bình 🟡 / Nhẹ 🟢
+3. Cơ chế tương tác ngắn gọn
+4. Khuyến nghị lâm sàng cụ thể (giảm liều, đổi thuốc, theo dõi gì)
+5. Lưu ý đặc biệt với **phụ nữ mang thai và cho con bú**
+Khi được hỏi về **phác đồ điều trị**, đối chiếu với hướng dẫn của Bộ Y tế Việt Nam và WHO.
 Bạn là cộng sự trung thành, chuyên môn cao, vui vẻ, dí dỏm và thực tế. Gọi bác sĩ là "anh Tuấn" hoặc "anh Tuấn mập", xưng "em".
 Nhiệm vụ:
 - Trả lời thắc mắc chuyên môn sản phụ khoa
@@ -9314,10 +9442,59 @@ document.body.insertAdjacentHTML('beforeend', `
         <div id="scan-ai-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;white-space:pre-wrap;"></div>
       </div>
 
+      <!-- Ghi chú BS -->
+      <div id="scan-ai-notes-area" style="display:none;margin-bottom:12px;">
+        <textarea id="scan-ai-notes" rows="2" placeholder="Ghi chú của bác sĩ (tuỳ chọn)..."
+          style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;resize:none;color:#1F1A0F;box-sizing:border-box;"></textarea>
+      </div>
       <!-- Buttons -->
-      <div style="display:flex;gap:10px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button onclick="document.getElementById('scan-ai-modal').style.display='none'" style="flex:1;padding:13px;border-radius:12px;border:1px solid #E0D0B0;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Đóng</button>
         <button id="scan-ai-btn" onclick="scanAIRun()" style="flex:2;padding:13px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🔬 Phân tích</button>
+        <button id="scan-ai-save-btn" onclick="scanAISave()" style="display:none;width:100%;padding:13px;border-radius:12px;border:none;background:#3A7D5C;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💾 Lưu vào hồ sơ BN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drug Interaction Modal -->
+  <div id="drug-check-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom));">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:32px;margin-bottom:6px;">💊</div>
+        <div style="font-family:'Lora',serif;font-size:18px;color:#1F1A0F;margin-bottom:4px;">Kiểm tra tương tác thuốc</div>
+        <div style="font-size:12px;color:#B0A490;">Nhập danh sách thuốc, AI kiểm tra tương tác và an toàn thai kỳ</div>
+      </div>
+
+      <!-- Input thuốc -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Danh sách thuốc đang dùng / chuẩn bị kê</div>
+        <textarea id="drug-check-input" rows="4" placeholder="Ví dụ:&#10;- Amoxicillin 500mg&#10;- Paracetamol 500mg&#10;- Metformin 850mg&#10;- Aspirin 81mg"
+          style="width:100%;border:1px solid #E0D0B0;border-radius:12px;padding:10px 14px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;resize:none;color:#1F1A0F;box-sizing:border-box;line-height:1.6;"></textarea>
+      </div>
+
+      <!-- Thông tin BN tự động điền -->
+      <div id="drug-check-patient-info" style="background:#FFF8E7;border:1px solid #F0E0B0;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#7A6F5C;display:none;">
+        <span style="font-weight:600;color:#B57A1F;">BN:</span> <span id="drug-check-pt-name"></span> &nbsp;|&nbsp;
+        <span style="font-weight:600;color:#B57A1F;">Dị ứng:</span> <span id="drug-check-allergy"></span>
+      </div>
+
+      <!-- Dị ứng thêm -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Dị ứng / Thuốc đang dùng thêm (nếu có)</div>
+        <input id="drug-check-allergy-input" type="text" placeholder="VD: Penicillin, Sulfa..."
+          style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
+      </div>
+
+      <!-- Kết quả -->
+      <div id="drug-check-result" style="display:none;background:#F8F6F2;border-radius:14px;padding:14px 16px;margin-bottom:16px;max-height:320px;overflow-y:auto;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Kết quả kiểm tra</div>
+        <div id="drug-check-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('drug-check-modal').style.display='none'" style="flex:1;padding:13px;border-radius:12px;border:1px solid #E0D0B0;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Đóng</button>
+        <button id="drug-check-btn" onclick="drugCheckRun()" style="flex:2;padding:13px;border-radius:12px;border:none;background:#7B5EA7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">💊 Kiểm tra ngay</button>
       </div>
     </div>
   </div>
