@@ -5749,37 +5749,29 @@ async function scanAIRun() {
   const resultText = document.getElementById('scan-ai-result-text');
   btn.disabled = true; btn.textContent = '⏳ Đang phân tích...';
 
+  // System prompt chuẩn hóa — trả về JSON để app parse và lưu DB
+  const JSON_SYSTEM = `Bạn là một trợ lý y khoa lâm sàng chuyên nghiệp độc lập tại phòng khám chuyên khoa.
+Phân tích cực kỳ cẩn thận hình ảnh/PDF kết quả cận lâm sàng đính kèm và trích xuất thông tin chính xác theo cấu trúc JSON quy định.
+Yêu cầu nghiêm ngặt:
+1. Không bịa đặt thông tin - Chỉ ghi nhận dữ liệu hiển thị rõ trên phiếu. Nếu không có, để giá trị trống hoặc mảng rỗng.
+2. Dịch các giá trị chỉ số học thuật chuẩn xác theo thuật ngữ y tế tiếng Việt chuẩn của Bộ Y tế.
+3. Phân loại status từng chỉ số dựa trên khoảng tham chiếu ghi bên cạnh: "high" / "low" / "normal".
+Trả về JSON thuần không chứa markdown, khớp hoàn toàn cấu trúc sau:
+{"patientName":"","dob":"","diagnosis":"","extractedTables":[{"test":"","value":"","ref":"","status":"normal"}],"prescriptions":[{"drug_name":"","dosage":""}]}`;
+
   const typePrompts = {
-    xetnghiem: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Phân tích kết quả xét nghiệm trong ảnh/file này.
-Hãy:
-1. Liệt kê tất cả chỉ số xét nghiệm phát hiện được (tên chỉ số, giá trị, đơn vị, giá trị bình thường)
-2. Đánh dấu ⚠️ chỉ số bất thường (cao/thấp hơn ngưỡng)
-3. Nhận xét tổng thể ngắn gọn
-4. Khuyến nghị theo dõi nếu có
-Trả lời bằng tiếng Việt, rõ ràng, có cấu trúc.`,
+    xetnghiem: JSON_SYSTEM + `
 
-    hosogay: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Đọc hồ sơ bệnh án giấy trong ảnh này.
-Hãy trích xuất các thông tin:
-- Họ tên, ngày sinh, giới tính (nếu có)
-- Chẩn đoán, bệnh lý
-- Thuốc đang dùng (nếu có)
-- Tiền sử bệnh, dị ứng
-- Ngày khám, tên bác sĩ
-- Các chỉ số quan trọng (nếu có)
-Trả lời bằng tiếng Việt, format rõ ràng theo từng mục.`,
+File đính kèm là kết quả xét nghiệm máu/nước tiểu/sinh hóa. Trích xuất tất cả chỉ số.`,
+    hosogay:   JSON_SYSTEM + `
 
-    doanthuoc: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Đọc đơn thuốc trong ảnh này.
-Hãy liệt kê:
-1. Tên từng thuốc
-2. Hàm lượng, liều dùng
-3. Số ngày dùng
-4. Lưu ý đặc biệt (nếu có)
-5. Nhận xét về phác đồ nếu thấy điểm cần lưu ý
-Trả lời bằng tiếng Việt.`,
+File đính kèm là hồ sơ bệnh án giấy. Trích xuất thông tin bệnh nhân, chẩn đoán, thuốc, tiền sử.`,
+    doanthuoc: JSON_SYSTEM + `
 
-    khac: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Phân tích tài liệu y tế trong ảnh/file này.
-Hãy mô tả nội dung, trích xuất thông tin quan trọng và đưa ra nhận xét y khoa nếu phù hợp.
-Trả lời bằng tiếng Việt.`
+File đính kèm là đơn thuốc. Trích xuất danh sách thuốc, liều dùng, tần suất. extractedTables để trống nếu không có chỉ số xét nghiệm.`,
+    khac:      JSON_SYSTEM + `
+
+File đính kèm là tài liệu y tế. Trích xuất mọi thông tin lâm sàng liên quan.`
   };
 
   try {
@@ -5805,17 +5797,60 @@ Trả lời bằng tiếng Việt.`
 
     if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
     const data = await resp.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Không phân tích được tài liệu này.';
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    // Parse JSON từ AI
+    let parsed = null;
+    let displayHtml = '';
+    try {
+      const clean = raw.replace(/```json|```/g,'').trim();
+      parsed = JSON.parse(clean);
+      window._scanAIParsed = parsed;
 
-    resultText.textContent = text;
+      // Render đẹp từ JSON
+      displayHtml = '';
+      if (parsed.patientName) displayHtml += `<div style="margin-bottom:8px"><b>👤 Bệnh nhân:</b> ${parsed.patientName}${parsed.dob?' · '+parsed.dob:''}</div>`;
+      if (parsed.diagnosis)   displayHtml += `<div style="margin-bottom:12px"><b>🏥 Chẩn đoán:</b> ${parsed.diagnosis}</div>`;
+
+      if (parsed.extractedTables?.length) {
+        displayHtml += `<div style="font-weight:700;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7A6F5C;">Chỉ số xét nghiệm</div>`;
+        displayHtml += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
+          <tr style="background:#F0E7D2;"><th style="padding:5px 8px;text-align:left;">Chỉ số</th><th style="padding:5px 8px;">Giá trị</th><th style="padding:5px 8px;">Tham chiếu</th><th style="padding:5px 8px;">KQ</th></tr>`;
+        parsed.extractedTables.forEach(r => {
+          const statusIcon = r.status==='high'?'🔴':r.status==='low'?'🔵':'🟢';
+          const rowBg = r.status==='high'?'#FFF0F0':r.status==='low'?'#F0F0FF':'';
+          displayHtml += `<tr style="background:${rowBg};border-bottom:1px solid #F0E7D2;">
+            <td style="padding:5px 8px;">${r.test||''}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:600;">${r.value||''}</td>
+            <td style="padding:5px 8px;text-align:center;color:#7A6F5C;">${r.ref||''}</td>
+            <td style="padding:5px 8px;text-align:center;">${statusIcon}</td>
+          </tr>`;
+        });
+        displayHtml += `</table>`;
+      }
+
+      if (parsed.prescriptions?.length) {
+        displayHtml += `<div style="font-weight:700;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7A6F5C;">Đơn thuốc</div>`;
+        parsed.prescriptions.forEach((p,i) => {
+          displayHtml += `<div style="padding:6px 0;border-bottom:1px solid #F0E7D2;font-size:12px;">
+            <span style="font-weight:600;">${p.drug_name||''}</span>
+            ${p.dosage?'<br><span style="color:#7A6F5C;">'+p.dosage+'</span>':''}
+          </div>`;
+        });
+      }
+      resultText.innerHTML = displayHtml || '<div style="color:#7A6F5C;font-style:italic;">Không trích xuất được dữ liệu cụ thể</div>';
+    } catch(e) {
+      // Fallback: hiện text thô nếu không parse được JSON
+      resultText.textContent = raw || 'Không phân tích được tài liệu này.';
+      window._scanAIParsed = null;
+    }
+
+    window._scanAILastResult = raw;
     resultDiv.style.display = 'block';
-    // Hiện nút lưu và ô ghi chú
     const saveBtn = document.getElementById('scan-ai-save-btn');
     const notesArea = document.getElementById('scan-ai-notes-area');
     if (saveBtn) saveBtn.style.display = 'block';
     if (notesArea) notesArea.style.display = 'block';
-    // Lưu kết quả để dùng khi save
-    window._scanAILastResult = text;
   } catch(e) {
     toast('Lỗi phân tích: ' + e.message, 'err');
   } finally {
@@ -5843,7 +5878,7 @@ async function scanAISave() {
       doctype:          _scanAIType,
       scan_type:        _scanAIType,
       status:           'ai_processed',
-      ai_extracted:     { result: window._scanAILastResult, type: _scanAIType, scanned_at: new Date().toISOString() },
+      ai_extracted:     { result: window._scanAILastResult, parsed: window._scanAIParsed || null, type: _scanAIType, scanned_at: new Date().toISOString() },
       doctor_notes:     notes,
       is_saved_to_emr:  true,
       uploaded_by:      curUser?.id || null
