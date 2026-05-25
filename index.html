@@ -8284,13 +8284,16 @@ function _showTriageModal() {
   document.getElementById('triage-modal').style.display = 'flex';
 }
 
-function _triagePick(prompt) {
+async function _triagePick(prompt) {
   // Đóng modal
   document.getElementById('triage-modal').style.display = 'none';
-  // Mở chat với tin nhắn đã chọn
-  openChatPanel('bn');
-  // Gửi sau khi chat load xong
-  setTimeout(() => chatSend(prompt), 600);
+  // Reset để chat mở fresh (không load history cũ)
+  _chatType    = 'bn';
+  _chatHistory = [];
+  // Mở chat và chờ load xong
+  await openChatPanel('bn');
+  // Gửi sau khi welcome message đã render
+  setTimeout(() => chatSend(prompt), 500);
 }
 
 async function openChatPanel(type) {
