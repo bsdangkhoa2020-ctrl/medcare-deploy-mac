@@ -8113,12 +8113,13 @@ Khi bệnh nhân mô tả triệu chứng, hãy phân loại theo 3 mức và ph
 
 🟡 MỨC 2 — CẦN THEO DÕI: Triệu chứng cần lưu ý, nên đặt lịch tái khám trong 1-3 ngày. Hướng dẫn cách theo dõi tại nhà.
 
-🔴 MỨC 3 — KHẨN CẤP: Triệu chứng nguy hiểm. Trả về JSON: {"emergency": true, "message": "mô tả tình trạng và yêu cầu gọi BS Tuấn 0938559098 ngay"}
+🔴 MỨC 3 — KHẨN CẤP: CHỈ khi bệnh nhân mô tả RÕ RÀNG một trong các triệu chứng sau: ra máu nhiều, vỡ ối, thai không đạp, đau dữ dội không chịu được, co giật, ngất xỉu. Khi đó mới trả về JSON cuối phản hồi: {"emergency": true, "message": "..."}. TUYỆT ĐỐI không dùng JSON này cho bất kỳ triệu chứng nhẹ nào.
 
 Ví dụ phân loại:
+- "Không có triệu chứng gì" → 🟢 BÌNH THƯỜNG, hỏi thêm để tư vấn
 - Buồn nôn, mệt mỏi nhẹ → 🟢 BÌNH THƯỜNG
-- Đau bụng âm ỉ, khí hư bất thường → 🟡 CẦN THEO DÕI  
-- Ra máu nhiều, rỉ ối, thai không đạp, đau dữ dội → 🔴 KHẨN CẤP
+- Đau bụng âm ỉ, khí hư bất thường → 🟡 CẦN THEO DÕI
+- Ra máu nhiều, thai không đạp, đau dữ dội → 🔴 KHẨN CẤP (mới dùng JSON)
 
 Hỗ trợ thêm: giải thích chỉ số siêu âm (BPD, FL, EFW), dinh dưỡng, ốm nghén, cử động thai.
 Chỉ dùng tiếng Việt.
@@ -8331,9 +8332,9 @@ async function openChatPanel(type) {
     return;
   }
 
-  // Lần đầu mở → load từ Supabase
+  // Lần đầu mở → load từ Supabase (chỉ khi là user thật)
   msgs.innerHTML = '';
-  if (curUser?.id) {
+  if (curUser?.id && curUser?._supabase !== false) {
     const { data: session } = await db.loadChatSession(curUser.id, type);
     if (session?.messages?.length > 0) {
       _chatHistory = session.messages;
@@ -8477,7 +8478,7 @@ let _chatSaveTimer = null;
 function _chatDebounceSave() {
   clearTimeout(_chatSaveTimer);
   _chatSaveTimer = setTimeout(async () => {
-    if (!curUser?.id || !_chatHistory.length) return;
+    if (!curUser?.id || !_chatHistory.length || curUser?._supabase === false) return;
     try {
       await db.saveChatSession(curUser.id, curUser.bn_code||null, _chatType, _chatHistory);
     } catch(e) { /* silent */ }
