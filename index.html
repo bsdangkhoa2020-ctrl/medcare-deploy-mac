@@ -6074,8 +6074,7 @@ Trả về JSON thuần không chứa markdown:
     } catch(e) {
       // Fallback khi không parse được JSON — hiện text gọn
       _aiscanParsed = null;
-      const cleaned = (raw||'').replace(/[{}"]/g,'').replace(/,(?=\s*[a-z])/gi, '
-').trim();
+      const cleaned = (raw||'').replace(/[{}"]/g,'').replace(/,(?=\s*[a-z])/gi, '\n').trim();
       resultText.innerHTML = '<div style="font-size:12px;color:#1F1A0F;line-height:1.8;white-space:pre-wrap;">'+cleaned+'</div>';
     }
     resultDiv.style.display = 'block';
