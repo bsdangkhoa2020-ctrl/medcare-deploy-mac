@@ -4177,7 +4177,8 @@ async function _admSaveShift(ds, type, shiftKey) {
   const spec = type==='hv' ? 'gy' : 'ob';
   const isOff = shiftKey==='OFF'||shiftKey==='Nghỉ';
   if (isOff) {
-    await sb.from('doctor_schedule').delete().eq('date',ds).eq('location',loc);
+    const { error } = await sb.from('doctor_schedule').delete().eq('date',ds).eq('location',loc);
+    if (error) { console.error('[Schedule delete error]', error); toast('Lỗi xoá lịch: ' + error.message, 'err'); }
     return;
   }
   const timeMap = {
@@ -4186,11 +4187,12 @@ async function _admSaveShift(ds, type, shiftKey) {
     'Sáng + Tối':{'s':'08:00','e':'20:00'},'Sáng+Tối':{'s':'08:00','e':'20:00'},
   };
   const t = timeMap[shiftKey] || {s:'07:00',e:'17:00'};
-  await sb.from('doctor_schedule').upsert({
+  const { error } = await sb.from('doctor_schedule').upsert({
     date:ds, location:loc, shift_name:shiftKey,
     start_time:t.s, end_time:t.e, specialty:spec,
     created_by: curUser?.id||null
   }, {onConflict:'date,location,shift_name'});
+  if (error) { console.error('[Schedule upsert error]', error); toast('Lỗi lưu lịch: ' + error.message, 'err'); }
 }
 
 // ── Sửa cả tuần ──
