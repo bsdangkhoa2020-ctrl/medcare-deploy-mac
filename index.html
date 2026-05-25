@@ -7905,6 +7905,8 @@ async function gyLoadHomeData() {
 async function loadExtraArticles(type, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  // Bỏ qua nếu mock user (không có session thật)
+  if (curUser?._supabase === false) return;
   try {
     const { data, error } = await db.getArticles(type);
     if (error || !data || !data.length) return;
