@@ -709,6 +709,7 @@ input, textarea, select {
     </div>
     <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Hồ sơ bệnh nhân</div>
     <button onclick="pdExportPdf()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #E8A93C;background:#FFF8E7;color:#B57A1F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📄 PDF</button>
+    <button onclick="pdOpenScanAI()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #3A7D5C;background:#F0F7F4;color:#3A7D5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🔬 Scan AI</button>
     <button id="pd-edit-btn" onclick="pdToggleEdit()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #1F1A0F;background:transparent;color:#1F1A0F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa</button>
   </div>
   <div class="scroll" style="padding:16px;">
@@ -5616,6 +5617,126 @@ function _renderRx(rxs) {
 
 let _currentRx = [];
 
+// ══════════════════════════════════════
+// SCAN AI — đọc hồ sơ giấy / xét nghiệm
+// ══════════════════════════════════════
+let _scanAIFileData = null; // {mimeType, base64}
+let _scanAIType = 'xetnghiem';
+
+function pdOpenScanAI() {
+  scanAIClear();
+  document.getElementById('scan-ai-modal').style.display = 'flex';
+}
+
+function scanAISetType(btn, type) {
+  _scanAIType = type;
+  document.querySelectorAll('.scan-type-btn').forEach(b => {
+    b.style.background = '#fff'; b.style.color = '#7A6F5C'; b.style.borderColor = '#E0D0B0';
+  });
+  btn.style.background = '#1F1A0F'; btn.style.color = '#E8A93C'; btn.style.borderColor = '#1F1A0F';
+}
+
+function scanAILoadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File tối đa 5MB', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result.split(',')[1];
+    _scanAIFileData = { mimeType: file.type || 'image/jpeg', base64, name: file.name };
+    document.getElementById('scan-ai-upload-area').style.display = 'none';
+    document.getElementById('scan-ai-preview').style.display = 'block';
+    document.getElementById('scan-ai-file-name').textContent = file.name;
+    document.getElementById('scan-ai-result').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function scanAIClear() {
+  _scanAIFileData = null;
+  const up = document.getElementById('scan-ai-upload-area');
+  const pr = document.getElementById('scan-ai-preview');
+  const rs = document.getElementById('scan-ai-result');
+  if (up) up.style.display = 'block';
+  if (pr) pr.style.display = 'none';
+  if (rs) rs.style.display = 'none';
+}
+
+async function scanAIRun() {
+  if (!_scanAIFileData) { toast('Vui lòng chọn file trước', 'err'); return; }
+  const btn = document.getElementById('scan-ai-btn');
+  const resultDiv = document.getElementById('scan-ai-result');
+  const resultText = document.getElementById('scan-ai-result-text');
+  btn.disabled = true; btn.textContent = '⏳ Đang phân tích...';
+
+  const typePrompts = {
+    xetnghiem: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Phân tích kết quả xét nghiệm trong ảnh/file này.
+Hãy:
+1. Liệt kê tất cả chỉ số xét nghiệm phát hiện được (tên chỉ số, giá trị, đơn vị, giá trị bình thường)
+2. Đánh dấu ⚠️ chỉ số bất thường (cao/thấp hơn ngưỡng)
+3. Nhận xét tổng thể ngắn gọn
+4. Khuyến nghị theo dõi nếu có
+Trả lời bằng tiếng Việt, rõ ràng, có cấu trúc.`,
+
+    hosogay: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Đọc hồ sơ bệnh án giấy trong ảnh này.
+Hãy trích xuất các thông tin:
+- Họ tên, ngày sinh, giới tính (nếu có)
+- Chẩn đoán, bệnh lý
+- Thuốc đang dùng (nếu có)
+- Tiền sử bệnh, dị ứng
+- Ngày khám, tên bác sĩ
+- Các chỉ số quan trọng (nếu có)
+Trả lời bằng tiếng Việt, format rõ ràng theo từng mục.`,
+
+    doanthuoc: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Đọc đơn thuốc trong ảnh này.
+Hãy liệt kê:
+1. Tên từng thuốc
+2. Hàm lượng, liều dùng
+3. Số ngày dùng
+4. Lưu ý đặc biệt (nếu có)
+5. Nhận xét về phác đồ nếu thấy điểm cần lưu ý
+Trả lời bằng tiếng Việt.`,
+
+    khac: `Bạn là bác sĩ chuyên khoa Sản Phụ khoa. Phân tích tài liệu y tế trong ảnh/file này.
+Hãy mô tả nội dung, trích xuất thông tin quan trọng và đưa ra nhận xét y khoa nếu phù hợp.
+Trả lời bằng tiếng Việt.`
+  };
+
+  try {
+    const resp = await fetch(GEMINI_FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({
+        model: 'gemini-2.5-flash',
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: typePrompts[_scanAIType] || typePrompts.khac },
+            { inlineData: { mimeType: _scanAIFileData.mimeType, data: _scanAIFileData.base64 } }
+          ]
+        }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1500 }
+      })
+    });
+
+    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
+    const data = await resp.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Không phân tích được tài liệu này.';
+
+    resultText.textContent = text;
+    resultDiv.style.display = 'block';
+  } catch(e) {
+    toast('Lỗi phân tích: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '🔬 Phân tích lại';
+  }
+}
+
 function rxDownloadPdf(idx) {
   const rx = _currentRx[idx];
   if (!rx) { toast('Không tìm thấy đơn thuốc', 'err'); return; }
@@ -8413,6 +8534,34 @@ function _chatRenderChips() {
   ).join('');
 }
 
+// ── Attach file for AI scan ──
+let _chatAttachData = null; // { mimeType, base64, name }
+
+function chatAttachFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File tối đa 5MB', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(',')[1];
+    const mimeType = file.type || 'image/jpeg';
+    _chatAttachData = { mimeType, base64, name: file.name };
+    const preview = document.getElementById('chat-attach-preview');
+    const nameEl  = document.getElementById('chat-attach-name');
+    if (preview) preview.style.display = 'block';
+    if (nameEl)  nameEl.textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+  input.value = ''; // reset input
+}
+
+function chatClearAttach() {
+  _chatAttachData = null;
+  const preview = document.getElementById('chat-attach-preview');
+  if (preview) preview.style.display = 'none';
+}
+
 // ── Auto-resize textarea ──
 function chatAutoResize(el) {
   el.style.height = 'auto';
@@ -8460,10 +8609,16 @@ async function chatSend(customText) {
       ragContext = '\n\n[TÀI LIỆU THAM KHẢO — ưu tiên dùng thông tin này khi trả lời]:\n' + ragResults.join('\n');
     }
     const systemInstruction = _getChatSystemPrompt(_chatType) + ragContext;
-    const contents = _chatHistory.map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
-    }));
+    // Build contents — thêm ảnh đính kèm vào tin nhắn cuối nếu có
+    const contents = _chatHistory.map((m, idx) => {
+      const parts = [{ text: m.content }];
+      // Nếu là tin nhắn cuối của user và có file đính kèm
+      if (m.role === 'user' && idx === _chatHistory.length - 1 && _chatAttachData) {
+        parts.push({ inlineData: { mimeType: _chatAttachData.mimeType, data: _chatAttachData.base64 } });
+        chatClearAttach(); // clear sau khi gửi
+      }
+      return { role: m.role === 'user' ? 'user' : 'model', parts };
+    });
 
     const resp = await fetch(GEMINI_FN_URL, {
       method: 'POST',
@@ -9078,10 +9233,17 @@ document.body.insertAdjacentHTML('beforeend', `
   <div id="chat-chips" style="display:flex;gap:6px;padding:8px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;"></div>
 
   <!-- Input bar -->
+  <input type="file" id="chat-file-input" accept="image/*,.pdf" style="display:none" onchange="chatAttachFile(this)">
+  <div id="chat-attach-preview" style="display:none;padding:6px 14px;flex-shrink:0;">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:10px;padding:5px 10px;">
+      <span id="chat-attach-name" style="font-size:11px;color:#fff;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button onclick="chatClearAttach()" style="background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:14px;padding:0;">×</button>
+    </div>
+  </div>
   <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;padding-bottom:calc(10px + var(--sab));">
+    <button id="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" style="display:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:transparent;cursor:pointer;color:rgba(255,255,255,.7);font-size:18px;flex-shrink:0;align-items:center;justify-content:center;">📎</button>
     <textarea id="chat-input" rows="1" placeholder="Nhập câu hỏi..." oninput="chatAutoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
       style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:9px 14px;font-size:13px;color:#fff;resize:none;outline:none;font-family:'IBM Plex Sans',sans-serif;max-height:100px;line-height:1.5;"></textarea>
-    <!-- mic tạm ẩn -->
     <button onclick="chatSend()" id="chat-send-btn"
       style="width:38px;height:38px;border-radius:50%;border:none;background:#E8A93C;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -9095,6 +9257,70 @@ document.body.insertAdjacentHTML('beforeend', `
 
   <!-- Print Frame for PDF export -->
   <div id="print-frame"></div>
+
+  <!-- Scan AI Modal -->
+  <div id="scan-ai-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom));">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:32px;margin-bottom:6px;">🔬</div>
+        <div style="font-family:'Lora',serif;font-size:18px;color:#1F1A0F;margin-bottom:4px;">Scan AI</div>
+        <div style="font-size:12px;color:#B0A490;">Upload ảnh hoặc PDF để AI phân tích</div>
+      </div>
+
+      <!-- Upload area -->
+      <input type="file" id="scan-ai-file" accept="image/*,.pdf" style="display:none" onchange="scanAILoadFile(this)">
+      <div id="scan-ai-upload-area" onclick="document.getElementById('scan-ai-file').click()"
+        style="border:2px dashed #E0D0B0;border-radius:16px;padding:28px;text-align:center;cursor:pointer;margin-bottom:16px;background:#FEFCF7;transition:border-color .2s;"
+        onmouseover="this.style.borderColor='#E8A93C'" onmouseout="this.style.borderColor='#E0D0B0'">
+        <div style="font-size:32px;margin-bottom:8px;">📎</div>
+        <div style="font-size:13px;font-weight:500;color:#1F1A0F;">Bấm để chọn file</div>
+        <div style="font-size:11px;color:#B0A490;margin-top:4px;">Ảnh hoặc PDF · Tối đa 5MB</div>
+      </div>
+
+      <!-- File preview -->
+      <div id="scan-ai-preview" style="display:none;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;background:#F5EFE6;border-radius:10px;padding:10px 12px;">
+          <span id="scan-ai-file-name" style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1F1A0F;"></span>
+          <button onclick="scanAIClear()" style="background:none;border:none;color:#B0A490;cursor:pointer;font-size:16px;">×</button>
+        </div>
+      </div>
+
+      <!-- Loại scan -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Loại tài liệu</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="scanAISetType(this,'xetnghiem')" class="scan-type-btn scan-type-active"
+            style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #1F1A0F;background:#1F1A0F;color:#E8A93C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+            🧪 Xét nghiệm
+          </button>
+          <button onclick="scanAISetType(this,'hosogay')" class="scan-type-btn"
+            style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+            📋 Hồ sơ giấy
+          </button>
+          <button onclick="scanAISetType(this,'doanthuoc')" class="scan-type-btn"
+            style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+            💊 Đơn thuốc
+          </button>
+          <button onclick="scanAISetType(this,'khac')" class="scan-type-btn"
+            style="font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid #E0D0B0;background:#fff;color:#7A6F5C;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+            📄 Khác
+          </button>
+        </div>
+      </div>
+
+      <!-- Kết quả AI -->
+      <div id="scan-ai-result" style="display:none;background:#F8F6F2;border-radius:14px;padding:14px 16px;margin-bottom:16px;max-height:300px;overflow-y:auto;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Kết quả phân tích AI</div>
+        <div id="scan-ai-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('scan-ai-modal').style.display='none'" style="flex:1;padding:13px;border-radius:12px;border:1px solid #E0D0B0;background:#fff;font-size:14px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Đóng</button>
+        <button id="scan-ai-btn" onclick="scanAIRun()" style="flex:2;padding:13px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">🔬 Phân tích</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Triage Modal -->
   <div id="triage-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
