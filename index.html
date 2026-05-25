@@ -395,43 +395,6 @@ input[type=date], input[type=time], input[type=datetime-local] {
     <div class="serif-h" style="font-size:28px;margin-bottom:4px">BS. <em style="color:var(--gold-dk)">Hoàng Thanh Tuấn</em></div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:32px">Chuyên khoa Sản Phụ khoa · CK1</div>
 
-    <!-- Quick login — chỉ dùng để test -->
-    <div style="width:100%;max-width:320px;margin-bottom:20px">
-      <div class="eyebrow" style="color:var(--gold-dk);margin-bottom:8px;text-align:left">Đăng nhập nhanh</div>
-      <div class="card" style="margin-bottom:0;text-align:left">
-        <div class="card-section" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="quickLogin('admin')">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:20px">👨‍⚕️</span>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--ink)">BS. Hoàng Thanh Tuấn</div>
-              <div style="font-size:11px;color:var(--muted)">Admin · BV Hùng Vương &amp; PK 315</div>
-            </div>
-          </div>
-          <span style="font-size:12px;font-weight:600;color:var(--gold-dk);border:0.5px solid var(--gold);padding:4px 10px;border-radius:5px">Vào →</span>
-        </div>
-        <div class="card-section" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="quickLogin('ob')">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:20px">🤰</span>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--ink)">Nguyễn Thị Hoa</div>
-              <div style="font-size:11px;color:var(--muted)">Thai kỳ tuần 28 · Sản khoa</div>
-            </div>
-          </div>
-          <span style="font-size:12px;color:var(--muted)">Vào →</span>
-        </div>
-        <div class="card-section" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:none;-webkit-tap-highlight-color:transparent" onclick="quickLogin('gy')">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:20px">🌸</span>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--ink)">Lê Thị Hồng</div>
-              <div style="font-size:11px;color:var(--muted)">Tái khám định kỳ · Phụ khoa</div>
-            </div>
-          </div>
-          <span style="font-size:12px;color:var(--muted)">Vào →</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Nút gốc — giữ nguyên -->
     <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px">
       <button class="btn btn-primary" onclick="goTo('s-login')">Đăng nhập</button>
@@ -712,6 +675,14 @@ input, textarea, select {
 .chat-mic-active { background: #D64545 !important; animation: micPulse 1s infinite; }
 @keyframes micPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
+/* @media print — PDF export */
+@media print {
+  body > *:not(#print-frame) { display: none !important; }
+  #print-frame { display: block !important; position: fixed; inset: 0; background: #fff; z-index: 999999; }
+  #print-frame * { color: #000 !important; background: #fff !important; border-color: #ccc !important; }
+  @page { margin: 15mm; size: A4; }
+}
+#print-frame { display: none; }
 /* Emergency */
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
 /* Triage levels */
@@ -769,7 +740,10 @@ input, textarea, select {
         <div style="display:flex;flex-direction:column;gap:10px;" id="pd-edit-fields"></div>
         <div style="display:flex;gap:8px;margin-top:16px;">
           <button onclick="pdCancelEdit()" style="flex:1;padding:11px;border-radius:12px;border:1px solid #F0E7D2;background:#fff;font-size:13px;cursor:pointer;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Huỷ</button>
-          <button onclick="pdSaveEdit()" style="flex:1;padding:11px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu thay đổi</button>
+          <button onclick="pdExportPdf()" style="display:flex;align-items:center;gap:4px;padding:7px 12px;background:#FFF8E7;border:1px solid #E8A93C;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;color:#B57A1F;font-family:'IBM Plex Sans',sans-serif;">
+              📄 Xuất PDF
+            </button>
+            <button onclick="pdSaveEdit()" style="flex:1;padding:11px;border-radius:12px;border:none;background:#1F1A0F;color:#E8A93C;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Lưu thay đổi</button>
         </div>
       </div>
     </div>
@@ -3158,63 +3132,6 @@ function togglePwd(inputId, btn) {
   btn.textContent = show ? '🙈' : '👁';
 }
 
-// ── QUICK LOGIN (test accounts) ──
-const QUICK_ACCOUNTS = {
-  admin: {
-    role: 'admin', patient_type: null,
-    id: 'test-admin-001', email: 'admin@bstuan247.com',
-    name: 'BS. Hoàng Thanh Tuấn', _supabase: false
-  },
-  ob: {
-    role: 'ob', patient_type: 'ob',
-    id: 'test-ob-001', email: 'hoa@test.com',
-    name: 'Nguyễn Thị Hoa', lmp: _lmpFromWeek(28),
-    bn_code: 'BN-001', _supabase: false,
-    dob: '1998-12-21', gender: 'Nữ', phone: '0912 345 678',
-    weight: 58, height: 158,
-    pulse: 82, bp: '110/70',
-    address: '52 đường số 8 KDC Bình Phú, Phường Bình Phú, TP. HCM',
-    allergy: 'Chưa ghi nhận',
-    diagnosis: 'Con lần 2, thai 28 tuần (P1T0A0L1)'
-  },
-  gy: {
-    role: 'ob', patient_type: 'gy',
-    id: 'test-gy-001', email: 'hong@test.com',
-    name: 'Lê Thị Hồng',
-    bn_code: 'BN-002', _supabase: false,
-    lmp: new Date(Date.now() - 8 * 86400000).toISOString().split('T')[0],
-    cycle_len: 28,
-    patient_type: 'gy'
-  }
-};
-
-// Tính LMP giả để tuổi thai = n tuần
-function _lmpFromWeek(weeks) {
-  const d = new Date();
-  d.setDate(d.getDate() - weeks * 7);
-  return d.toISOString().split('T')[0];
-}
-
-function quickLogin(type) {
-  const user = QUICK_ACCOUNTS[type];
-  if (!user) return;
-  // Reset session state để tránh lẫn lộn giữa các account
-  _history = [];
-  if (typeof adm !== 'undefined') {
-    adm.patients = []; adm.articles = []; adm.tab = 'patients';
-  }
-  curUser = { ...user };
-  _enterAppQuick(curUser);
-}
-
-function _enterAppQuick(user) {
-  if (user.role === 'admin') {
-    goTo('s-admin');
-    setTimeout(initAdmin, 100);
-    return;
-  }
-  _enterApp(user);
-}
 
 // ── LOGIN TỪ FORM LANDING ──
 async function doLoginFromLanding() {
@@ -3679,7 +3596,12 @@ function pdRenderEditFields() {
     </div>`).join('');
 }
 
-async function pdSaveEdit() {
+async function pdExportPdf() {
+  const bnCode = window._adminViewBnCode || curUser?.bn_code;
+  if (bnCode) exportPatientPdf(bnCode);
+}
+
+function pdSaveEdit() {
   const keys = ['name','phone','dob','blood_type','allergy','height_cm','weight_kg','lmp','address','medical_history'];
   const updates = {};
   keys.forEach(k => {
@@ -5670,10 +5592,119 @@ function _renderRx(rxs) {
   }).join('');
 }
 
-// Placeholder — sẽ build PDF thật ở P9
 let _currentRx = [];
+
 function rxDownloadPdf(idx) {
-  toast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo');
+  const rx = _currentRx[idx];
+  if (!rx) { toast('Không tìm thấy đơn thuốc', 'err'); return; }
+  const items = Array.isArray(rx.items) ? rx.items : [];
+  const name = curUser?.name || '—';
+  const bn   = curUser?.bn_code || '—';
+  const date = rx.date || rx.created_at?.slice(0,10) || '—';
+  const doc  = rx.doctor || 'BS. CK1 Hoàng Thanh Tuấn';
+
+  const html = `
+  <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;">
+    <div style="text-align:center;border-bottom:2px solid #B8814A;padding-bottom:14px;margin-bottom:18px;">
+      <div style="font-size:13px;color:#666;letter-spacing:.1em;text-transform:uppercase;">Phòng khám Phụ Sản 315</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">167-169 Bình Phú, Q.6, TP.HCM · 0938 559 098</div>
+      <div style="font-size:20px;font-weight:700;margin-top:10px;color:#1C1510;">ĐƠN THUỐC</div>
+    </div>
+    <table style="width:100%;margin-bottom:16px;font-size:13px;">
+      <tr><td style="width:50%;padding:4px 0;"><b>Bệnh nhân:</b> ${name}</td>
+          <td style="padding:4px 0;"><b>Mã BN:</b> ${bn}</td></tr>
+      <tr><td style="padding:4px 0;"><b>Ngày kê:</b> ${date}</td>
+          <td style="padding:4px 0;"><b>Bác sĩ:</b> ${doc}</td></tr>
+      ${rx.diagnosis ? `<tr><td colspan="2" style="padding:4px 0;"><b>Chẩn đoán:</b> ${rx.diagnosis}</td></tr>` : ''}
+    </table>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+      <thead>
+        <tr style="background:#F5EFE6;">
+          <th style="padding:8px;text-align:left;border:1px solid #ddd;width:40%;">Tên thuốc</th>
+          <th style="padding:8px;text-align:center;border:1px solid #ddd;width:20%;">Liều dùng</th>
+          <th style="padding:8px;text-align:center;border:1px solid #ddd;width:15%;">Số lượng</th>
+          <th style="padding:8px;text-align:left;border:1px solid #ddd;">Hướng dẫn</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map((it,i) => `
+        <tr style="background:${i%2===0?'#fff':'#fafafa'}">
+          <td style="padding:7px 8px;border:1px solid #eee;">${it.name||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.dose||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.qty||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;">${it.note||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    ${rx.note ? `<div style="background:#FFF8F0;border:1px solid #F0DCC0;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;"><b>Ghi chú:</b> ${rx.note}</div>` : ''}
+    <div style="margin-top:30px;text-align:right;font-size:12px;">
+      <div style="display:inline-block;text-align:center;width:200px;">
+        <div style="margin-bottom:50px;">TP.HCM, ngày ${new Date().getDate()} tháng ${new Date().getMonth()+1} năm ${new Date().getFullYear()}</div>
+        <div style="border-top:1px solid #000;padding-top:4px;"><b>Bác sĩ kê đơn</b></div>
+        <div style="font-size:11px;color:#555;">BS. CK1 Hoàng Thanh Tuấn</div>
+      </div>
+    </div>
+    <div style="margin-top:20px;font-size:10px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;">
+      Đơn thuốc được tạo bởi BaoBei · bstuan247.com · Lưu ý: Đây là đơn thuốc điện tử, có giá trị tương đương đơn giấy
+    </div>
+  </div>`;
+
+  const frame = document.getElementById('print-frame');
+  if (!frame) return;
+  frame.innerHTML = html;
+  frame.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { frame.style.display = 'none'; frame.innerHTML = ''; }, 1000);
+  }, 200);
+}
+
+// Xuất hồ sơ tổng hợp BN (dùng cho Admin)
+function exportPatientPdf(bnCode) {
+  const pt = adm?.patients?.find(p => p.bn_code === bnCode) || {};
+  const dob = pt.dob ? new Date(pt.dob).toLocaleDateString('vi-VN') : '—';
+  const lmp = pt.lmp ? new Date(pt.lmp).toLocaleDateString('vi-VN') : '—';
+
+  const html = `
+  <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;">
+    <div style="text-align:center;border-bottom:2px solid #B8814A;padding-bottom:14px;margin-bottom:18px;">
+      <div style="font-size:13px;color:#666;letter-spacing:.1em;text-transform:uppercase;">Phòng khám Phụ Sản 315</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">167-169 Bình Phú, Q.6, TP.HCM · 0938 559 098</div>
+      <div style="font-size:20px;font-weight:700;margin-top:10px;color:#1C1510;">HỒ SƠ BỆNH NHÂN</div>
+    </div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:16px;">
+      <tr style="background:#F5EFE6;"><td colspan="2" style="padding:8px;font-weight:700;border:1px solid #ddd;">THÔNG TIN CÁ NHÂN</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;width:35%;color:#666;">Họ tên</td><td style="padding:7px 8px;border:1px solid #eee;font-weight:600;">${pt.name||'—'}</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Mã BN</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.bn_code||'—'}</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Ngày sinh</td><td style="padding:7px 8px;border:1px solid #eee;">${dob}</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Số điện thoại</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.phone||'—'}</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Chuyên khoa</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.specialty==='gy'?'Phụ khoa':'Sản khoa'}</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Chiều cao / Cân nặng</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.height_cm||'—'} cm / ${pt.weight_kg||'—'} kg</td></tr>
+      <tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Nhóm máu</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.blood_type||'—'}</td></tr>
+      ${pt.specialty!=='gy' ? `<tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Ngày kinh cuối (LMP)</td><td style="padding:7px 8px;border:1px solid #eee;">${lmp}</td></tr>` : ''}
+      ${pt.allergy ? `<tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Dị ứng</td><td style="padding:7px 8px;border:1px solid #eee;color:#C03030;">${pt.allergy}</td></tr>` : ''}
+      ${pt.medical_history ? `<tr><td style="padding:7px 8px;border:1px solid #eee;color:#666;">Tiền sử bệnh</td><td style="padding:7px 8px;border:1px solid #eee;">${pt.medical_history}</td></tr>` : ''}
+    </table>
+    <div style="margin-top:30px;text-align:right;font-size:12px;">
+      <div style="display:inline-block;text-align:center;width:200px;">
+        <div style="margin-bottom:50px;">TP.HCM, ngày ${new Date().getDate()} tháng ${new Date().getMonth()+1} năm ${new Date().getFullYear()}</div>
+        <div style="border-top:1px solid #000;padding-top:4px;"><b>Bác sĩ phụ trách</b></div>
+        <div style="font-size:11px;color:#555;">BS. CK1 Hoàng Thanh Tuấn</div>
+      </div>
+    </div>
+    <div style="margin-top:20px;font-size:10px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;">
+      BaoBei · bstuan247.com · Xuất ngày ${new Date().toLocaleDateString('vi-VN')}
+    </div>
+  </div>`;
+
+  const frame = document.getElementById('print-frame');
+  if (!frame) return;
+  frame.innerHTML = html;
+  frame.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { frame.style.display = 'none'; frame.innerHTML = ''; }, 1000);
+  }, 200);
 }
 
 // ── OB APPOINTMENTS ──
@@ -7390,7 +7421,7 @@ function gyRecTab(tab, el) {
             <div style="font-size:13px;font-weight:600;color:var(--gy-ink);margin-bottom:3px">${x.name}</div>
             <div style="font-size:11px;color:var(--gy-muted)">${new Date(x.date).toLocaleDateString('vi-VN')}</div>
           </div>
-          <button onclick="toast('Tính năng tải PDF sẽ có trong phiên bản tiếp theo')"
+          <button onclick="rxDownloadPdf(0)"
             style="display:flex;align-items:center;gap:5px;background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--gy-dk);font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             PDF
@@ -9047,6 +9078,9 @@ document.body.insertAdjacentHTML('beforeend', `
   <!-- wake indicator tạm ẩn -->
   <!-- Emergency Modal -->
   <div id="s-emergency-modal" style="position:fixed;inset:0;z-index:99999;pointer-events:none;"></div>
+
+  <!-- Print Frame for PDF export -->
+  <div id="print-frame"></div>
 
   <!-- Triage Modal -->
   <div id="triage-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:flex-end;" onclick="if(event.target===this)this.style.display='none'">
