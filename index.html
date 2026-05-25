@@ -5899,9 +5899,7 @@ Trả về JSON thuần không chứa markdown:
       body: JSON.stringify({
         model:'gemini-2.5-flash',
         contents:[{role:'user',parts:[
-          {text: JSON_SYSTEM+'
-
-'+typeHints[_aiscanType]},
+          {text: JSON_SYSTEM+'\n\n'+typeHints[_aiscanType]},
           {inlineData:{mimeType:_aiscanFileData.mimeType,data:_aiscanFileData.base64}}
         ]}],
         generationConfig:{temperature:0.1,maxOutputTokens:1500}
