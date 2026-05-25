@@ -3156,6 +3156,9 @@ async function doLoginFromLanding() {
       if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
       return;
     }
+    if (data.session) {
+      await sb.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
+    }
     const { data: profile } = await db.getProfile(data.user.id);
     const user = _resolveUser(data.user, profile);
     await _routeAfterLogin(user);
@@ -3189,6 +3192,9 @@ async function doLogin() {
       const msg = error.message.includes('Invalid') ? 'Email hoặc mật khẩu không đúng' : error.message;
       if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
       return;
+    }
+    if (data.session) {
+      await sb.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
     }
     const { data: profile } = await db.getProfile(data.user.id);
     const user = _resolveUser(data.user, profile);
@@ -8987,6 +8993,11 @@ async function initApp() {
     const { data: { session } } = await db.getSession();
     if (session?.user) {
       showLoading('Đang đăng nhập...');
+      // Set session vào client trước khi query (đảm bảo auth.uid() có giá trị)
+      await sb.auth.setSession({
+        access_token:  session.access_token,
+        refresh_token: session.refresh_token
+      });
       const { data: profile } = await db.getProfile(session.user.id);
       const user = _resolveUser(session.user, profile);
       await _routeAfterLogin(user);
