@@ -5625,6 +5625,7 @@ let _scanAIFileData = null; // {mimeType, base64}
 let _scanAIType = 'xetnghiem';
 
 function pdOpenScanAI() {
+  if (curUser?.role !== 'admin') { toast('Tính năng chỉ dành cho Bác sĩ', 'err'); return; }
   scanAIClear();
   document.getElementById('scan-ai-modal').style.display = 'flex';
 }
@@ -5658,6 +5659,7 @@ function scanAILoadFile(input) {
 // DRUG INTERACTION CHECK
 // ══════════════════════════════════════
 function pdOpenDrugCheck() {
+  if (curUser?.role !== 'admin') { toast('Tính năng chỉ dành cho Bác sĩ', 'err'); return; }
   // Auto fill thông tin BN hiện tại
   const pt = adm?.patients?.find(p => p.bn_code === window._adminViewBnCode);
   const infoDiv  = document.getElementById('drug-check-patient-info');
@@ -8639,6 +8641,11 @@ async function openChatPanel(type) {
   // Mic chỉ hiển thị cho BS
   const micBtn = document.getElementById('chat-mic-btn');
   if (micBtn) micBtn.style.display = isBs ? 'flex' : 'none';
+
+  // 📎 Đính kèm ảnh chỉ dành cho BS/Admin — BN không có tính năng này
+  const attachBtn = document.getElementById('chat-attach-btn');
+  if (attachBtn) attachBtn.style.display = (isBs && curUser?.role === 'admin') ? 'flex' : 'none';
+  chatClearAttach();
 
   // Ẩn emergency banner
   document.getElementById('chat-emergency').style.display = 'none';
