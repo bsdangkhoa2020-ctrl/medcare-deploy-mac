@@ -446,6 +446,37 @@ input[type=date], input[type=time], input[type=datetime-local] {
 
     <button class="btn btn-ghost" onclick="goTo('s-register')">Đăng ký với mã mời</button>
 
+    <!-- ── PANEL TEST NHANH ── -->
+    <div style="margin-top:32px;border:1px dashed var(--gold);border-radius:14px;padding:14px 16px;background:var(--gold-lt);">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px;">🧪 Tài khoản test nhanh</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="quickLogin('bstuanhoang@gmail.com','28072020')"
+          style="display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--gold);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;width:100%;">
+          <span style="font-size:18px;">👨‍⚕️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">Admin — BS. Tuấn</div>
+            <div style="font-size:11px;color:var(--muted);">bstuanhoang@gmail.com</div>
+          </div>
+        </button>
+        <button onclick="quickLogin('obtest2026@gmail.com','Test@2026')"
+          style="display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--gold);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;width:100%;">
+          <span style="font-size:18px;">🤰</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">Sản khoa — Nguyễn Thị Hoa</div>
+            <div style="font-size:11px;color:var(--muted);">Thai 28 tuần · obtest2026@gmail.com</div>
+          </div>
+        </button>
+        <button onclick="quickLogin('gytest2026@gmail.com','Test@2026')"
+          style="display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--gold);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;width:100%;">
+          <span style="font-size:18px;">🌸</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">Phụ khoa — Lê Thị Hương</div>
+            <div style="font-size:11px;color:var(--muted);">Chu kỳ D10 · gytest2026@gmail.com</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <div style="text-align:center;margin-top:28px">
       <span onclick="goTo('s-landing')" style="font-size:12px;color:var(--hint);cursor:pointer;letter-spacing:.02em">← Quay lại trang chủ</span>
     </div>
@@ -3309,6 +3340,13 @@ async function doLoginFromLanding() {
 }
 
 // ── LOGIN (từ s-login screen) ──
+// ── QUICK LOGIN (test panel) ──
+async function quickLogin(email, pass) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-pass').value  = pass;
+  await doLogin();
+}
+
 async function doLogin() {
   const email = document.getElementById('login-email')?.value?.trim();
   const pass  = document.getElementById('login-pass')?.value;
