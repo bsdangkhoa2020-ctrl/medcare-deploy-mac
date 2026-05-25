@@ -708,6 +708,7 @@ input, textarea, select {
       <span style="font-size:13px;color:#7A6F5C;font-family:'IBM Plex Sans',sans-serif;">Quay lại</span>
     </div>
     <div class="adm-lora" style="font-size:16px;font-weight:400;color:#1F1A0F;">Hồ sơ bệnh nhân</div>
+    <button onclick="pdExportPdf()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #E8A93C;background:#FFF8E7;color:#B57A1F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">📄 PDF</button>
     <button id="pd-edit-btn" onclick="pdToggleEdit()" style="font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #1F1A0F;background:transparent;color:#1F1A0F;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">✏️ Sửa</button>
   </div>
   <div class="scroll" style="padding:16px;">
@@ -3484,7 +3485,7 @@ async function loadPatientDetail(bnCode) {
   document.getElementById('pd-edit-btn').textContent = '✏️ Sửa';
 
   const { data: pt, error } = await db.getMyPatient(bnCode);
-  if (error || !pt) { alert('Không tìm thấy hồ sơ'); goBack(); return; }
+  if (error || !pt) { toast('Không tìm thấy hồ sơ'); goBack(); return; }
   _pdPatient = pt;
   const isOB = pt.specialty === 'ob';
 
@@ -3613,7 +3614,7 @@ async function pdSaveEdit() {
 
   // Lưu vào patients (nguồn sự thật chính)
   const { error } = await db.updatePatient(_pdBnCode, updates);
-  if (error) { alert('Lỗi lưu hồ sơ: '+error.message); return; }
+  if (error) { toast('Lỗi lưu hồ sơ: '+error.message, 'err'); return; }
 
   // Đồng bộ sang profiles — các trường profiles cần: full_name, lmp, phone, dob
   const pt = _pdPatient;
@@ -3797,14 +3798,14 @@ async function admSaveInvite() {
     patient_type: _pdInvType,
     created_by: curUser?.id || null
   });
-  if (error) { alert('Lỗi tạo mã: '+error.message); return; }
+  if (error) { toast('Lỗi tạo mã: '+error.message, 'err'); return; }
   document.getElementById('adm-invite-modal').style.display = 'none';
   admLoadInvites();
 }
 
 function admCopyInvite(code) {
   navigator.clipboard?.writeText(code).then(() => {
-    alert(`Đã copy mã: ${code}`);
+    toast(`Đã copy mã: ${code}`);
   }).catch(() => {
     prompt('Copy mã mời:', code);
   });
@@ -4025,6 +4026,14 @@ function _getMonday(offset) {
   const m = new Date(now); m.setDate(now.getDate() - dow + 1 + offset*7);
   return m;
 }
+// Helper: lấy date string theo timezone VN (tránh UTC off-by-1)
+function _localDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 function _weekDates(offset) {
   const m = _getMonday(offset);
   return Array.from({length:7}, (_,i) => { const d=new Date(m); d.setDate(m.getDate()+i); return d; });
@@ -4079,7 +4088,7 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
   if (!grid) return;
   const today = new Date().toISOString().slice(0,10);
   grid.innerHTML = dates.map((d,i) => {
-    const ds = d.toISOString().slice(0,10);
+    const ds = _localDateStr(d);
     const isPast = ds < today;
     const isToday = ds === today;
     const shiftKey = shifts[ds] || (type==='hv'?'OFF':'Nghỉ');
@@ -4208,7 +4217,7 @@ function _admOpenWeekModal(type, offset) {
   const locName = type==='hv' ? 'BV Hùng Vương' : 'PK 315';
   _schWeekEdits = {};
   dates.forEach(d => {
-    const ds = d.toISOString().slice(0,10);
+    const ds = _localDateStr(d);
     _schWeekEdits[ds] = shifts[ds] || (type==='hv'?'OFF':'Nghỉ');
   });
   const titleEl = document.getElementById('adm-sch-week-title');
@@ -4243,7 +4252,7 @@ function _admRenderWeekDays() {
   const today = new Date().toISOString().slice(0,10);
   const dowMap = ['CN','T2','T3','T4','T5','T6','T7'];
   daysEl.innerHTML = dates.map((d,i) => {
-    const ds = d.toISOString().slice(0,10);
+    const ds = _localDateStr(d);
     const cur = _schWeekEdits[ds] || (_schWeekType==='hv'?'OFF':'Nghỉ');
     const isPast = ds < today;
     const isToday = ds === today;
@@ -4335,10 +4344,10 @@ function admRenderCalStrip() {
   const dow = today.getDay() || 7;
   const monday = new Date(today); monday.setDate(today.getDate() - dow + 1); monday.setHours(0,0,0,0);
   const DOW = ['T2','T3','T4','T5','T6','T7','CN'];
-  const todayStr = today.toISOString().slice(0,10);
+  const todayStr = _localDateStr(today);
   strip.innerHTML = Array.from({length:7}, (_,i) => {
     const d = new Date(monday); d.setDate(monday.getDate()+i);
-    const ds = d.toISOString().slice(0,10);
+    const ds = _localDateStr(d);
     const isSel = ds === _calSelDate;
     const isToday = ds === todayStr;
     return `<div onclick="admCalSelectDay('${ds}')"
@@ -4407,7 +4416,7 @@ function admRenderApptStrip() {
   for (let i = -1; i <= 13; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    const ds = d.toISOString().slice(0,10);
+    const ds = _localDateStr(d);
     const isActive = ds === adm.apptDate;
     const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
     const btn = document.createElement('div');
@@ -4510,7 +4519,7 @@ async function admApptSave() {
   const name  = document.getElementById('adm-appt-name').value.trim();
   const date  = document.getElementById('adm-appt-date').value;
   const time  = document.getElementById('adm-appt-time').value;
-  if (!name || !date || !time) { alert('Vui lòng nhập tên, ngày và giờ hẹn'); return; }
+  if (!name || !date || !time) { toast('Vui lòng nhập tên, ngày và giờ hẹn'); return; }
 
   // Find bn_code if patient exists
   const matchPt = adm.patients.find(p => p.name === name);
@@ -4530,7 +4539,7 @@ async function admApptSave() {
   } else {
     ({ error } = await db.insertAppointment(payload));
   }
-  if (error) { alert('Lỗi lưu lịch hẹn: ' + error.message); return; }
+  if (error) { toast('Lỗi lưu lịch hẹn: ' + error.message, 'err'); return; }
   admApptModalClose();
   admLoadAppts();
 }
@@ -4636,7 +4645,7 @@ function admArtModalClose() {
 async function admArtSave() {
   const title   = document.getElementById('adm-art-title').value.trim();
   const content = document.getElementById('adm-art-content').value.trim();
-  if (!title || !content) { alert('Vui lòng nhập tiêu đề và nội dung'); return; }
+  if (!title || !content) { toast('Vui lòng nhập tiêu đề và nội dung'); return; }
   const payload = {
     title,
     content,
@@ -4650,7 +4659,7 @@ async function admArtSave() {
   } else {
     ({ error } = await db.insertArticle(payload));
   }
-  if (error) { alert('Lỗi lưu bài viết: ' + error.message); return; }
+  if (error) { toast('Lỗi lưu bài viết: ' + error.message, 'err'); return; }
   admArtModalClose();
   adm.articles = [];
   admLoadArticles();
@@ -5244,7 +5253,7 @@ async function recSaveEdit() {
   const email = document.getElementById('rec-edit-email')?.value.trim();
   const phone = document.getElementById('rec-edit-phone')?.value.trim();
   const lmp   = document.getElementById('rec-edit-lmp')?.value;
-  if (!name) { alert('Vui lòng nhập họ tên'); return; }
+  if (!name) { toast('Vui lòng nhập họ tên'); return; }
   if (name)  curUser.name  = name;
   if (email) curUser.email = email;
   if (phone) curUser.phone = phone;
@@ -8060,7 +8069,7 @@ function _getBsScheduleContext() {
       const hvLines = [];
       for (let i=0; i<7; i++) {
         const d = new Date(monday); d.setDate(monday.getDate()+i);
-        const ds = d.toISOString().slice(0,10);
+        const ds = _localDateStr(d);
         const shift = _hvShifts[ds];
         if (shift && shift !== 'OFF') {
           hvLines.push(`${DOW_VN[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}: ${shift}`);
@@ -8073,7 +8082,7 @@ function _getBsScheduleContext() {
       const pkLines = [];
       for (let i=0; i<7; i++) {
         const d = new Date(monday); d.setDate(monday.getDate()+i);
-        const ds = d.toISOString().slice(0,10);
+        const ds = _localDateStr(d);
         const shift = _pkShifts[ds];
         if (shift && shift !== 'Nghỉ') {
           pkLines.push(`${DOW_VN[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}: ${shift}`);
@@ -8899,7 +8908,7 @@ function _intentDismiss(bubbleId) {
 // ── Voice Dictation (Admin only) ──
 function chatToggleMic() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Safari chưa hỗ trợ nhận dạng giọng nói. Vui lòng dùng iOS 17+ hoặc Chrome.');
+    toast('Safari chưa hỗ trợ nhận dạng giọng nói. Vui lòng dùng iOS 17+ hoặc Chrome.');
     return;
   }
   if (_chatMicOn) {
