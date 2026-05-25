@@ -4109,11 +4109,10 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
     const shiftKey = shifts[ds] || (type==='hv'?'OFF':'Nghỉ');
     const ca = caMap[shiftKey] || Object.values(caMap)[0];
     const isOff = shiftKey==='OFF' || shiftKey==='Nghỉ';
-    const clickHandler = isPast ? '' : `admSchDayEdit('${ds}','${type}')`;
-    return `<div onclick="${clickHandler}"
+    return `<div
       style="padding:6px 4px;text-align:center;border-radius:12px;min-height:76px;
       display:flex;flex-direction:column;justify-content:space-between;
-      cursor:${isPast?'default':'pointer'};
+      cursor:default;
       border:1px solid ${isToday?'#E8A93C':isOff?'#F0E7D2':'#E0D0B0'};
       background:${isToday?'#FFF8E7':isPast?'#FAFAF8':isOff?'#FFFDF9':ca.bg};
       opacity:${isPast?.7:1};
@@ -4128,9 +4127,6 @@ function _renderDayGrid(gridId, dates, shifts, caMap, type) {
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:${isOff?'#C0B8B0':ca.color};
           background:${isOff?'transparent':ca.bg};border-radius:4px;padding:1px 3px;margin-bottom:2px;">
           ${ca.label}
-        </div>
-        <div style="font-size:8px;color:${isPast?'#C0B8B0':'#B0A490'};">
-          ${isOff?'':(!isPast?'✏️ Sửa':'')}
         </div>
       </div>
     </div>`;
