@@ -6657,55 +6657,78 @@ async function scanAISave() {
 function rxDownloadPdf(idx) {
   const rx = _currentRx[idx];
   if (!rx) { toast('Không tìm thấy đơn thuốc', 'err'); return; }
-  const items = Array.isArray(rx.items) ? rx.items : [];
-  const name = curUser?.name || '—';
-  const bn   = curUser?.bn_code || '—';
-  const date = rx.date || rx.created_at?.slice(0,10) || '—';
-  const doc  = rx.doctor || 'BS. CK1 Hoàng Thanh Tuấn';
+  const items = Array.isArray(rx.medications) ? rx.medications
+              : Array.isArray(rx.items) ? rx.items : [];
+  const name  = curUser?.name || '—';
+  const dob   = curUser?.dob  ? new Date(curUser.dob).toLocaleDateString('vi-VN') : '—';
+  const bn    = curUser?.bn_code || '—';
+  const date  = rx.rx_date || rx.date || rx.created_at?.slice(0,10) || '—';
+  const nextVisit = rx.next_visit_date ? new Date(rx.next_visit_date).toLocaleDateString('vi-VN') : null;
 
   const html = `
-  <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;">
-    <div style="text-align:center;border-bottom:2px solid #B8814A;padding-bottom:14px;margin-bottom:18px;">
-      <div style="font-size:13px;color:#666;letter-spacing:.1em;text-transform:uppercase;">Phòng khám Phụ Sản 315</div>
-      <div style="font-size:11px;color:#888;margin-top:2px;">167-169 Bình Phú, Q.6, TP.HCM · 0938 559 098</div>
-      <div style="font-size:20px;font-weight:700;margin-top:10px;color:#1C1510;">ĐƠN THUỐC</div>
+  <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:24px;">
+    <div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #B8814A;padding-bottom:14px;margin-bottom:18px;">
+      <div style="flex:1;">
+        <div style="font-size:12px;color:#666;font-weight:600;">Tên đơn vị: <b>Hệ thống Y tế Sản Khoa 315</b></div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">Địa chỉ: 167-169 Bình Phú, Phường Bình Phú, Tp. Hồ Chí Minh</div>
+        <div style="font-size:11px;color:#888;">Điện thoại: 0933.826.315 - 0901.315.315</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px;font-weight:700;color:#1C1510;letter-spacing:.05em;">ĐƠN THUỐC</div>
+      </div>
     </div>
-    <table style="width:100%;margin-bottom:16px;font-size:13px;">
-      <tr><td style="width:50%;padding:4px 0;"><b>Bệnh nhân:</b> ${name}</td>
-          <td style="padding:4px 0;"><b>Mã BN:</b> ${bn}</td></tr>
-      <tr><td style="padding:4px 0;"><b>Ngày kê:</b> ${date}</td>
-          <td style="padding:4px 0;"><b>Bác sĩ:</b> ${doc}</td></tr>
-      ${rx.diagnosis ? `<tr><td colspan="2" style="padding:4px 0;"><b>Chẩn đoán:</b> ${rx.diagnosis}</td></tr>` : ''}
+    <table style="width:100%;margin-bottom:14px;font-size:13px;border-collapse:collapse;">
+      <tr>
+        <td style="padding:3px 0;width:60%;"><b>Họ và tên:</b> <span style="font-weight:700;text-transform:uppercase;">${name}</span></td>
+        <td style="padding:3px 0;"><b>Mã BN:</b> ${bn}</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 0;"><b>Ngày sinh:</b> ${dob}</td>
+        <td style="padding:3px 0;"><b>Ngày kê đơn:</b> ${date}</td>
+      </tr>
+      ${rx.diagnosis ? `<tr><td colspan="2" style="padding:5px 0;"><b>Chẩn đoán:</b> ${rx.diagnosis}</td></tr>` : ''}
     </table>
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px;border-bottom:1px solid #ddd;padding-bottom:4px;">Thuốc điều trị:</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
       <thead>
         <tr style="background:#F5EFE6;">
+          <th style="padding:8px;text-align:left;border:1px solid #ddd;width:5%;">STT</th>
           <th style="padding:8px;text-align:left;border:1px solid #ddd;width:40%;">Tên thuốc</th>
-          <th style="padding:8px;text-align:center;border:1px solid #ddd;width:20%;">Liều dùng</th>
+          <th style="padding:8px;text-align:center;border:1px solid #ddd;width:20%;">Cách dùng</th>
           <th style="padding:8px;text-align:center;border:1px solid #ddd;width:15%;">Số lượng</th>
-          <th style="padding:8px;text-align:left;border:1px solid #ddd;">Hướng dẫn</th>
+          <th style="padding:8px;text-align:left;border:1px solid #ddd;">Thời gian</th>
         </tr>
       </thead>
       <tbody>
-        ${items.map((it,i) => `
+        ${items.length ? items.map((it, i) => `
         <tr style="background:${i%2===0?'#fff':'#fafafa'}">
-          <td style="padding:7px 8px;border:1px solid #eee;">${it.name||'—'}</td>
-          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.dose||'—'}</td>
-          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.qty||'—'}</td>
-          <td style="padding:7px 8px;border:1px solid #eee;">${it.note||'—'}</td>
-        </tr>`).join('')}
+          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${i+1}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;font-weight:600;">${it.name||it.drug_name||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.dose||it.dosage||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;text-align:center;">${it.qty||it.quantity||'—'}</td>
+          <td style="padding:7px 8px;border:1px solid #eee;">${it.days||it.duration||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="5" style="padding:12px;text-align:center;color:#999;">Không có dữ liệu thuốc</td></tr>'}
       </tbody>
     </table>
-    ${rx.note ? `<div style="background:#FFF8F0;border:1px solid #F0DCC0;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;"><b>Ghi chú:</b> ${rx.note}</div>` : ''}
-    <div style="margin-top:30px;text-align:right;font-size:12px;">
-      <div style="display:inline-block;text-align:center;width:200px;">
+    <div style="font-size:13px;margin-bottom:6px;">
+      <b>Lời dặn:</b><br>
+      ${nextVisit ? `<b>Ngày tái khám: ${nextVisit}</b><br>` : ''}
+      <i style="font-size:12px;color:#555;">LƯU Ý: Quý khách <b>KHÔNG</b> tự ý mua thêm thuốc hoặc sử dụng lại đơn cho lần điều trị khác.</i>
+    </div>
+    ${rx.notes ? `<div style="background:#FFF8F0;border:1px solid #F0DCC0;border-radius:8px;padding:10px 14px;font-size:12px;margin:12px 0;"><b>Ghi chú:</b> ${rx.notes}</div>` : ''}
+    <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:flex-end;font-size:12px;">
+      <div style="font-size:11px;color:#666;">
+        - Khám bệnh lại xin mang theo đơn này.<br>
+        - Số điện thoại liên hệ: 0938 559 098
+      </div>
+      <div style="text-align:center;min-width:200px;">
         <div style="margin-bottom:50px;">TP.HCM, ngày ${new Date().getDate()} tháng ${new Date().getMonth()+1} năm ${new Date().getFullYear()}</div>
         <div style="border-top:1px solid #000;padding-top:4px;"><b>Bác sĩ kê đơn</b></div>
         <div style="font-size:11px;color:#555;">BS. CK1 Hoàng Thanh Tuấn</div>
       </div>
     </div>
     <div style="margin-top:20px;font-size:10px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px;">
-      Đơn thuốc được tạo bởi BaoBei · bstuan247.com · Lưu ý: Đây là đơn thuốc điện tử, có giá trị tương đương đơn giấy
+      Đơn thuốc điện tử - BaoBei · bstuan247.com · Xuất ngày ${new Date().toLocaleDateString('vi-VN')}
     </div>
   </div>`;
 
