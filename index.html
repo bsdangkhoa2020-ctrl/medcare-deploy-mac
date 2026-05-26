@@ -4974,7 +4974,10 @@ Trả về JSON thuần không chứa markdown:
         generationConfig:{temperature:0.1,maxOutputTokens:1500}
       })
     });
-    if (!resp.ok) throw new Error('Lỗi AI: '+resp.status);
+    if (!resp.ok) {
+      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
+      throw new Error('Lỗi AI: '+resp.status);
+    }
     const data = await resp.json();
     const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     _aiscanLastResult = raw;
@@ -5395,7 +5398,10 @@ Trả lời tiếng Việt, rõ ràng, có cấu trúc.`;
         generationConfig: { temperature: 0.1, maxOutputTokens: 1200 }
       })
     });
-    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
+    if (!resp.ok) {
+      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
+      throw new Error('Lỗi AI: ' + resp.status);
+    }
     const data = await resp.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Không kiểm tra được.';
     resultText.textContent = text;
@@ -5471,7 +5477,10 @@ File đính kèm là tài liệu y tế. Trích xuất mọi thông tin lâm sà
       })
     });
 
-    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
+    if (!resp.ok) {
+      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
+      throw new Error('Lỗi AI: ' + resp.status);
+    }
     const data = await resp.json();
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
@@ -8787,7 +8796,10 @@ async function chatSend(customText) {
 
     _chatRemoveTyping(typingId);
 
-    if (!resp.ok) throw new Error('Lỗi kết nối AI (' + resp.status + ')');
+    if (!resp.ok) {
+      if (resp.status === 429) throw new Error('AI đang quá tải (giới hạn 15 lệnh/phút). Vui lòng đợi 30s rồi thử lại!');
+      throw new Error('Lỗi kết nối AI (' + resp.status + ')');
+    }
     const data = await resp.json();
     let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
              || 'Dạ em chưa nghe rõ, chị vui lòng hỏi lại nhé.';
