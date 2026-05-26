@@ -47,8 +47,14 @@ Deno.serve(async (req) => {
       if (/^(OB|GY)\d{3,}$/.test(code)) {
         await handleBnCodeLink(zaloId, code);
       } else {
-        await sendZaloMessage(zaloId, buildAutoReply(msgText));
+        await sendZaloMessage(zaloId, "🌸 Xin chào! Cảm ơn bạn đã nhắn tin cho Bot của BS. Tuấn.\n\n👉 Nếu bạn là Lễ tân, hãy đính kèm ảnh chụp/PDF xét nghiệm để hệ thống tự động đọc và phân loại nhé!");
       }
+      return new Response('ok', { status: 200 });
+    }
+    
+    // ── NẾU GỬI FILE PDF BỊ ZALO CHẶN ──
+    if (event === 'message.unsupported.received') {
+      await sendZaloMessage(zaloId, "❌ Rất tiếc, hệ thống Zalo Bot hiện tại chưa hỗ trợ nhận File tài liệu (PDF/Word). Bạn vui lòng **gửi File ẢNH (JPG/PNG) hoặc chụp màn hình** kết quả xét nghiệm nhé!");
       return new Response('ok', { status: 200 });
     }
 
