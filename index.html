@@ -3669,7 +3669,7 @@ async function admApptCancel(id) {
 // TAB 4: TẠP CHÍ
 // ────────────────────────────────────────
 async function admLoadArticles() {
-  const { data } = await db.getArticles('all');
+  const { data } = await sb.from('articles').select('*').order('created_at', { ascending: false });
   adm.articles = data || [];
   admRenderArticles();
 }
