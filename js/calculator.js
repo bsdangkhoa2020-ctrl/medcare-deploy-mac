@@ -14,11 +14,16 @@ function calcGA(lmpStr) {
   const days  = diff % 7;
   const trimester = weeks < 14 ? 1 : weeks < 28 ? 2 : 3;
   const edd = new Date(lmp.getTime() + 280 * 86400000);
+  
+  // Tránh lỗi lệch múi giờ (Timezone Shift) làm lùi ngày dự sinh đi 1 ngày trong hệ GMT+7
+  const tzOffset = edd.getTimezoneOffset() * 60000;
+  const eddLocalIso = (new Date(edd.getTime() - tzOffset)).toISOString().split('T')[0];
+  
   return {
     weeks, days, total_days: diff, trimester,
     display: `${weeks} tuần ${days} ngày`,
     edd: formatDate(edd),
-    edd_iso: edd.toISOString().split('T')[0]
+    edd_iso: eddLocalIso
   };
 }
 
@@ -68,5 +73,14 @@ function calcAge(dobStr) {
 function genBnCode(existingCodes = []) {
   let n = (existingCodes.length + 1);
   return 'BN-' + String(n).padStart(3, '0');
+}
+
+// Tránh lỗi lệch múi giờ (Timezone Shift) khi chuyển đổi sang ISO YYYY-MM-DD
+function toLocalISOString(d) {
+  if (!d) return '';
+  const dt = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dt)) return '';
+  const tzOffset = dt.getTimezoneOffset() * 60000;
+  return (new Date(dt.getTime() - tzOffset)).toISOString().split('T')[0];
 }
 

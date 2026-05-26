@@ -3657,7 +3657,8 @@ async function admApptSave() {
     datetime:         `${date}T${time}:00`,
     appt_type: document.getElementById('adm-appt-type').value,
     notes:            document.getElementById('adm-appt-note').value.trim(),
-    status:           'confirmed'
+    status:           'confirmed',
+    created_by:       curUser?.id || null
   };
 
   let error;
@@ -6105,7 +6106,8 @@ window.confirmPatBooking = async function() {
     datetime: dt,
     appt_type: apptType,
     notes: notes,
-    status: 'confirmed'
+    status: 'confirmed',
+    created_by: curUser?.id || null
   };
 
   showLoading('Đang gửi yêu cầu đặt lịch...');
