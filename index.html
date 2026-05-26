@@ -9217,6 +9217,7 @@ function _parseIntent(text, aiReply) {
         adm.patients.forEach(p => {
           patOpts += `<option value="${p.bn_code}" ${p.bn_code === autoMatchedCode ? 'selected' : ''}>${p.bn_code} - ${p.name} ${p.dob ? '('+p.dob+')' : ''}</option>`;
         });
+        patOpts += `<option value="CREATE_NEW" ${!autoMatchedCode ? 'selected' : ''}>➕ Tạo Hồ Sơ Bệnh Nhân Mới</option>`;
       }
       confirmBubble = `<div id="${intentId}" style="background:#F0F7F0;border:1px solid #4CAF50;border-radius:14px;padding:12px 14px;margin-top:6px;">
         <div style="font-size:11px;font-weight:700;color:#2E6E50;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">🔬 Lưu hồ sơ bệnh án?</div>
@@ -9270,6 +9271,22 @@ async function _intentSaveRecord(bubbleId) {
     toast('Vui lòng chọn bệnh nhân để lưu', 'err');
     return;
   }
+  
+  if (bnCode === 'CREATE_NEW') {
+    _aiscanParsed = {
+       patientName: intent.patient_name || '',
+       diagnosis: intent.record_type || ''
+    };
+    _aiscanLastResult = intent.summary || '';
+    _aiscanFileData = window._pendingRecordImage || null;
+    
+    delete window._pendingIntents[bubbleId];
+    document.getElementById(bubbleId)?.remove();
+    
+    if (typeof aicptOpenFromScan === 'function') aicptOpenFromScan();
+    return;
+  }
+
   const btn = selEl.nextElementSibling.querySelector('button');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu...'; }
 
