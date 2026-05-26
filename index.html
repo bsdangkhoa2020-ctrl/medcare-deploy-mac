@@ -3589,6 +3589,17 @@ async function admPopulateApptPatientList() {
   if (dl) dl.innerHTML = adm.patients.map(p => `<option value="${p.name}">${p.bn_code}</option>`).join('');
 }
 
+function admApptAutoFill() {
+  const nameVal = document.getElementById('adm-appt-name').value.trim();
+  if (!nameVal || !adm.patients) return;
+  const match = adm.patients.find(p => p.name === nameVal);
+  if (match && match.phone) {
+    const phoneEl = document.getElementById('adm-appt-phone');
+    if (!phoneEl.value) phoneEl.value = match.phone;
+  }
+}
+
+
 function admApptCreate() {
   adm.apptEditId = null;
   document.getElementById('adm-appt-modal-title').textContent = 'Tạo lịch hẹn';
@@ -9652,7 +9663,7 @@ document.body.insertAdjacentHTML('beforeend', `
     <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;">
       <div class="adm-lora" id="adm-appt-modal-title" style="font-size:18px;font-weight:400;margin-bottom:16px;">Tạo lịch hẹn</div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Tên bệnh nhân *</div>
-        <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;">
+        <input id="adm-appt-name" type="text" placeholder="Nhập tên hoặc chọn BN có sẵn..." list="adm-appt-pt-list" oninput="admApptAutoFill()" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;">
         <datalist id="adm-appt-pt-list"></datalist></div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:6px;">Số điện thoại</div>
         <input id="adm-appt-phone" type="tel" placeholder="0901 234 567" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;"></div>
