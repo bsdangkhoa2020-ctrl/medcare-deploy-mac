@@ -183,4 +183,12 @@ async function sendZaloMessage(toId: string, content: string) {
 }
 
 function buildAutoReply(m: string) { return '🌸 Xin chào! Cảm ơn bạn đã nhắn tin cho Bot của BS. Tuấn. Nếu bạn là Lễ tân, hãy đính kèm ảnh chụp/PDF xét nghiệm để hệ thống tự động xử lý nhé.'; }
-function arrayBufferToBase64(buffer: ArrayBuffer) { return btoa(String.fromCharCode(...new Uint8Array(buffer))); }
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
