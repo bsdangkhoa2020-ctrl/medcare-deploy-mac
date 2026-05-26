@@ -2701,6 +2701,7 @@ function pdRenderEditFields() {
   const pt = _pdPatient;
   const isOB = pt?.specialty === 'ob';
   const fields = [
+    { key:'specialty', label:'Chuyên khoa', type:'select', val: pt?.specialty||'ob', options: [{v:'ob',l:'🤰 Sản khoa (OB)'},{v:'gy',l:'🌸 Phụ khoa (GY)'}] },
     { key:'name', label:'Họ tên', type:'text', val: pt?.name||'' },
     { key:'phone', label:'Điện thoại', type:'tel', val: pt?.phone||'' },
     { key:'dob', label:'Ngày sinh', type:'date', val: pt?.dob||'' },
@@ -2720,6 +2721,10 @@ function pdRenderEditFields() {
       <div style="font-size:11px;color:#7A6F5C;font-weight:300;margin-bottom:5px;">${f.label}</div>
       ${f.type==='textarea'
         ? `<textarea id="pd-f-${f.key}" rows="2" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;resize:none;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">${f.val}</textarea>`
+        : f.type==='select'
+        ? `<select id="pd-f-${f.key}" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+             ${f.options.map(o => `<option value="${o.v}" ${f.val===o.v?'selected':''}>${o.l}</option>`).join('')}
+           </select>`
         : `<input id="pd-f-${f.key}" type="${f.type}" value="${f.val}" style="width:100%;padding:9px 12px;border:1px solid #F0E7D2;border-radius:10px;font-size:13px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">`
       }
     </div>`).join('');
@@ -2731,7 +2736,7 @@ async function pdExportPdf() {
 }
 
 async function pdSaveEdit() {
-  const keys = ['name','phone','dob','blood_type','allergy','height_cm','weight_kg','lmp','address','medical_history'];
+  const keys = ['specialty','name','phone','dob','blood_type','allergy','height_cm','weight_kg','lmp','address','medical_history'];
   const updates = {};
   keys.forEach(k => {
     const el = document.getElementById('pd-f-'+k);
