@@ -343,18 +343,16 @@ async function handleBnCodeLink(zaloId: string, code: string) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  GỬI TIN NHẮN QUA ZALO BOT CREATOR API
+//  GỬI TIN NHẮN QUA ZALO BOT PLATFORMS API
 // ══════════════════════════════════════════════════════════
 async function sendZaloMessage(toId: string, content: string) {
   try {
-    const res = await fetch('https://bot.zalo.me/v2/message/sendmessage', {
+    const res = await fetch(`https://bot-api.zaloplatforms.com/bot${ZALO_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        token: ZALO_TOKEN,
-        type: 'text',
-        to: toId,
-        data: { content },
+        chat_id: toId,
+        text: content
       }),
     });
     const result = await res.json();
