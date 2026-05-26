@@ -4974,10 +4974,7 @@ Trả về JSON thuần không chứa markdown:
         generationConfig:{temperature:0.1,maxOutputTokens:1500}
       })
     });
-    if (!resp.ok) {
-      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
-      throw new Error('Lỗi AI: '+resp.status);
-    }
+    if (!resp.ok) throw new Error('Lỗi AI: '+resp.status);
     const data = await resp.json();
     const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     _aiscanLastResult = raw;
@@ -5398,10 +5395,7 @@ Trả lời tiếng Việt, rõ ràng, có cấu trúc.`;
         generationConfig: { temperature: 0.1, maxOutputTokens: 1200 }
       })
     });
-    if (!resp.ok) {
-      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
-      throw new Error('Lỗi AI: ' + resp.status);
-    }
+    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
     const data = await resp.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Không kiểm tra được.';
     resultText.textContent = text;
@@ -5477,10 +5471,7 @@ File đính kèm là tài liệu y tế. Trích xuất mọi thông tin lâm sà
       })
     });
 
-    if (!resp.ok) {
-      if (resp.status === 429) throw new Error('Quá tải (vượt giới hạn 15 lệnh/phút của Google). Vui lòng đợi 30s rồi thử lại!');
-      throw new Error('Lỗi AI: ' + resp.status);
-    }
+    if (!resp.ok) throw new Error('Lỗi AI: ' + resp.status);
     const data = await resp.json();
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
@@ -8796,10 +8787,7 @@ async function chatSend(customText) {
 
     _chatRemoveTyping(typingId);
 
-    if (!resp.ok) {
-      if (resp.status === 429) throw new Error('AI đang quá tải (giới hạn 15 lệnh/phút). Vui lòng đợi 30s rồi thử lại!');
-      throw new Error('Lỗi kết nối AI (' + resp.status + ')');
-    }
+    if (!resp.ok) throw new Error('Lỗi kết nối AI (' + resp.status + ')');
     const data = await resp.json();
     let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
              || 'Dạ em chưa nghe rõ, chị vui lòng hỏi lại nhé.';
@@ -9231,7 +9219,10 @@ function _parseIntent(text, aiReply) {
         });
         patOpts += `<option value="CREATE_NEW" ${!autoMatchedCode ? 'selected' : ''}>➕ Tạo Hồ Sơ Bệnh Nhân Mới</option>`;
       }
-      confirmBubble = `<div id="${intentId}" style="background:#F0F7F0;border:1px solid #4CAF50;border-radius:14px;padding:12px 14px;margin-top:6px;">
+      
+      // Khởi tạo giao diện bubble
+      confirmBubble = `<div id="${intentId}" style="background:#F0F7F0;border:1px solid #4CAF50;border-radius:14px;padding:12px 14px;margin-top:6px;position:relative;">
+        <div id="dup-warn-${intentId}"></div>
         <div style="font-size:11px;font-weight:700;color:#2E6E50;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">🔬 Lưu hồ sơ bệnh án?</div>
         <div style="font-size:13px;color:#1F1A0F;margin-bottom:4px;"><b>Loại:</b> ${intent.record_type||'Không rõ'}</div>
         <div style="font-size:12px;color:#7A6F5C;margin-bottom:8px;line-height:1.4;">${intent.summary||''}</div>
@@ -9243,6 +9234,28 @@ function _parseIntent(text, aiReply) {
           <button onclick="_intentDismiss('${intentId}')" style="padding:8px 12px;border-radius:10px;border:1px solid #C8E6C9;background:#fff;font-size:12px;cursor:pointer;color:#2E6E50;font-family:'IBM Plex Sans',sans-serif;">✕</button>
         </div>
       </div>`;
+
+      // Async DB check for duplication (Semantic Match)
+      if (autoMatchedCode) {
+        setTimeout(async () => {
+          try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data } = await sb.from('attachments')
+              .select('id, created_at, doctor_notes')
+              .eq('bn_code', autoMatchedCode)
+              .gte('created_at', today)
+              .ilike('doctor_notes', '%Lưu từ Chatbot%')
+              .limit(1);
+            if (data && data.length > 0) {
+              const warnBox = document.getElementById('dup-warn-' + intentId);
+              if (warnBox) {
+                warnBox.innerHTML = '<div style="background:#FFF0F0;border:1px solid #FFCDD2;color:#D32F2F;padding:8px 10px;border-radius:8px;font-size:11.5px;margin-bottom:10px;font-weight:500;line-height:1.4;animation: fadeIn 0.5s;">⚠️ <b>Cảnh báo trùng lặp:</b> Bệnh nhân này đã có một hồ sơ (ảnh) được lưu từ Chatbot trong hôm nay. Hãy kiểm tra kỹ để tránh lưu đè hoặc lưu rác!</div>';
+              }
+            }
+          } catch (err) { console.error('Lỗi check trùng:', err); }
+        }, 100);
+      }
+
     } else {
       return false;
     }
