@@ -797,48 +797,6 @@
       </button>
     </div>
 
-    <!-- Divider -->
-    <div style="border-top:1px solid #F0E7D2;margin:24px 0;"></div>
-
-    <!-- Drug Check section -->
-    <div style="margin-bottom:16px;">
-      <div style="font-family:'Lora',serif;font-size:18px;font-weight:400;color:#1F1A0F;margin-bottom:4px;">💊 Kiểm tra tương tác thuốc</div>
-      <div style="font-size:12px;color:#B0A490;margin-bottom:14px;">Phát hiện tương tác nguy hại và an toàn thai kỳ</div>
-
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Bệnh nhân</div>
-        <select id="drugcheck-bn-select" style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;background:#fff;" onchange="drugcheckAutoFill(this.value)">
-          <option value="">-- Không liên kết BN --</option>
-        </select>
-      </div>
-
-      <div id="drugcheck-pt-info" style="display:none;background:#FFF8E7;border:1px solid #F0E0B0;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#7A6F5C;">
-        <span style="font-weight:600;color:#B57A1F;">Dị ứng:</span> <span id="drugcheck-allergy-show"></span>
-      </div>
-
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Danh sách thuốc</div>
-        <textarea id="drugcheck-input" rows="4" placeholder="Ví dụ:&#10;- Amoxicillin 500mg&#10;- Paracetamol 500mg&#10;- Metformin 850mg"
-          style="width:100%;border:1px solid #E0D0B0;border-radius:12px;padding:10px 14px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;resize:none;color:#1F1A0F;box-sizing:border-box;line-height:1.6;"></textarea>
-      </div>
-
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B0A490;margin-bottom:6px;">Dị ứng / Thuốc thêm</div>
-        <input id="drugcheck-allergy-input" type="text" placeholder="VD: Penicillin, Sulfa..."
-          style="width:100%;border:1px solid #E0D0B0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#1F1A0F;box-sizing:border-box;">
-      </div>
-
-      <button id="drugcheck-run-btn" onclick="drugcheckRun()"
-        style="width:100%;padding:14px;border-radius:12px;border:none;background:#7B5EA7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;margin-bottom:14px;">
-        💊 Kiểm tra tương tác
-      </button>
-
-      <div id="drugcheck-result" style="display:none;background:#F8F6F2;border-radius:14px;padding:14px 16px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B0A490;margin-bottom:8px;">Kết quả kiểm tra</div>
-        <div id="drugcheck-result-text" style="font-size:13px;color:#1F1A0F;line-height:1.7;white-space:pre-wrap;"></div>
-      </div>
-    </div>
-
   </div>
 
 </div>
@@ -2217,8 +2175,26 @@ const db = {
       .gte('date', monday).lte('date', sunday).order('date').order('start_time');
     if (specialty) q = q.eq('specialty', specialty);
     return q;
+  },
+
+  // ── CONSENT ──
+  async getConsent(userId) {
+    return sb.from('consents').select('id').eq('user_id', userId).maybeSingle();
+  },
+  async insertConsent(userId) {
+    return sb.from('consents').upsert({ user_id: userId, agreed_at: new Date().toISOString() }, { onConflict: 'user_id' });
+  },
+
+  // ── INVITE CODES ──
+  async checkInviteCode(code) {
+    return sb.from('invite_codes')
+      .select('specialty, is_used')
+      .eq('code', code)
+      .eq('is_used', false)
+      .maybeSingle();
   }
 };
+
 
 
 
@@ -4916,12 +4892,11 @@ function _aiscanApplyMatch(bnCode) {
 
 function aiscanTabInit() {
   // Populate BN select dropdowns
-  ['aiscan-bn-select','drugcheck-bn-select'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '<option value="">-- Không liên kết BN --</option>' +
+  const aiscanSel = document.getElementById('aiscan-bn-select');
+  if (aiscanSel) {
+    aiscanSel.innerHTML = '<option value="">-- Không liên kết BN --</option>' +
       (adm.patients||[]).map(p => `<option value="${p.bn_code}">${p.name} (${p.bn_code})</option>`).join('');
-  });
+  }
 }
 
 function aiscanSetType(btn, type) {
@@ -5311,57 +5286,7 @@ async function aicptConfirmCreate() {
   }
 }
 
-function drugcheckAutoFill(bnCode) {
-  const pt = (adm.patients||[]).find(p => p.bn_code===bnCode);
-  const infoDiv = document.getElementById('drugcheck-pt-info');
-  const allergyShow = document.getElementById('drugcheck-allergy-show');
-  const allergyInput = document.getElementById('drugcheck-allergy-input');
-  if (pt?.allergy) {
-    if (allergyShow) allergyShow.textContent = pt.allergy;
-    if (allergyInput) allergyInput.value = pt.allergy;
-    if (infoDiv) infoDiv.style.display = 'block';
-  } else {
-    if (infoDiv) infoDiv.style.display = 'none';
-  }
-}
 
-async function drugcheckRun() {
-  const drugs = document.getElementById('drugcheck-input')?.value?.trim();
-  if (!drugs) { toast('Vui lòng nhập danh sách thuốc','err'); return; }
-  const allergy = document.getElementById('drugcheck-allergy-input')?.value?.trim();
-  const bnCode  = document.getElementById('drugcheck-bn-select')?.value;
-  const pt = (adm.patients||[]).find(p => p.bn_code===bnCode);
-  const isPregnant = pt?.specialty==='ob';
-  const btn = document.getElementById('drugcheck-run-btn');
-  const resultDiv  = document.getElementById('drugcheck-result');
-  const resultText = document.getElementById('drugcheck-result-text');
-  btn.disabled=true; btn.textContent='⏳ Đang kiểm tra...';
-
-  const prompt = `Bạn là dược sĩ lâm sàng chuyên khoa Sản Phụ khoa. Kiểm tra tương tác thuốc:
-${drugs}
-${allergy?'Dị ứng/Thuốc thêm: '+allergy:''}
-${pt?'Bệnh nhân: '+pt.name+', '+(isPregnant?'đang mang thai':'phụ khoa'):''}
-
-Phân tích:
-1. Tương tác giữa các thuốc (🔴 Nghiêm trọng / 🟡 Trung bình / 🟢 Nhẹ) + cơ chế + khuyến nghị
-2. An toàn thai kỳ nếu bệnh nhân mang thai (phân loại FDA)
-3. Tương tác với dị ứng (nếu có)
-4. Kết luận + điều chỉnh cần thiết
-Trả lời tiếng Việt, rõ ràng, có cấu trúc.`;
-
-  try {
-    const resp = await fetch(GEMINI_FN_URL,{method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
-      body:JSON.stringify({model:'gemini-2.5-flash',contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:1200}})
-    });
-    if (!resp.ok) throw new Error('Lỗi AI: '+resp.status);
-    const data = await resp.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text||'Không kiểm tra được.';
-    resultText.textContent = text;
-    resultDiv.style.display = 'block';
-  } catch(e) { toast('Lỗi: '+e.message,'err'); }
-  finally { btn.disabled=false; btn.textContent='💊 Kiểm tra lại'; }
-}
 
 function pdOpenScanAI() {
   if (curUser?.role !== 'admin') { toast('Tính năng chỉ dành cho Bác sĩ', 'err'); return; }

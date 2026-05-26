@@ -148,8 +148,14 @@ async function _routeAfterLogin(user) {
     goTo('s-admin');
     if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
   } else {
-    const { data: consent } = await db.getConsent(user.id);
-    if (!consent) { goTo('s-consent'); return; }
+    // Kiểm tra consent — nếu bảng chưa có hoặc lỗi thì cho vào app bình thường
+    try {
+      const { data: consent, error: consentErr } = await db.getConsent(user.id);
+      if (!consentErr && !consent) { goTo('s-consent'); return; }
+    } catch(e) {
+      // Bảng consents chưa tồn tại → bỏ qua, cho vào app
+      console.warn('[AUTH] getConsent error (bảng chưa tồn tại?):', e.message);
+    }
     if (user.bn_code) {
       try {
         const { data: pt } = await db.getMyPatient(user.bn_code);
@@ -166,6 +172,7 @@ async function _routeAfterLogin(user) {
     _enterApp(user);
   }
 }
+
 
 function _enterApp(user) {
   if (user.role === 'admin') {
