@@ -2198,6 +2198,25 @@ const db = {
   },
   async insertLog(data) {
     return sb.from('patient_logs').insert(data).select().single();
+  },
+
+  // ── DOCTOR SCHEDULE ──
+  async getSchedule(specialty) {
+    let q = sb.from('doctor_schedule').select('*').order('date').order('start_time');
+    if (specialty) q = q.eq('specialty', specialty);
+    return q;
+  },
+  async getScheduleFrom(fromDate, specialty) {
+    let q = sb.from('doctor_schedule').select('*')
+      .gte('date', fromDate).order('date').order('start_time');
+    if (specialty) q = q.eq('specialty', specialty);
+    return q;
+  },
+  async getScheduleWeek(monday, sunday, specialty) {
+    let q = sb.from('doctor_schedule').select('*')
+      .gte('date', monday).lte('date', sunday).order('date').order('start_time');
+    if (specialty) q = q.eq('specialty', specialty);
+    return q;
   }
 };
 
@@ -3312,23 +3331,30 @@ async function _admSaveShift(ds, type, shiftKey) {
   const loc  = type==='hv' ? 'hung_vuong' : 'pk315';
   const spec = type==='hv' ? 'gy' : 'ob';
   const isOff = shiftKey==='OFF'||shiftKey==='Nghỉ';
-  if (isOff) {
-    const { error } = await sb.from('doctor_schedule').delete().eq('date',ds).eq('location',loc);
-    if (error) { console.error('[Schedule delete error]', error); toast('Lỗi xoá lịch: ' + error.message, 'err'); }
-    return;
-  }
+  
+  // Xoá ca cũ của ngày và địa điểm này để tránh trùng lặp hoặc vi phạm ràng buộc unique
+  const { error: delErr } = await sb.from('doctor_schedule').delete().eq('date', ds).eq('location', loc);
+  if (delErr) { console.error('[Schedule clear error]', delErr); }
+  
+  if (isOff) return;
+  
   const timeMap = {
     'A':{'s':'06:00','e':'14:00'},'HC':{'s':'07:15','e':'16:30'},'C':{'s':'09:00','e':'17:00'},
     'Sáng':{'s':'08:00','e':'11:00'},'Tối':{'s':'17:00','e':'20:00'},
     'Sáng + Tối':{'s':'08:00','e':'20:00'},'Sáng+Tối':{'s':'08:00','e':'20:00'},
   };
   const t = timeMap[shiftKey] || {s:'07:00',e:'17:00'};
-  const { error } = await sb.from('doctor_schedule').upsert({
-    date:ds, location:loc, shift_name:shiftKey,
-    start_time:t.s, end_time:t.e, specialty:spec,
-    created_by: curUser?.id||null
-  }, {onConflict:'date,location,shift_name'});
-  if (error) { console.error('[Schedule upsert error]', error); toast('Lỗi lưu lịch: ' + error.message, 'err'); }
+  
+  const { error } = await sb.from('doctor_schedule').insert({
+    date: ds,
+    location: loc,
+    shift_name: shiftKey,
+    start_time: t.s,
+    end_time: t.e,
+    specialty: spec,
+    created_by: curUser?.id || null
+  });
+  if (error) { console.error('[Schedule insert error]', error); toast('Lỗi lưu lịch: ' + error.message, 'err'); }
 }
 
 // ── Sửa cả tuần ──
