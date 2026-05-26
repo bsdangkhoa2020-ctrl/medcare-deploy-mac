@@ -10,7 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_KEY = Deno.env.get('SB_SERVICE_KEY')!;
-const ZALO_TOKEN   = Deno.env.get('ZALO_BOT_TOKEN')!;
+const ZALO_TOKEN   = Deno.env.get('ZALO_BOT_TOKEN') || '2942065296280499653:LsDMgYWDiJmiDvXtqMtngiGuSrZzSqIkjpZnulLRwkDCAeVlJwTOEaRSXwjCiHvc';
 const GEMINI_KEY   = Deno.env.get('GEMINI_API_KEY')!;
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
