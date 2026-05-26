@@ -1766,8 +1766,11 @@
       <div style="font-size:11px;color:var(--gy-muted);margin-top:4px" id="gy-appt-type">—</div>
     </div>
     <div onclick="goTo('s-gy-appts')" style="background:var(--gy-lt);border:.5px solid var(--gy-md);border-radius:var(--r-lg);padding:14px;cursor:pointer">
-      <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-dk);font-weight:600;margin-bottom:10px">Lịch BS Tuấn</div>
-      <div id="gy-doc-schedule" style="display:flex;flex-direction:column;gap:4px"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gy-dk);font-weight:600">Lịch BS Tuấn</div>
+        <div style="font-size:9px;color:var(--gy-dk);font-weight:600;letter-spacing:.06em">Xem →</div>
+      </div>
+      <div id="gy-doc-schedule" style="display:flex;flex-direction:column;"></div>
     </div>
   </div>
 
@@ -4198,14 +4201,14 @@ function _renderMockDocSchedule() {
 
   grid.innerHTML = upcoming.map(({ label, sessions, isToday, date }) => {
     const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid rgba(184,129,74,.15)">
-      <div style="display:flex;align-items:center;gap:6px">
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(184,129,74,.15)">
+      <div style="font-size:12px;font-weight:${isToday?'600':'500'};color:var(--gold-dk);opacity:${isToday?'1':'0.7'}">${label} ${dateStr}</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:11px;color:var(--gold-dk);opacity:${isToday?'0.8':'0.4'};font-weight:500">${sessions.join(' · ')}</div>
         ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gold-dk);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
-        <span style="font-size:11px;font-weight:${isToday?'700':'500'};color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.8)'}">${label} ${dateStr}</span>
       </div>
-      <span style="font-size:10px;color:${isToday?'var(--gold-dk)':'rgba(184,129,74,.7)'};font-weight:600;text-align:right">${sessions.join(' · ')}</span>
     </div>`;
-  }).join('') + `<div style="font-size:9px;color:rgba(184,129,74,.5);margin-top:6px;text-align:center;letter-spacing:.08em">Phụ Sản 315 · Q.6</div>`;
+  }).join('');
 }
 
 // ── OB BOTTOM NAV ──
@@ -6369,16 +6372,16 @@ async function obLoadDocScheduleCard() {
       if (!byDate[r.date]) byDate[r.date] = [];
       byDate[r.date].push(r);
     });
-    const rows = Object.keys(byDate).slice(0,8).map(ds => {
+    const rows = Object.keys(byDate).slice(0,5).map(ds => {
       const shifts = byDate[ds];
       const labels = shifts.map(s => `${s.shift_name} ${s.start_time}–${s.end_time}`).join(' · ');
       const isToday = ds === today;
-      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;
-        border-bottom:0.5px solid rgba(184,129,74,.1);">
-        <div style="font-size:10px;font-weight:${isToday?'600':'400'};
-          color:${isToday?'var(--gold)':'rgba(184,129,74,.6)'};min-width:48px;">${fmtDate(ds)}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.5);flex:1;">${labels}</div>
-        ${isToday?'<div style="width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>':''}
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(184,129,74,.15)">
+        <div style="font-size:12px;font-weight:${isToday?'600':'500'};color:var(--gold-dk);opacity:${isToday?'1':'0.7'}">${fmtDate(ds)}</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:11px;color:var(--gold-dk);opacity:${isToday?'0.8':'0.4'};font-weight:500">${labels}</div>
+          ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gold-dk);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
+        </div>
       </div>`;
     }).join('');
     grid.innerHTML = rows;
@@ -8178,18 +8181,17 @@ async function gyLoadHomeData() {
       if (!sched || !sched.length) {
         schedEl.innerHTML = `<div style="font-size:10px;color:var(--gy-muted);font-style:italic;">BS chưa cập nhật lịch tuần này</div>`;
       } else {
-        schedEl.innerHTML = sched.map(r => {
+        schedEl.innerHTML = sched.slice(0,5).map(r => {
           const d = new Date(r.date + 'T00:00:00');
           const isToday = r.date === todayStr;
           const dateStr = `${DOW2[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
+          const timeStr = `${r.shift_name} ${r.start_time}–${r.end_time}`;
           return `
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;
-            ${isToday?'border-left:2px solid var(--gy-dk);padding-left:8px;':'padding-left:10px;'}">
-            <div style="font-size:11px;font-weight:${isToday?'600':'400'};
-              color:${isToday?'var(--gy-ink)':'var(--gy-muted)'};min-width:54px;">${dateStr}</div>
-            <div>
-              <div style="font-size:10px;color:#4A90D9;font-weight:500;">BV Hùng Vương</div>
-              <div style="font-size:9px;color:var(--gy-muted);">${r.shift_name} · ${r.start_time}–${r.end_time}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(135,142,153,.2)">
+            <div style="font-size:12px;font-weight:${isToday?'600':'500'};color:var(--gy-ink);opacity:${isToday?'1':'0.7'}">${dateStr}</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="font-size:11px;color:var(--gy-dk);opacity:${isToday?'1':'0.6'};font-weight:500">${timeStr}</div>
+              ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gy-ink);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
             </div>
           </div>`;
         }).join('');
