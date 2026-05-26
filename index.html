@@ -39,336 +39,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap" rel="stylesheet">
 
-<style>
-/* ════════════════════════════════════════════════════════════
-   BLOCK 2: CSS — TOKENS
-   Bộ màu D · Rose Gold & Cream
-   Sửa màu: chỉ động vào đây
-════════════════════════════════════════════════════════════ */
-:root {
-  /* PRIMARY — Rose Gold (OB) */
-  --gold:       #B8814A;
-  --gold-dk:    #8C5C2E;
-  --gold-lt:    #FDF0E8;
-  --gold-md:    #DEC0A0;
-
-  /* NEUTRAL — Cream */
-  --bg:         #FEFAF5;
-  --surface:    #FFFFFF;
-  --border:     #E8D8C8;
-  --border-md:  #D4BFA8;
-
-  /* DANGER — Đỏ (cảnh báo & SOS only) */
-  --danger:     #C03030;
-  --danger-dk:  #802020;
-  --danger-lt:  #FFF0EE;
-
-  /* TEXT */
-  --ink:        #1C1510;
-  --ink-2:      #4A3020;
-  --muted:      #907060;
-  --hint:       #C0A888;
-
-  /* SUCCESS */
-  --ok:         #2E6E50;
-  --ok-lt:      #E8F4EC;
-
-  /* GY — Blush Peach */
-  --gy-primary:    #F0B8C0;
-  --gy-dk:         #C96080;
-  --gy-lt:         #FFF0F2;
-  --gy-md:         #E8B8C4;
-  --gy-bg:         #FDEEF0;
-  --gy-ink:        #2A1015;
-  --gy-muted:      #9A6070;
-  --gy-dark-bg:    #2A1015;
-  /* FONTS */
-  --sans:  'Be Vietnam Pro', system-ui, sans-serif;
-  --serif: 'Cormorant Garamond', Georgia, serif;
-
-  /* PWA SAFE AREA — iPhone notch/Dynamic Island */
-  --sat: env(safe-area-inset-top,    0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left,   0px);
-  --sar: env(safe-area-inset-right,  0px);
-
-  /* RADIUS */
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 20px;
-}
-
-/* ════════════════════════════════════════════════════════════
-   BLOCK 3: CSS — LAYOUT
-   Screen system, scroll, bottom nav, PWA fixes
-   Sửa layout: chỉ động vào đây
-════════════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html {
-  height: 100%; height: -webkit-fill-available;
-  background: var(--gold-dk);
-  overscroll-behavior: none;
-}
-body {
-  height: 100dvh; font-family: var(--sans);
-  font-size: 15px; line-height: 1.6;
-  background: var(--bg); color: var(--ink);
-  overflow: hidden; overscroll-behavior: none;
-  padding-left: var(--sal); padding-right: var(--sar);
-  -webkit-text-size-adjust: 100%;
-}
-
-img, video { max-width: 100%; height: auto; display: block; }
-input, select, textarea, button { font-family: inherit; }
-input[type=date], input[type=time], input[type=datetime-local] {
-  display: block; width: 100%; max-width: 100%;
-  -webkit-appearance: none; appearance: none;
-}
-
-/* APP SHELL */
-.app { width: 100%; height: 100dvh; max-height: 100dvh; overflow: hidden; background: var(--surface); }
-
-/* SCREEN */
-.screen {
-  display: none; flex-direction: column;
-  height: 100dvh; max-height: 100dvh;
-  overflow: hidden; padding-top: var(--sat);
-}
-.screen.active { display: flex; }
-
-/* SCROLL AREA */
-.scroll {
-  flex: 1; min-height: 0;
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-}
-.scroll::-webkit-scrollbar { width: 3px; }
-.scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
-
-.adm-pane {
-  flex: 1; min-height: 0;
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-}
-
-/* BOTTOM NAV */
-.bnav {
-  display: flex; background: var(--surface);
-  border-top: 0.5px solid var(--border);
-  padding: 8px 4px;
-  padding-bottom: max(10px, var(--sab));
-  flex-shrink: 0; z-index: 10;
-}
-.ni {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: 3px; cursor: pointer;
-  padding: 4px 2px; -webkit-tap-highlight-color: transparent;
-}
-.ni svg { color: var(--hint); transition: color .15s; }
-.ni.on svg { color: var(--gold-dk); }
-#s-gy-home .ni.on svg { color: var(--gy-dk); }
-#s-gy-home .ni.on .nl { color: var(--gy-dk); }
-.nl { font-size: 9.5px; color: var(--hint); font-weight: 600; letter-spacing: .2px; transition: color .15s; }
-.ni.on .nl { color: var(--gold-dk); }
-
-/* BACK BAR */
-.bbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; flex-shrink: 0; }
-.bbtn {
-  width: 38px; height: 38px; border-radius: 50%;
-  border: 0.5px solid var(--border-md);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; background: var(--surface);
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* SECTION HEADER */
-.sh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.sh h3 { font-size: 15px; font-weight: 700; }
-.sh a { font-size: 12px; color: var(--gold-dk); cursor: pointer; font-weight: 600; }
-
-/* ════════════════════════════════════════════════════════════
-   BLOCK 4: CSS — COMPONENTS
-   Buttons, cards, inputs, badges, chips, toast, loading
-   Sửa component dùng chung: chỉ động vào đây
-════════════════════════════════════════════════════════════ */
-
-/* BUTTONS */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  border: none; cursor: pointer; font-family: var(--sans);
-  font-size: 14px; font-weight: 600; line-height: 1;
-  padding: 14px 20px; border-radius: var(--r-md);
-  transition: all .15s; -webkit-tap-highlight-color: transparent;
-  width: 100%; text-align: center;
-}
-.btn-primary  { background: var(--gold);   color: #fff; }
-.btn-primary:active  { background: var(--gold-dk); }
-.btn-secondary { background: transparent; color: var(--gold-dk); border: 1px solid var(--gold); }
-.btn-secondary:active { background: var(--gold-lt); }
-.btn-danger   { background: var(--danger); color: #fff; }
-.btn-danger:active   { background: var(--danger-dk); }
-.btn-ghost    { background: transparent; color: var(--muted); border: 0.5px solid var(--border-md); }
-.btn-ghost:active    { background: var(--bg); }
-.btn-sm { font-size: 12px; padding: 9px 14px; border-radius: var(--r-sm); width: auto; }
-.btn:disabled { opacity: .45; pointer-events: none; }
-
-/* CARDS */
-.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 10px; }
-.card-pad { padding: 16px; }
-.card-section { border-bottom: 0.5px solid var(--border); padding: 14px 16px; }
-.card-section:last-child { border-bottom: none; }
-.card-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-.card-gold    { background: var(--gold-lt); border-color: var(--gold-md); }
-.card-danger  { background: var(--danger-lt); border-color: #F5C0C0; border-left: 3px solid var(--danger); border-radius: 0 var(--r-lg) var(--r-lg) 0; }
-
-/* INPUTS */
-.input-group { margin-bottom: 16px; }
-.input-label { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-.input {
-  width: 100%; padding: 12px 14px;
-  background: var(--surface); border: 0.5px solid var(--border-md);
-  border-radius: var(--r-md); font-size: 14px;
-  color: var(--ink); outline: none; transition: border-color .15s;
-  -webkit-appearance: none; appearance: none;
-}
-.input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,129,74,.12); }
-.input::placeholder { color: var(--hint); }
-.input-line {
-  width: 100%; padding: 10px 0; background: transparent;
-  border: none; border-bottom: 0.5px solid var(--border-md);
-  font-size: 15px; color: var(--ink); outline: none; transition: border-color .15s;
-}
-.input-line:focus { border-bottom-color: var(--gold); }
-.input-line::placeholder { color: var(--hint); }
-
-/* BADGES */
-.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .03em; white-space: nowrap; }
-.badge-gold   { background: var(--gold-lt);   color: var(--gold-dk); }
-.badge-ok     { background: var(--ok-lt);     color: var(--ok); }
-.badge-danger { background: var(--danger-lt); color: var(--danger-dk); }
-.badge-gray   { background: var(--bg); color: var(--muted); border: 0.5px solid var(--border-md); }
-.badge-ob     { background: #E6F4ED; color: #2E6E4A; }
-.badge-gy     { background: #FAECE7; color: #8B3A20; }
-
-/* CHIPS */
-.chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 13px; border-radius: 20px; font-size: 13px;
-  font-weight: 500; cursor: pointer;
-  background: var(--surface); border: 0.5px solid var(--border-md);
-  color: var(--muted); transition: all .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.chip.selected { background: var(--gold-lt); border-color: var(--gold); color: var(--gold-dk); font-weight: 600; }
-.chip-danger.selected { background: var(--danger-lt); border-color: var(--danger); color: var(--danger-dk); }
-.chips-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
-
-/* TOAST */
-.toast {
-  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: #FDF0E8;
-  padding: 11px 20px; border-radius: var(--r-md);
-  font-size: 13px; font-weight: 500;
-  display: none; z-index: 9999;
-  white-space: nowrap; letter-spacing: .02em;
-  box-shadow: 0 4px 20px rgba(28,21,16,.2);
-}
-.toast.show { display: block; }
-.toast-ok  { background: var(--ok); }
-.toast-err { background: var(--danger); }
-
-/* LOADING */
-.spinner { width: 22px; height: 22px; border: 2.5px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-overlay { position: fixed; inset: 0; background: rgba(254,250,245,.88); display: none; align-items: center; justify-content: center; z-index: 9998; flex-direction: column; gap: 12px; }
-.loading-overlay.show { display: flex; }
-.loading-overlay p { font-size: 13px; color: var(--muted); }
-
-/* STEP BAR */
-.step-bar { display: flex; gap: 5px; margin-bottom: 22px; }
-.step-seg { flex: 1; height: 3px; border-radius: 2px; background: var(--border-md); transition: background .2s; }
-.step-seg.done { background: var(--gold); }
-
-/* FAB */
-.fab {
-  position: fixed; right: 18px; width: 52px; height: 52px;
-  border-radius: 50%; display: flex; align-items: center;
-  justify-content: center; cursor: pointer; z-index: 200;
-  border: none; -webkit-tap-highlight-color: transparent;
-  transition: transform .15s; box-shadow: 0 3px 14px rgba(0,0,0,.18);
-}
-.fab:active { transform: scale(.93); }
-.fab-ai  { background: var(--gold);   bottom: 90px; box-shadow: 0 3px 14px rgba(184,129,74,.4); }
-.fab.hidden { display: none; }
-
-/* DIVIDER */
-.divider { height: 0.5px; background: var(--border); margin: 16px 0; }
-
-/* AVATAR */
-.avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gold-lt); border: 0.5px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 16px; color: var(--gold-dk); flex-shrink: 0; }
-
-/* TYPOGRAPHY */
-.eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.serif-h { font-family: var(--serif); font-weight: 400; color: var(--ink); line-height: 1.2; }
-.text-muted  { color: var(--muted); }
-.text-danger { color: var(--danger-dk); }
-.text-ok     { color: var(--ok); }
-.text-gold   { color: var(--gold-dk); }
-
-/* EMPTY STATE */
-.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-.empty-icon { font-size: 36px; margin-bottom: 10px; opacity: .4; }
-.empty p { font-size: 14px; line-height: 1.6; }
-
-/* ── OB HERO PARALLAX ── */
-#ob-header { transition: height .05s linear, opacity .05s linear; }
-@keyframes ob-fade-up {
-  from { opacity:0; transform:translateY(10px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes ob-float {
-  0%,100% { transform:translateY(0); }
-  50%     { transform:translateY(-5px); }
-}
-@keyframes ob-shimmer-line {
-  0%   { transform:scaleX(0); opacity:0; }
-  60%  { transform:scaleX(1); opacity:1; }
-  100% { transform:scaleX(1); opacity:.5; }
-}
-@keyframes ob-orb-drift {
-  0%,100% { transform:translate(0,0) scale(1); }
-  33%     { transform:translate(10px,-8px) scale(1.05); }
-  66%     { transform:translate(-6px,5px) scale(.96); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .ob-orb1 { animation: ob-orb-drift 10s ease-in-out infinite; }
-  .ob-orb2 { animation: ob-orb-drift 14s ease-in-out infinite reverse; }
-  .ob-float { animation: ob-float 5s ease-in-out infinite; }
-  .ob-fade1 { animation: ob-fade-up .45s ease both; }
-  .ob-fade2 { animation: ob-fade-up .45s .1s ease both; }
-  .ob-fade3 { animation: ob-fade-up .45s .2s ease both; }
-  .ob-line  { animation: ob-shimmer-line .5s .3s ease both; transform-origin:left; }
-}
-
-/* MODAL OVERLAY */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(28,21,16,.5);
-  z-index: 500; display: none;
-  align-items: flex-end; justify-content: center;
-}
-.modal-overlay.show { display: flex; }
-.modal-sheet {
-  background: var(--surface); width: 100%; max-width: 480px;
-  border-radius: var(--r-xl) var(--r-xl) 0 0;
-  padding: 20px 20px calc(20px + var(--sab));
-  max-height: 85vh; overflow-y: auto;
-}
-.modal-handle { width: 36px; height: 4px; background: var(--border-md); border-radius: 2px; margin: 0 auto 18px; }
-
-/* ERROR MESSAGE */
-.err-msg { font-size: 12px; color: var(--danger); text-align: center; margin: 6px 0; display: none; font-weight: 500; }
-</style>
+<link rel="stylesheet" href="css/styles.css">
 
 <!-- ════════════════════════════════════════════════════════════
      BLOCK 5: HTML — SHARED SCREENS
@@ -668,68 +339,7 @@ input[type=date], input[type=time], input[type=datetime-local] {
      BLOCK 6: HTML — ADMIN
      Placeholder — sẽ build trong P7
 ════════════════════════════════════════════════════════════ -->
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
-.adm-lora { font-family: 'Lora', serif !important; }
-.adm-ibm  { font-family: 'IBM Plex Sans', sans-serif !important; }
-/* Tabs */
-#s-admin .adm-tab      { transition: color .15s, border-color .15s; }
-/* List rows */
-.adm-pt-row:hover      { background: #FEFAF3 !important; }
-/* Init avatar */
-.adm-init { width:36px;height:36px;border-radius:8px;background:#F5F0E8;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:11px;color:#7A6F5C;flex-shrink:0;font-style:italic;font-weight:500;letter-spacing:.01em; }
-.adm-init-gy { background:#FEF5F7; }
-/* Badge */
-.adm-badge-ob { background:#1F1A0F;color:#E8A93C;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
-.adm-badge-gy { background:#FFF0F4;color:#C96080;border:1px solid #F5D0DC;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
-/* ── iOS Auto-zoom fix: font-size tối thiểu 16px cho tất cả input ── */
-input, textarea, select {
-  font-size: 16px !important;
-}
-/* ── AI CHAT ── */
-#s-chat { background: #1A1710; }
-#chat-header { background: #1A1710; }
-.chat-bubble { max-width: 82%; border-radius: 18px; padding: 10px 14px; font-size: 13px; line-height: 1.6; }
-.chat-bubble-user { background: #E8A93C; color: #1F1A0F; margin-left: auto; border-bottom-right-radius: 4px; font-weight: 500; }
-.chat-bubble-ai { background: rgba(255,255,255,.1); color: #EDE8DF; margin-right: auto; border-bottom-left-radius: 4px; }
-.chat-bubble-ai strong { color: #E8C96A; font-weight: 600; }
-.chat-bubble-ai em { color: rgba(255,255,255,.7); }
-.chat-ts { font-size: 9px; color: rgba(255,255,255,.3); margin-top: 3px; }
-.chat-ts-user { text-align: right; }
-.chat-chip { background: rgba(232,169,60,.15); border: 1px solid rgba(232,169,60,.3); color: #E8C96A; font-size: 11px; padding: 6px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: 'IBM Plex Sans', sans-serif; }
-.chat-chip:active { background: rgba(232,169,60,.3); }
-.chat-typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: rgba(255,255,255,.1); border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
-.chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.4); animation: chatDot 1.2s infinite; }
-.chat-typing span:nth-child(2) { animation-delay: .2s; }
-.chat-typing span:nth-child(3) { animation-delay: .4s; }
-@keyframes chatDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
-.chat-mic-active { background: #D64545 !important; animation: micPulse 1s infinite; }
-@keyframes micPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
-
-/* @media print — PDF export */
-@media print {
-  body > *:not(#print-frame) { display: none !important; }
-  #print-frame { display: block !important; position: fixed; inset: 0; background: #fff; z-index: 999999; }
-  #print-frame * { color: #000 !important; background: #fff !important; border-color: #ccc !important; }
-  @page { margin: 15mm; size: A4; }
-}
-#print-frame { display: none; }
-/* Emergency */
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
-/* Triage levels */
-.triage-ok   { background:rgba(58,125,92,.12); border-left:3px solid #3A7D5C; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
-.triage-warn { background:rgba(184,129,74,.12); border-left:3px solid #B8814A; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
-.triage-err  { background:rgba(192,48,48,.12);  border-left:3px solid #C03030; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
-/* TTS */
-.chat-tts-btn { background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.5; padding:2px 4px; transition:opacity .15s; }
-.chat-tts-btn:hover { opacity:1; }
-.chat-tts-btn.speaking { opacity:1; animation:ttsPulse .8s infinite; }
-@keyframes ttsPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-/* Wake word indicator */
-#wake-indicator { position:fixed; top: calc(var(--sat) + 8px); left:50%; transform:translateX(-50%); background:#D64545; color:#fff; font-size:11px; font-weight:700; padding:6px 16px; border-radius:20px; z-index:9999; display:none; letter-spacing:.06em; }
-/* Status dot */
-.adm-dot-ok { width:7px;height:7px;border-radius:50%;background:#3DAA72;flex-shrink:0; }
-</style>
+<link rel="stylesheet" href="css/screens.css">
 
 <!-- ══ PATIENT DETAIL (Admin) ══ -->
 <div class="screen" id="s-patient-detail">
@@ -1539,6 +1149,96 @@ input, textarea, select {
   </div>
 </div>
 
+<!-- ── PATIENT BOOKING BOTTOM SHEET MODAL ── -->
+<style>
+  .bs-sched-day-cell { transition: background 0.15s ease, transform 0.1s ease; }
+  .bs-sched-day-cell:hover { background: var(--gold-lt) !important; }
+  .bs-sched-day-cell:active { transform: scale(0.96); }
+  .bk-time-slot-pill { transition: all 0.15s ease; }
+  .bk-time-slot-pill:hover:not([style*="cursor:not-allowed"]) { border-color: var(--gold-md) !important; background: var(--gold-lt) !important; color: var(--gold-dk) !important; }
+  .bk-time-slot-pill:active:not([style*="cursor:not-allowed"]) { transform: scale(0.92); }
+  .bk-type-pill { transition: all 0.15s ease; }
+  .bk-type-pill:hover { border-color: var(--gold-md) !important; color: var(--gold-dk) !important; }
+  .bk-type-pill:active { transform: scale(0.95); }
+</style>
+
+<div id="pat-booking-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(42,16,21,.6);align-items:flex-end;" onclick="if(event.target===this)closePatBooking()">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:0 0 30px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 -10px 40px rgba(0,0,0,0.15);transition:transform 0.3s ease-out;">
+    <!-- Handle bar -->
+    <div style="padding:14px 0 0;text-align:center;cursor:pointer" onclick="closePatBooking()">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto"></div>
+    </div>
+    
+    <!-- Modal Header -->
+    <div style="padding:16px 22px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--border)">
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dk)">Phòng Khám Phụ Sản 315</div>
+        <div style="font-family:var(--serif);font-size:22px;color:var(--ink);font-weight:300;margin-top:2px">Đặt lịch khám <em style="color:var(--gold-dk)">BS Tuấn</em></div>
+      </div>
+      <div onclick="closePatBooking()" style="width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;border:.5px solid var(--border)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </div>
+    </div>
+
+    <!-- Date selector preview -->
+    <div style="padding:18px 22px 0;">
+      <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Ngày khám đã chọn</div>
+      <div style="background:var(--surface);border:.5px solid var(--gold-md);border-radius:var(--r-md);padding:12px 16px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:20px">📅</span>
+        <div>
+          <div style="font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink)" id="pat-bk-date-str">Thứ Ba, 26/05/2026</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px;">Nhấp vào ô lịch tuần để đổi ngày</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time slot grid selector -->
+    <div style="padding:18px 22px 0;">
+      <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between">
+        <span>Chọn khung giờ trống</span>
+        <span style="color:var(--gold-dk)" id="pat-bk-shift-label">Tất cả</span>
+      </div>
+      
+      <!-- Morning slots section -->
+      <div id="pat-bk-morning-section">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.5px;">Ca Sáng (8h - 11h)</div>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;" id="pat-bk-morning-grid"></div>
+      </div>
+      
+      <!-- Evening slots section -->
+      <div id="pat-bk-evening-section">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px;">Ca Tối (17h - 20h)</div>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;" id="pat-bk-evening-grid"></div>
+      </div>
+    </div>
+
+    <!-- Appointment Type selector -->
+    <div style="padding:18px 22px 0;">
+      <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Loại hình thăm khám</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;" class="scroll-x">
+        <div onclick="selectPatBkType('kham_thai', this)" class="bk-type-pill" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--gold-md);background:var(--gold-lt);color:var(--gold-dk);font-size:12px;font-weight:600;cursor:pointer;">🤰 Khám thai định kỳ</div>
+        <div onclick="selectPatBkType('sieu_am', this)" class="bk-type-pill" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px;cursor:pointer;">🩺 Siêu âm thai</div>
+        <div onclick="selectPatBkType('xet_nghiem', this)" class="bk-type-pill" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px;cursor:pointer;">🔬 Xét nghiệm</div>
+        <div onclick="selectPatBkType('tu_van', this)" class="bk-type-pill" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px;cursor:pointer;">💬 Tư vấn từ xa</div>
+      </div>
+    </div>
+
+    <!-- Note field -->
+    <div style="padding:18px 22px 0;">
+      <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Lý do khám & ghi chú</div>
+      <textarea id="pat-bk-notes" placeholder="Nhập triệu chứng của mẹ hoặc nội dung muốn khám để bác sĩ chuẩn bị chu đáo..." rows="2"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border:.5px solid var(--border);border-radius:10px;font-family:var(--serif);font-size:13px;color:var(--ink);resize:none;outline:none;background:#fff;-webkit-appearance:none"></textarea>
+    </div>
+
+    <!-- Action button -->
+    <div style="padding:20px 22px 0">
+      <button onclick="confirmPatBooking()" id="pat-bk-btn" style="width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all 0.2s;box-shadow:0 4px 12px rgba(62,42,61,0.25)">
+        Xác nhận đặt lịch hẹn
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── GY CHECK-IN MODAL ── -->
 <div id="gy-checkin-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(42,16,21,.6)" onclick="if(event.target===this)closeGyCheckin()">
   <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:0 0 40px;max-height:92vh;overflow-y:auto">
@@ -1953,7 +1653,7 @@ input, textarea, select {
     </div>
 
     <!-- Tap zone -->
-    <div onclick="tapKick()" id="kick-tap" style="margin:0 22px;padding:32px 20px;background:var(--ink);border-radius:var(--r-xl);text-align:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent">
+    <div onclick="tapKick(event)" id="kick-tap" class="kick-tap-pulse" style="position:relative;overflow:hidden;margin:0 22px;padding:32px 20px;background:var(--ink);border-radius:var(--r-xl);text-align:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent">
       <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(184,129,74,.8)">Chạm để đếm</div>
       <div style="font-family:var(--serif);font-weight:300;font-style:italic;font-size:28px;line-height:1.35;color:#fff;margin:14px 0">Mỗi lần bé đạp,<br>hãy chạm vào đây.</div>
       <div style="width:44px;height:44px;border-radius:50%;border:0.5px solid rgba(184,129,74,.6);display:flex;align-items:center;justify-content:center;margin:0 auto">
@@ -2341,6 +2041,9 @@ input, textarea, select {
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/data.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/router.js"></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════
@@ -2501,792 +2204,16 @@ const db = {
 
   // ── PATIENT LOGS (check-in, kick, weight) ──
   async getLogs(bnCode, logType = null) {
-    let q = sb.from('patient_logs').select('*').eq('bn_code', bnCode);
+    let q = sb.from('patient_logs').select('*').eq('bn_code', bnCode).order('created_at', { ascending: false });
     if (logType) q = q.eq('log_type', logType);
-    return q.order('created_at', { ascending: false });
+    return q;
   },
   async insertLog(data) {
-    return sb.from('patient_logs').insert(data);
-  },
-
-  // ── CHAT LOGS ──
-  async getChatLogs(userId, chatType) {
-    return sb.from('chat_logs').select('*')
-      .eq('user_id', userId).eq('chat_type', chatType)
-      .order('created_at', { ascending: true }).limit(20);
-  },
-  async insertChatLog(data) {
-    return sb.from('chat_logs').insert(data);
-  },
-
-  // ── DOCTOR SCHEDULE ──
-  async getSchedule(specialty) {
-    let q = sb.from('doctor_schedule').select('*').order('date').order('start_time');
-    if (specialty) q = q.eq('specialty', specialty);
-    return q;
-  },
-  async getScheduleFrom(fromDate, specialty) {
-    let q = sb.from('doctor_schedule').select('*')
-      .gte('date', fromDate).order('date').order('start_time');
-    if (specialty) q = q.eq('specialty', specialty);
-    return q;
-  },
-  async getScheduleWeek(monday, sunday, specialty) {
-    let q = sb.from('doctor_schedule').select('*')
-      .gte('date', monday).lte('date', sunday).order('date').order('start_time');
-    if (specialty) q = q.eq('specialty', specialty);
-    return q;
-  },
-  async toggleSchedule(row) {
-    const { data: existing } = await sb.from('doctor_schedule').select('id')
-      .eq('date', row.date).eq('location', row.location).eq('shift_name', row.shift_name).single();
-    if (existing) {
-      return sb.from('doctor_schedule').delete().eq('id', existing.id);
-    } else {
-      return sb.from('doctor_schedule').insert(row);
-    }
-  },
-  async deleteSchedule(id) {
-    return sb.from('doctor_schedule').delete().eq('id', id);
-  },
-  // ── CHAT SESSIONS ──
-  async loadChatSession(userId, chatType) {
-    return sb.from('chat_sessions').select('messages')
-      .eq('user_id', userId).eq('chat_type', chatType)
-      .order('updated_at', { ascending: false }).limit(1).maybeSingle();
-  },
-  async saveChatSession(userId, bnCode, chatType, messages) {
-    return sb.from('chat_sessions').upsert({
-      user_id: userId, bn_code: bnCode,
-      chat_type: chatType, messages,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id,chat_type' });
-  },
-
-  // ── INVITE CODES ──
-  async verifyInviteCode(code) {
-    return sb.from('invite_codes')
-      .select('*').eq('code', code.toUpperCase())
-      .is('used_at', null).maybeSingle();
-  },
-  async getInviteCodes() {
-    return sb.from('invite_codes').select('*').order('created_at', { ascending: false });
-  },
-  async insertInviteCode(data) {
-    return sb.from('invite_codes').insert(data).select().single();
-  },
-  async deleteInviteCode(id) {
-    return sb.from('invite_codes').delete().eq('id', id);
-  },
-  async checkInviteCode(code) {
-    const now = new Date().toISOString();
-    const { data, error } = await sb.from('invite_codes')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .is('used_by', null)
-      .gt('expires_at', now)
-      .single();
-    return { data, error };
-  },
-  async markInviteUsed(code, userId) {
-    return sb.from('invite_codes')
-      .update({ used_at: new Date().toISOString(), used_by: userId })
-      .eq('code', code.toUpperCase());
-  },
-
-  // ── CONSENTS ──
-  async getConsent(userId) {
-    return sb.from('consents').select('*').eq('user_id', userId)
-      .order('accepted_at', { ascending: false }).limit(1).maybeSingle();
-  },
-  async insertConsent(userId) {
-    return sb.from('consents').insert({
-      user_id: userId,
-      version: 'v1',
-      accepted_at: new Date().toISOString()
-    });
-  },
-
-  // ── PATIENT TAGS ──
-  async getTags(bnCode) {
-    return sb.from('patient_tags').select('*').eq('bn_code', bnCode);
-  },
-  async insertTag(data) {
-    return sb.from('patient_tags').insert(data);
-  },
-  async deleteTag(id) {
-    return sb.from('patient_tags').delete().eq('id', id);
-  },
-
-  // ── ADMIN STATS ──
-  async getStatsThisMonth(startDate, endDate) {
-    const [pNew, visits, rxs, appts] = await Promise.all([
-      sb.from('patients').select('bn_code', { count: 'exact', head: true })
-        .gte('created_at', startDate).lte('created_at', endDate),
-      sb.from('visits').select('id', { count: 'exact', head: true })
-        .gte('visit_date', startDate).lte('visit_date', endDate),
-      sb.from('prescriptions').select('id', { count: 'exact', head: true })
-        .gte('rx_date', startDate).lte('rx_date', endDate),
-      sb.from('appointments').select('id,status', { count: 'exact', head: true })
-        .gte('datetime', startDate + 'T00:00:00').lte('datetime', endDate + 'T23:59:59')
-    ]);
-    return {
-      patients: pNew.count || 0,
-      visits:   visits.count || 0,
-      rxs:      rxs.count || 0,
-      appts:    appts.count || 0
-    };
-  },
-
-  // ── HEALTH ARTICLES ──
-  async getArticles(category) {
-    let q = sb.from('health_articles').select('*').order('created_at', { ascending: false });
-    if (category && category !== 'all') q = q.in('category', [category, 'both']);
-    return q;
-  },
-  async insertArticle(data) {
-    return sb.from('health_articles').insert(data).select().single();
-  },
-  async updateArticle(id, data) {
-    data.updated_at = new Date().toISOString();
-    return sb.from('health_articles').update(data).eq('id', id).select().single();
-  },
-  async deleteArticle(id) {
-    return sb.from('health_articles').delete().eq('id', id);
+    return sb.from('patient_logs').insert(data).select().single();
   }
 };
 
-/* ════════════════════════════════════════════════════════════
-   BLOCK 12: JS — UTILS
-   Hàm tiện ích dùng chung toàn app
-════════════════════════════════════════════════════════════ */
 
-// ═══════════════════════════════════════════════════════════
-// MILESTONE DATA — 10 tuần với SVG illustrations boutique-fied
-// Style: peaceful (eyes closed), uterus pear shape, rose-d/plum palette
-// ═══════════════════════════════════════════════════════════
-
-// SVG strings — common defs trích vào hàm để giảm dung lượng
-function _wombDefs(id){
-  return '<defs>'+
-    '<linearGradient id="wo'+id+'" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#C97B91"/><stop offset="100%" stop-color="#9E5C73"/></linearGradient>'+
-    '<radialGradient id="wi'+id+'" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#5A3D52"/><stop offset="100%" stop-color="#3E2A3D"/></radialGradient>'+
-  '</defs>';
-}
-const _WOMB_OUTER = '<circle cx="100" cy="100" r="88" fill="none" stroke="#A88656" stroke-width="1" stroke-dasharray="3 5" opacity=".65"/><path d="M 100 30 Q 58 32 48 75 Q 38 118 60 152 Q 82 182 110 180 Q 152 175 160 130 Q 164 78 145 50 Q 125 28 100 30 Z" fill="url(#wo{ID})"/><path d="M 100 48 Q 68 52 60 86 Q 54 118 74 142 Q 92 165 112 162 Q 142 158 148 124 Q 152 84 134 60 Q 120 48 100 48 Z" fill="url(#wi{ID})"/>';
-const _HEART_OUT = '<path d="M 178 110 Q 170 100 178 92 Q 184 98 184 100 Q 184 98 190 92 Q 198 100 190 110 Q 184 116 178 110 Z" fill="#C97B91" stroke="#9E5C73" stroke-width="1.2"/>';
-const _SPARKLES = '<g fill="#C7A47B" opacity=".7"><circle cx="40" cy="45" r="1.3"/><circle cx="158" cy="40" r="1.1"/></g>';
-
-function _svg(id, content){
-  const womb = _WOMB_OUTER.replace(/{ID}/g, id);
-  return '<svg width="120" height="120" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'+
-    _wombDefs(id) + womb + content + _SPARKLES +
-  '</svg>';
-}
-
-const BABY_SVG = {
-  4: _svg('4',
-    '<ellipse cx="100" cy="118" rx="14" ry="10" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<path d="M 96 120 Q 100 124 106 122" stroke="#E8B098" stroke-width="1.2" fill="none" opacity=".6"/>'+
-    '<circle cx="100" cy="116" r="2" fill="#C97B91"/><circle cx="100" cy="116" r="3" fill="none" stroke="#FAE5EB" stroke-width=".8" opacity=".7"/>'+
-    '<ellipse cx="118" cy="105" rx="6" ry="4" fill="#F5C9AB" stroke="#3D2818" stroke-width=".8" opacity=".7"/>'+
-    '<line x1="112" y1="115" x2="116" y2="108" stroke="#3D2818" stroke-width="1" opacity=".7"/>'+
-    _HEART_OUT
-  ),
-  8: _svg('8',
-    '<path d="M 95 100 Q 80 105 82 125 Q 88 142 106 142 Q 124 138 124 122 Q 122 105 110 102 Q 100 98 95 100 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<circle cx="105" cy="100" r="16" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<path d="M 99 100 Q 102 99 105 100" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 108 100 Q 111 99 114 100" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 103 107 Q 107 109 111 107" stroke="#3D2818" stroke-width="1" fill="none" stroke-linecap="round"/>'+
-    '<ellipse cx="97" cy="105" rx="2.5" ry="1.8" fill="#E8A1B5" opacity=".5"/>'+
-    '<circle cx="84" cy="118" r="4" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<circle cx="124" cy="118" r="4" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<circle cx="96" cy="138" r="4" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<circle cx="116" cy="138" r="4" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<path d="M 105 122 Q 100 118 103 114 Q 105 116 105 117 Q 105 116 107 114 Q 110 118 105 122 Z" fill="#C97B91"/>'+
-    '<path d="M 132 100 Q 142 118 138 140" stroke="#C97B91" stroke-width="2.2" fill="none" stroke-linecap="round"/>'+
-    _HEART_OUT
-  ),
-  12: _svg('12',
-    '<path d="M 138 80 Q 145 100 138 125" stroke="#C97B91" stroke-width="2.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 80 95 Q 62 110 65 140 Q 75 162 105 160 Q 132 155 135 128 Q 132 100 118 92 Q 100 86 80 95 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 80 115 Q 72 130 78 150" stroke="#E8B098" stroke-width="1.5" fill="none" opacity=".4"/>'+
-    '<circle cx="92" cy="92" r="20" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 82 92 Q 86 90 90 92" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 94 92 Q 98 90 102 92" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 84 91 L 83 89" stroke="#3D2818" stroke-width=".5"/><path d="M 96 91 L 95 89" stroke="#3D2818" stroke-width=".5"/>'+
-    '<ellipse cx="80" cy="100" rx="3" ry="2" fill="#E8A1B5" opacity=".5"/>'+
-    '<path d="M 88 104 Q 92 105 96 104" stroke="#3D2818" stroke-width="1" fill="none" stroke-linecap="round"/>'+
-    '<ellipse cx="88" cy="108" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.1"/>'+
-    '<path d="M 90 105 Q 92 102 91 100" stroke="#3D2818" stroke-width="1" fill="#FBE0CC"/>'+
-    '<ellipse cx="115" cy="125" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.1"/>'+
-    '<ellipse cx="128" cy="148" rx="9" ry="5" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.1"/>'+
-    _HEART_OUT
-  ),
-  16: _svg('16',
-    '<path d="M 138 70 Q 148 90 140 115" stroke="#C97B91" stroke-width="2.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 78 98 Q 58 113 62 142 Q 72 168 105 166 Q 138 160 142 130 Q 140 100 122 90 Q 100 84 78 98 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 80 116 Q 72 134 78 152" stroke="#E8B098" stroke-width="1.5" fill="none" opacity=".4"/>'+
-    '<circle cx="90" cy="90" r="22" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 102 80 Q 110 92 107 105" stroke="#E8B098" stroke-width="1.5" fill="none" opacity=".4"/>'+
-    '<path d="M 78 74 Q 84 68 90 72 Q 96 66 102 72 Q 99 76 90 76 Q 81 78 78 74 Z" fill="#5A3E2B" opacity=".55" stroke="#3D2818" stroke-width=".7"/>'+
-    '<path d="M 80 90 Q 84 88 88 90" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 92 90 Q 96 88 100 90" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 82 89 L 81 87" stroke="#3D2818" stroke-width=".5"/><path d="M 94 89 L 93 87" stroke="#3D2818" stroke-width=".5"/>'+
-    '<ellipse cx="78" cy="98" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 92 94 Q 94 97 92 100" stroke="#3D2818" stroke-width="1.1" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 88 104 Q 92 106 96 104" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 110 96 Q 118 96 116 106 Q 108 106 110 96 Z" fill="#FAE5EB" stroke="#C97B91" stroke-width="1.3"/>'+
-    '<path d="M 112 100 Q 114 100 113 104" stroke="#C97B91" stroke-width=".8" fill="none"/>'+
-    '<g stroke="#C97B91" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".6">'+
-    '<path d="M 130 95 Q 134 100 130 105"/><path d="M 138 92 Q 144 100 138 108"/></g>'+
-    '<ellipse cx="80" cy="118" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.1"/>'+
-    '<g stroke="#3D2818" stroke-width=".5" stroke-linecap="round"><line x1="76" y1="118" x2="76" y2="121"/><line x1="79" y1="116" x2="79" y2="120"/><line x1="82" y1="116" x2="82" y2="120"/></g>'+
-    '<ellipse cx="125" cy="152" rx="10" ry="6" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    _HEART_OUT
-  ),
-  20: _svg('20',
-    '<path d="M 138 70 Q 148 95 138 118" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 75 100 Q 55 115 60 145 Q 70 170 105 168 Q 138 162 140 130 Q 138 100 122 90 Q 100 84 75 100 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 78 118 Q 70 135 76 152" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="90" cy="92" r="22" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 102 82 Q 110 92 107 106" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 78 76 Q 82 70 90 74 Q 96 68 102 74 Q 100 78 90 78 Q 80 80 78 76 Z" fill="#5A3E2B" opacity=".7" stroke="#3D2818" stroke-width=".8"/>'+
-    '<path d="M 82 92 Q 86 90 90 92" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 94 92 Q 98 90 102 92" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 84 91 L 83 89" stroke="#3D2818" stroke-width=".6"/><path d="M 96 91 L 95 89" stroke="#3D2818" stroke-width=".6"/>'+
-    '<ellipse cx="78" cy="100" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 92 96 Q 94 99 92 102" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 88 106 Q 92 108 96 106" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 108 96 Q 114 96 112 104 Q 106 104 108 96 Z" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<ellipse cx="78" cy="120" rx="7" ry="5" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g stroke="#3D2818" stroke-width=".7" stroke-linecap="round"><line x1="73" y1="120" x2="73" y2="124"/><line x1="76" y1="118" x2="76" y2="123"/><line x1="79" y1="117" x2="79" y2="123"/><line x1="82" y1="118" x2="82" y2="123"/></g>'+
-    '<ellipse cx="148" cy="138" rx="13" ry="7" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3" transform="rotate(20 148 138)"/>'+
-    '<g fill="#F5C9AB" stroke="#3D2818" stroke-width=".5"><circle cx="156" cy="135" r="1.5"/><circle cx="159" cy="138" r="1.5"/></g>'+
-    '<g stroke="#FAE5EB" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".75"><path d="M 167 130 Q 173 130 176 132"/><path d="M 172 138 Q 178 138 181 138"/><path d="M 169 145 Q 175 146 178 148"/></g>'+
-    '<ellipse cx="92" cy="158" rx="9" ry="5" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    _HEART_OUT
-  ),
-  24: _svg('24',
-    '<path d="M 140 65 Q 148 90 140 115" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 75 100 Q 55 115 60 145 Q 70 170 105 168 Q 138 162 140 130 Q 138 100 122 90 Q 100 84 75 100 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 78 118 Q 70 135 76 152" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="90" cy="92" r="23" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 103 82 Q 111 92 108 106" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 76 75 Q 82 67 90 71 Q 96 65 104 71 Q 108 76 106 82 Q 100 76 92 78 Q 84 76 78 82 Q 74 78 76 75 Z" fill="#5A3E2B" opacity=".75" stroke="#3D2818" stroke-width=".8"/>'+
-    '<path d="M 82 92 Q 86 90 90 92" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 94 92 Q 98 90 102 92" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 84 91 L 83 89" stroke="#3D2818" stroke-width=".6"/><path d="M 96 91 L 95 89" stroke="#3D2818" stroke-width=".6"/>'+
-    '<ellipse cx="78" cy="100" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 92 96 Q 94 99 92 102" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 86 106 Q 92 110 98 106" stroke="#3D2818" stroke-width="1.3" fill="#C97B91" opacity=".9"/>'+
-    '<ellipse cx="92" cy="107" rx="2" ry="1" fill="#E8A1B5" opacity=".7"/>'+
-    '<path d="M 110 96 Q 116 96 114 104 Q 108 104 110 96 Z" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<ellipse cx="80" cy="108" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g stroke="#3D2818" stroke-width=".6" stroke-linecap="round"><line x1="76" y1="108" x2="76" y2="111"/><line x1="79" y1="106" x2="79" y2="110"/><line x1="82" y1="106" x2="82" y2="110"/></g>'+
-    '<ellipse cx="118" cy="130" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<ellipse cx="125" cy="155" rx="11" ry="6" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    _HEART_OUT
-  ),
-  28: _svg('28',
-    '<ellipse cx="85" cy="78" rx="22" ry="30" fill="#FAE5EB" opacity=".15"/>'+
-    '<path d="M 140 65 Q 148 90 138 115 Q 130 138 142 158" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 75 100 Q 55 115 60 145 Q 70 170 105 168 Q 138 162 140 130 Q 138 102 122 92 Q 100 86 75 100 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 78 118 Q 70 135 76 152 Q 86 162 100 162" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="92" cy="92" r="24" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 105 82 Q 114 92 110 108" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 76 76 Q 82 68 90 72 Q 96 66 104 72 Q 108 78 106 84 Q 100 78 92 80 Q 84 78 78 84 Q 74 80 76 76 Z" fill="#5A3E2B" stroke="#3D2818" stroke-width=".8"/>'+
-    '<path d="M 82 92 Q 86 90 90 92" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 94 92 Q 98 90 102 92" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 84 91 L 83 89" stroke="#3D2818" stroke-width=".7"/><path d="M 86 91 L 86 89" stroke="#3D2818" stroke-width=".6"/>'+
-    '<path d="M 96 91 L 95 89" stroke="#3D2818" stroke-width=".7"/><path d="M 98 91 L 98 89" stroke="#3D2818" stroke-width=".6"/>'+
-    '<ellipse cx="80" cy="100" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 95 96 Q 97 99 95 102" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 88 106 Q 92 109 96 106" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 110 96 Q 116 96 114 104 Q 108 104 110 96 Z" fill="#FAE5EB" stroke="#C97B91" stroke-width="1.2"/>'+
-    '<g stroke="#C97B91" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".55"><path d="M 122 96 Q 126 100 122 104"/><path d="M 128 92 Q 134 100 128 108"/></g>'+
-    '<ellipse cx="80" cy="116" rx="7" ry="5" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g stroke="#3D2818" stroke-width=".7" stroke-linecap="round"><line x1="74" y1="116" x2="74" y2="120"/><line x1="77" y1="114" x2="77" y2="119"/><line x1="80" y1="113" x2="80" y2="119"/><line x1="83" y1="114" x2="83" y2="119"/></g>'+
-    '<ellipse cx="128" cy="155" rx="11" ry="6" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g fill="#F5C9AB" stroke="#3D2818" stroke-width=".5"><circle cx="120" cy="154" r="1.3"/><circle cx="122" cy="158" r="1"/></g>'+
-    '<path d="M 178 110 Q 170 100 178 92 Q 184 98 184 100 Q 184 98 190 92 Q 198 100 190 110 Q 184 116 178 110 Z" fill="#C97B91" stroke="#9E5C73" stroke-width="1.2"/>'+
-    '<path d="M 182 100 Q 184 96 186 98" stroke="#FAE5EB" stroke-width="1" fill="none" stroke-linecap="round" opacity=".7"/>'
-  ),
-  32: _svg('32',
-    '<path d="M 142 60 Q 150 90 140 115 Q 132 138 144 158" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 70 96 Q 50 113 55 144 Q 65 172 105 170 Q 142 165 145 132 Q 142 100 124 88 Q 100 80 70 96 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 75 116 Q 67 134 73 154 Q 83 165 100 165" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="90" cy="88" r="25" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 104 78 Q 113 90 109 105" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 74 72 Q 80 64 88 68 Q 94 60 102 66 Q 108 72 106 80 Q 104 76 96 76 Q 88 78 80 78 Q 74 80 74 72 Z" fill="#5A3E2B" stroke="#3D2818" stroke-width=".8"/>'+
-    '<path d="M 80 88 Q 84 86 88 88" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 92 88 Q 96 86 100 88" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 82 87 L 81 85" stroke="#3D2818" stroke-width=".6"/><path d="M 94 87 L 93 85" stroke="#3D2818" stroke-width=".6"/>'+
-    '<ellipse cx="78" cy="96" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 93 92 Q 95 95 93 98" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<ellipse cx="92" cy="103" rx="3" ry="2" fill="#3D2818" opacity=".7"/>'+
-    '<ellipse cx="92" cy="102.5" rx="2.5" ry="1" fill="#C97B91" opacity=".6"/>'+
-    '<path d="M 108 92 Q 114 92 112 100 Q 106 100 108 92 Z" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<g stroke="#FAE5EB" stroke-width=".9" fill="rgba(250,229,235,.4)" opacity=".8"><circle cx="98" cy="106" r="2.5"/><circle cx="105" cy="108" r="1.8"/><circle cx="112" cy="110" r="1.2"/></g>'+
-    '<ellipse cx="78" cy="118" rx="7" ry="5" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g stroke="#3D2818" stroke-width=".7" stroke-linecap="round"><line x1="73" y1="118" x2="73" y2="122"/><line x1="76" y1="116" x2="76" y2="121"/><line x1="79" y1="115" x2="79" y2="121"/><line x1="82" y1="116" x2="82" y2="121"/></g>'+
-    '<ellipse cx="130" cy="158" rx="12" ry="7" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g fill="#F5C9AB" stroke="#3D2818" stroke-width=".5"><circle cx="121" cy="156" r="1.3"/><circle cx="123" cy="160" r="1"/></g>'+
-    _HEART_OUT
-  ),
-  36: _svg('36',
-    '<path d="M 145 55 Q 142 80 130 95 Q 116 105 110 90" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 78 60 Q 58 75 55 100 Q 55 130 75 145 Q 100 155 122 145 Q 142 130 142 100 Q 138 75 122 60 Q 100 50 78 60 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 80 80 Q 72 100 78 120" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="92" cy="138" r="26" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.3"/>'+
-    '<path d="M 105 128 Q 114 138 110 154" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 70 130 Q 76 122 82 125 Q 88 118 94 122 Q 100 117 106 122 Q 112 124 114 132 Q 110 128 102 128 Q 92 130 84 130 Q 76 132 70 130 Z" fill="#5A3E2B" stroke="#3D2818" stroke-width=".8"/>'+
-    '<path d="M 84 138 Q 88 136 92 138" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 96 138 Q 100 136 104 138" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 86 137 L 85 135" stroke="#3D2818" stroke-width=".7"/><path d="M 88 137 L 88 135" stroke="#3D2818" stroke-width=".6"/>'+
-    '<path d="M 98 137 L 97 135" stroke="#3D2818" stroke-width=".7"/><path d="M 100 137 L 100 135" stroke="#3D2818" stroke-width=".6"/>'+
-    '<ellipse cx="82" cy="146" rx="3.5" ry="2.5" fill="#E8A1B5" opacity=".55"/>'+
-    '<path d="M 95 142 Q 97 145 95 148" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 90 152 Q 94 154 98 152" stroke="#3D2818" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 113 142 Q 119 142 117 150 Q 111 150 113 142 Z" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<ellipse cx="125" cy="65" rx="11" ry="6" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g fill="#F5C9AB" stroke="#3D2818" stroke-width=".5"><circle cx="116" cy="63" r="1.3"/><circle cx="118" cy="67" r="1"/></g>'+
-    '<ellipse cx="80" cy="120" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<g fill="#C7A47B" opacity=".8"><path d="M 30 28 L 30 36 M 26 32 L 34 32" stroke="#C7A47B" stroke-width="1"/><path d="M 168 30 L 168 38 M 164 34 L 172 34" stroke="#C7A47B" stroke-width="1"/></g>'+
-    '<path d="M 178 108 Q 168 96 178 88 Q 184 96 184 98 Q 184 96 190 88 Q 200 96 190 108 Q 184 116 178 108 Z" fill="#C97B91" stroke="#9E5C73" stroke-width="1.2"/>'+
-    '<path d="M 182 96 Q 184 92 187 94" stroke="#FAE5EB" stroke-width="1" fill="none" opacity=".7"/>'
-  ),
-  40: '<svg width="120" height="120" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">'+
-    _wombDefs('40')+
-    '<g stroke="#C7A47B" stroke-width=".8" opacity=".5" stroke-linecap="round"><path d="M 100 8 L 100 18"/><path d="M 60 12 L 64 22"/><path d="M 140 12 L 136 22"/><path d="M 22 30 L 30 36"/><path d="M 178 30 L 170 36"/></g>'+
-    _WOMB_OUTER.replace(/{ID}/g, '40')+
-    '<path d="M 145 55 Q 145 80 135 95" stroke="#C97B91" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 75 55 Q 52 70 50 105 Q 50 135 72 148 Q 100 158 128 148 Q 148 135 148 105 Q 145 72 122 55 Q 100 45 75 55 Z" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.4"/>'+
-    '<path d="M 78 80 Q 70 105 78 130" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<circle cx="95" cy="140" r="28" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.4"/>'+
-    '<path d="M 110 130 Q 120 142 116 158" stroke="#E8B098" stroke-width="2" fill="none" opacity=".35"/>'+
-    '<path d="M 68 130 Q 74 120 82 124 Q 88 116 94 120 Q 100 114 106 120 Q 114 122 118 132 Q 114 130 105 128 Q 95 130 84 130 Q 74 132 68 130 Z" fill="#5A3E2B" stroke="#3D2818" stroke-width=".9"/>'+
-    '<path d="M 86 140 Q 90 138 94 140" stroke="#3D2818" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 98 140 Q 102 138 106 140" stroke="#3D2818" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 88 139 L 87 137" stroke="#3D2818" stroke-width=".8"/><path d="M 90 139 L 90 137" stroke="#3D2818" stroke-width=".7"/>'+
-    '<path d="M 100 139 L 99 137" stroke="#3D2818" stroke-width=".8"/><path d="M 102 139 L 102 137" stroke="#3D2818" stroke-width=".7"/>'+
-    '<ellipse cx="83" cy="148" rx="4" ry="3" fill="#E8A1B5" opacity=".6"/>'+
-    '<ellipse cx="107" cy="148" rx="4" ry="3" fill="#E8A1B5" opacity=".6"/>'+
-    '<path d="M 96 144 Q 98 147 96 150" stroke="#3D2818" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 89 156 Q 95 159 101 156" stroke="#3D2818" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M 117 144 Q 124 144 122 152 Q 115 152 117 144 Z" fill="#F5C9AB" stroke="#3D2818" stroke-width="1"/>'+
-    '<ellipse cx="125" cy="60" rx="10" ry="6" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<ellipse cx="78" cy="116" rx="6" ry="4" fill="#FBE0CC" stroke="#3D2818" stroke-width="1.2"/>'+
-    '<path d="M 95 22 Q 88 14 96 8 Q 100 12 100 14 Q 100 12 104 8 Q 112 14 105 22 Q 100 28 95 22 Z" fill="#C97B91" stroke="#9E5C73" stroke-width="1.2"/>'+
-    '<path d="M 98 14 Q 100 11 102 13" stroke="#FAE5EB" stroke-width="1" fill="none" opacity=".8"/>'+
-    '<g fill="#C7A47B" opacity=".7"><circle cx="35" cy="55" r="1.5"/><circle cx="165" cy="55" r="1.3"/><circle cx="40" cy="100" r="1"/><circle cx="160" cy="105" r="1.2"/></g>'+
-    '<path d="M 178 88 Q 173 82 178 78 Q 181 81 181 82 Q 181 81 184 78 Q 189 82 184 88 Q 181 92 178 88 Z" fill="#E8A1B5" opacity=".8"/>'+
-    '<path d="M 25 95 Q 21 90 25 86 Q 28 89 28 90 Q 28 89 31 86 Q 35 90 31 95 Q 28 98 25 95 Z" fill="#E8A1B5" opacity=".7"/>'+
-  '</svg>'
-};
-
-// Milestone titles + stats (updated với wording mới cho 28w & 36w)
-const MILESTONE_DATA = {
-  4:  {title:'Phôi thai mới <em>làm tổ</em><br>tim bắt đầu hình thành', len:'2 mm', wt:'<1 g', hr:'90 bpm'},
-  8:  {title:'Bé có hình dáng <em>người tí hon</em><br>tim bắt đầu đập', len:'1.6 cm', wt:'1 g', hr:'150 bpm'},
-  12: {title:'Bé biết <em>mút ngón tay</em><br>tay chân hoàn chỉnh', len:'5.4 cm', wt:'14 g', hr:'160 bpm'},
-  16: {title:'Bé bắt đầu <em>nghe được</em> giọng mẹ', len:'11.6 cm', wt:'100 g', hr:'150 bpm'},
-  20: {title:'Mẹ có thể <em>cảm nhận</em> bé đạp', len:'25 cm', wt:'300 g', hr:'145 bpm'},
-  24: {title:'Bé phát triển <em>vị giác</em>', len:'30 cm', wt:'600 g', hr:'140 bpm'},
-  28: {title:'Bé biết <em>nghe giọng mẹ</em><br>và phản ứng ánh sáng', len:'37 cm', wt:'1.0 kg', hr:'140 bpm'},
-  32: {title:'Bé tập <em>thở</em> trong nước ối', len:'42 cm', wt:'1.7 kg', hr:'140 bpm'},
-  36: {title:'Bé đã <em>quay đầu xuống</em><br>sẵn sàng chào đời', len:'47 cm', wt:'2.6 kg', hr:'140 bpm'},
-  40: {title:'Đến ngày <em>gặp mẹ</em>', len:'50 cm', wt:'3.4 kg', hr:'140 bpm'}
-};
-
-
-
-// ── SUPPLEMENT DATA — theo tam cá nguyệt ──
-const SUPPLEMENT_DATA = {
-  tcn1: {
-    insight: 'Trong giai đoạn này BS. Tuấn khuyên bạn nên bổ sung Acid Folic để bảo vệ ống thần kinh bé, kết hợp Vitamin B6 giúp giảm nghén hiệu quả.',
-    products: [
-      { name:'Acid Folic 400–800mcg', badge:'BS Tuấn khuyên dùng', benefit:'Ngừa dị tật ống thần kinh. Quan trọng nhất trong 28 ngày đầu thai kỳ.', img:'' },
-      { name:'Vitamin B6 25mg',       badge:'BS Tuấn khuyên dùng', benefit:'Giảm buồn nôn, nghén hiệu quả. An toàn cho mẹ bầu tam cá nguyệt 1.', img:'' }
-    ]
-  },
-  tcn2: {
-    insight: 'Trong giai đoạn này BS. Tuấn khuyên bạn nên bổ sung DHA để hỗ trợ não và mắt bé, kết hợp Sắt hữu cơ để phòng thiếu máu.',
-    products: [
-      { name:'DHA 200–300mg',          badge:'BS Tuấn khuyên dùng', benefit:'Hỗ trợ phát triển não và thị giác bé. WHO khuyến nghị suốt thai kỳ.', img:'' },
-      { name:'Sắt hữu cơ Chela-Ferr', badge:'BS Tuấn khuyên dùng', benefit:'Sắt chelate hấp thu gấp 3 lần sắt thường. Ít buồn nôn, an toàn cho dạ dày.', img:'' }
-    ]
-  },
-  tcn3: {
-    insight: 'Trong giai đoạn này BS. Tuấn khuyên bạn nên bổ sung Canxi chất lượng cao cùng Sắt để hỗ trợ xương bé khoáng hóa tối ưu và chuẩn bị cơ thể mẹ trước sinh.',
-    products: [
-      { name:'Canxi hữu cơ + D3',      badge:'BS Tuấn khuyên dùng', benefit:'Dễ hấp thu, không táo bón. D3 giúp canxi vào xương tối ưu cho bé.', img:'' },
-      { name:'Sắt hữu cơ Chela-Ferr', badge:'BS Tuấn khuyên dùng', benefit:'Sắt chelate hấp thu gấp 3 lần sắt thường. Ít buồn nôn, an toàn cho dạ dày.', img:'' }
-    ]
-  }
-};
-
-function getSupplementByWeek(weeks) {
-  if (weeks <= 12) return SUPPLEMENT_DATA.tcn1;
-  if (weeks <= 27) return SUPPLEMENT_DATA.tcn2;
-  return SUPPLEMENT_DATA.tcn3;
-}
-
-const OB_MILESTONES = {
-  4:  'Phôi vừa làm tổ, nhỏ như hạt vừng. Tim nguyên thủy đang hình thành.',
-  5:  'Tim bé bắt đầu đập. Não và tủy sống đang phát triển nhanh.',
-  6:  'Tim đập rõ hơn, có thể thấy trên siêu âm. Mắt và tai bắt đầu hình thành.',
-  7:  'Bé bằng hạt đậu. Não phát triển mạnh, tay chân nhú ra.',
-  8:  'Tất cả cơ quan chính đã hình thành. Bé cử động nhưng mẹ chưa cảm nhận được.',
-  9:  'Ngón tay, ngón chân đã rõ. Bé nuốt nước ối và bắt đầu nhăn mặt.',
-  10: 'Bé bằng quả mận. Xương bắt đầu cứng dần, tóc và móng mọc.',
-  11: 'Bé có thể đạp và xoay. Các nội tạng đang hoàn thiện.',
-  12: 'Kết thúc tam cá nguyệt 1. Bé bằng quả chanh, phản xạ ngón tay đã có.',
-  13: 'Bé có vân tay riêng. Mặt nhìn rõ hơn trên siêu âm.',
-  14: 'Bé bằng quả lê. Có thể mút ngón tay, cơ mặt cử động.',
-  15: 'Bé nghe được tiếng mẹ. Xương tai trong đang hình thành.',
-  16: 'Bé bằng quả bơ. Mắt có thể phát hiện ánh sáng dù còn nhắm.',
-  17: 'Lớp mỡ bảo vệ bắt đầu hình thành. Bé có thể ngáp và cau mày.',
-  18: 'Bé bằng ớt chuông. Mẹ có thể bắt đầu cảm nhận cử động.',
-  19: 'Các giác quan phát triển mạnh. Bé có thể nghe nhạc và tiếng nói.',
-  20: 'Giữa thai kỳ. Bé bằng chuối, lông mi và tóc đã mọc.',
-  21: 'Bé nuốt nước ối đều đặn. Hệ tiêu hóa luyện tập hoạt động.',
-  22: 'Bé bằng quả xoài. Môi và lông mày đã rõ nét.',
-  23: 'Bé có thể nghe thấy tiếng tim mẹ. Phổi đang phát triển.',
-  24: 'Phổi sản xuất chất surfactant. Bé có thể sống nếu sinh non từ tuần này.',
-  25: 'Bé bằng quả bắp. Da vẫn nhăn nhưng đang dày lên mỗi ngày.',
-  26: 'Mắt mở được. Bé phản ứng với ánh sáng chiếu qua bụng mẹ.',
-  27: 'Não phát triển nhanh. Bé ngủ và thức theo chu kỳ rõ ràng.',
-  28: 'Vào tam cá nguyệt 3. Bé bằng bắp cải, phổi gần hoàn thiện.',
-  29: 'Bé tăng cân nhanh. Xương cứng dần, cần thêm canxi từ mẹ.',
-  30: 'Bé bằng bí đao. Não có các nếp gấp giúp tư duy sau này.',
-  31: 'Bé có thể xoay đầu và nắm tay. Mắt phân biệt được sáng tối.',
-  32: 'Bé đầy đủ móng tay. Luyện tập thở bằng cử động lồng ngực.',
-  33: 'Xương sọ vẫn mềm để dễ sinh. Bé bú mút mạnh hơn.',
-  34: 'Hệ miễn dịch đang hoàn thiện. Bé nhận kháng thể từ mẹ qua nhau thai.',
-  35: 'Phổi gần hoàn chỉnh. Bé bằng dưa lưới, nặng khoảng 2.4 kg.',
-  36: 'Bé thường xoay đầu xuống chuẩn bị sinh. Lớp mỡ đầy đặn.',
-  37: 'Thai đủ tháng sớm. Bé có thể chào đời bất cứ lúc nào.',
-  38: 'Bé bằng quả dưa hấu nhỏ. Nội tạng đã hoàn toàn sẵn sàng.',
-  39: 'Nhau thai truyền kháng thể tối đa. Bé đang chờ ngày ra đời.',
-  40: 'Thai đủ ngày. Bé sẵn sàng — chúc mẹ mẹ tròn con vuông!'
-};
-
-function obGetMilestone(weeks) {
-  if (!weeks || weeks < 4) return 'Giai đoạn rất sớm — bé đang hình thành.';
-  if (weeks > 40) return 'Bé đã đủ ngày. Chúc mẹ mẹ tròn con vuông!';
-  // Lấy milestone của tuần hiện tại, fallback về tuần gần nhất
-  for (let w = weeks; w >= 4; w--) {
-    if (OB_MILESTONES[w]) return OB_MILESTONES[w];
-  }
-  return '—';
-}
-
-// Tính tuổi thai từ LMP
-function calcGA(lmpStr) {
-  if (!lmpStr) return null;
-  const lmp   = new Date(lmpStr);
-  const today = new Date();
-  const diff  = Math.floor((today - lmp) / 86400000);
-  if (diff < 0) return null;
-  const weeks = Math.min(Math.floor(diff / 7), 42); // Cap tối đa tuần 42
-  const days  = diff % 7;
-  const trimester = weeks < 14 ? 1 : weeks < 28 ? 2 : 3;
-  const edd = new Date(lmp.getTime() + 280 * 86400000);
-  return {
-    weeks, days, total_days: diff, trimester,
-    display: `${weeks} tuần ${days} ngày`,
-    edd: formatDate(edd),
-    edd_iso: edd.toISOString().split('T')[0]
-  };
-}
-
-// Format ngày dd/mm/yyyy
-function formatDate(d) {
-  if (!d) return '—';
-  const dt = typeof d === 'string' ? new Date(d) : d;
-  if (isNaN(dt)) return '—';
-  return dt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-// Format ngày rút gọn "Thứ Hai, 26/05"
-function formatDateShort(d) {
-  if (!d) return '—';
-  const dt = typeof d === 'string' ? new Date(d) : d;
-  if (isNaN(dt)) return '—';
-  const days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
-  return `${days[dt.getDay()]}, ${dt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
-}
-
-// Format giờ "08:30"
-function formatTime(d) {
-  if (!d) return '—';
-  const dt = typeof d === 'string' ? new Date(d) : d;
-  if (isNaN(dt)) return '—';
-  return dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-}
-
-// Chuẩn hoá số điện thoại
-function normPhone(p) {
-  if (!p) return '';
-  return p.replace(/\D/g, '').replace(/^84/, '0');
-}
-
-// Tính tuổi từ ngày sinh
-function calcAge(dobStr) {
-  if (!dobStr) return null;
-  const dob = new Date(dobStr);
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const m = today.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-  return age;
-}
-
-// Generate mã BN
-function genBnCode(existingCodes = []) {
-  let n = (existingCodes.length + 1);
-  return 'BN-' + String(n).padStart(3, '0');
-}
-
-// Toast notification
-function toast(msg, type = '') {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg;
-  el.className = 'toast show' + (type ? ' toast-' + type : '');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.className = 'toast'; }, 2800);
-}
-
-// Loading overlay
-function showLoading(msg = 'Đang tải...') {
-  const el = document.getElementById('loading-overlay');
-  const txt = document.getElementById('loading-text');
-  if (el) { el.classList.add('show'); }
-  if (txt) txt.textContent = msg;
-}
-function hideLoading() {
-  const el = document.getElementById('loading-overlay');
-  if (el) el.classList.remove('show');
-}
-
-/* ════════════════════════════════════════════════════════════
-   BLOCK 13: JS — NAVIGATION
-   goTo(), back(), roleRedirect, history stack
-   Sửa navigation: chỉ động vào đây
-════════════════════════════════════════════════════════════ */
-
-let _history = [];          // stack màn hình đã đi qua
-let _isBackNav = false;     // flag để không push khi goBack
-
-// Danh sách screens chỉ admin xem được
-const ADMIN_ONLY = ['s-admin', 's-patient-detail', 's-admin-add-patient', 's-admin-invites'];
-// Screens OB
-const OB_SCREENS = ['s-ob-home', 's-ob-records', 's-ob-appts', 's-ob-kick', 's-ob-checkin', 's-ob-journey', 's-ob-doctor', 's-education-ob', 's-ob-journal', 's-chat'];
-// Screens GY
-const GY_SCREENS = ['s-gy-home', 's-gy-records', 's-gy-appts', 's-gy-checkin', 's-gy-journey', 's-education-gy', 's-chat'];
-
-function goTo(id) {
-  const next = document.getElementById(id);
-  if (!next) { console.warn('[NAV] Screen không tồn tại:', id); return; }
-
-  // Guard: màn hình admin chỉ admin vào được
-  if (ADMIN_ONLY.includes(id) && curUser?.role !== 'admin') {
-    console.warn('[NAV] Chặn truy cập admin screen:', id);
-    return;
-  }
-
-  // Guard: OB screens chỉ dành cho OB patient (admin bypass)
-  if (OB_SCREENS.includes(id) && id !== 's-chat' && curUser && curUser.role !== 'admin' && curUser.patient_type !== 'ob') {
-    console.warn('[NAV] Chặn GY patient vào OB screen:', id);
-    return;
-  }
-
-  // Guard: GY screens chỉ dành cho GY patient (admin bypass)
-  if (GY_SCREENS.includes(id) && id !== 's-chat' && curUser && curUser.role !== 'admin' && curUser.patient_type !== 'gy') {
-    console.warn('[NAV] Chặn OB patient vào GY screen:', id);
-    return;
-  }
-
-  // Lưu màn hình hiện tại vào history (trừ khi đang back)
-  const current = document.querySelector('.screen.active');
-  if (current && !_isBackNav) {
-    _history.push(current.id);
-  }
-  _isBackNav = false;
-
-  // Ẩn tất cả screens
-  document.querySelectorAll('.screen.active').forEach(s => s.classList.remove('active'));
-
-  // Hiện screen mới
-  next.classList.add('active');
-
-  // Stop TTS khi rời chat
-  if (id !== 's-chat') chatStopTTS();
-  // Cập nhật FAB visibility
-  _updateFabs(id);
-  // History API — fix nút Back iOS/Android
-  if (!_isBackNav && history.state?.screenId !== id) {
-    history.pushState({ screenId: id }, '', '#' + id);
-  }
-  // Auto-init theo màn hình
-  if (id === 's-ob-home')    setTimeout(initObHome, 50);
-  if (id === 's-ob-records') setTimeout(initObRecords, 50);
-  if (id === 's-ob-appts')   setTimeout(initObAppts, 50);
-  if (id === 's-ob-kick')    setTimeout(initKickCounter, 50);
-  if (id === 's-ob-journey') setTimeout(initEducation, 50);
-  if (id === 's-ob-doctor')  setTimeout(initDocSchedule, 50);
-  if (id === 's-gy-home')    setTimeout(initGyHome, 50);
-  if (id === 's-gy-records') setTimeout(initGyRecords, 50);
-  if (id === 's-gy-appts')   setTimeout(initGyAppts, 50);
-  if (id === 's-gy-journey') setTimeout(initGyJourney, 50);
-}
-
-// Lắng nghe nút Back hệ điều hành (iOS swipe / Android back)
-window.addEventListener('popstate', function(e) {
-  if (e.state && e.state.screenId) {
-    // Dùng _isBackNav để goTo không pushState lại
-    _isBackNav = true;
-    goTo(e.state.screenId);
-  } else if (_history.length > 0) {
-    _isBackNav = true;
-    goTo(_history.pop());
-  }
-  // Nếu không có gì → giữ nguyên, không reload
-});
-
-function goBack() {
-  if (_history.length === 0) {
-    // Fallback theo role
-    const home = curUser?.role === 'admin' ? 's-admin'
-               : curUser?.patient_type === 'gy' ? 's-gy-home'
-               : 's-ob-home';
-    goTo(home);
-    return;
-  }
-  _isBackNav = true;
-  goTo(_history.pop());
-}
-
-// Trang chủ theo role
-function goHomeScreen() {
-  if (!curUser) { goTo('s-landing'); return; }
-  if (curUser.role === 'admin') { goTo('s-admin'); return; }
-  goTo(curUser.patient_type === 'gy' ? 's-gy-home' : 's-ob-home');
-}
-
-// Cập nhật FAB (AI + SOS) theo màn hình
-function _updateFabs(screenId) {
-  const fabAI   = document.getElementById('fab-ai');
-  if (!fabAI) return;
-
-  // Ẩn FAB ở auth screens và admin screens (admin có nút BaoBei Khoa riêng trên header)
-  const authScreens = ['s-landing', 's-login', 's-register', 's-consent'];
-  const adminScreens = ['s-admin', 's-patient-detail', 's-admin-add-patient'];
-  const hideFab = authScreens.includes(screenId) || adminScreens.includes(screenId);
-  fabAI.classList.toggle('hidden', hideFab);
-
-
-
-}
-
-/* ════════════════════════════════════════════════════════════
-   BLOCK 14: JS — SHARED SCREENS
-   Login, Register, Consent, Logout
-════════════════════════════════════════════════════════════ */
-
-// Resolve role và patient_type từ profile DB
-function _resolveUser(sbUser, profile) {
-  let role = 'ob';
-  if (profile?.role === 'admin') role = 'admin';
-
-  let patientType = null;
-  if (role !== 'admin') {
-    patientType = profile?.patient_type || profile?.specialty || 'ob';
-    if (profile?.role === 'gy_patient') patientType = 'gy';
-    if (patientType !== 'gy') patientType = 'ob';
-  }
-
-  return {
-    id:           sbUser.id,
-    email:        sbUser.email,
-    role,
-    patient_type: patientType,
-    name:         profile?.full_name || profile?.name || sbUser.email,
-    lmp:          profile?.lmp  || null,
-    phone:        profile?.phone || null,
-    dob:          profile?.dob  || null,
-    bn_code:      profile?.bn_code || null,
-    _supabase:    true
-  };
-}
-
-// Route sau khi login thành công
-async function _routeAfterLogin(user) {
-  curUser = user;
-  _history = []; // Reset history khi đăng nhập mới
-  if (user.role === 'admin') {
-    goTo('s-admin');
-    setTimeout(initAdmin, 100);
-  } else {
-    // Check consent
-    const { data: consent } = await db.getConsent(user.id);
-    if (!consent) { goTo('s-consent'); return; }
-    // Luôn load đủ data từ patients (nguồn sự thật chính)
-    if (user.bn_code) {
-      try {
-        const { data: pt } = await db.getMyPatient(user.bn_code);
-        if (pt) {
-          if (pt.lmp)       curUser.lmp    = pt.lmp;
-          if (pt.phone)     curUser.phone  = pt.phone;
-          if (pt.dob)       curUser.dob    = pt.dob;
-          if (pt.name)      curUser.name   = pt.name;
-          if (pt.height_cm) curUser.height_cm = pt.height_cm;
-          if (pt.weight_kg) curUser.weight_kg = pt.weight_kg;
-        }
-      } catch(e) {}
-    }
-    // Vào app
-    _enterApp(user);
-  }
-}
-
-function _enterApp(user) {
-  // Nhánh 1: Admin / Bác sĩ
-  if (user.role === 'admin') {
-    goTo('s-admin');
-    if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
-    return;
-  }
-
-  // Nhánh 2: Bệnh nhân Phụ khoa (GY)
-  if (user.patient_type === 'gy') {
-    const el = document.getElementById('gy-name');
-    if (el) el.textContent = 'Chị ' + (user.name || '').split(' ').pop();
-    goTo('s-gy-home');
-    return;
-  }
-
-  // Nhánh 3: Bệnh nhân Sản khoa (OB) — default
-  const el = document.getElementById('ob-name');
-  if (el) el.textContent = (user.name || 'Mẹ').split(' ').pop();
-  if (user.lmp) {
-    const ga = calcGA(user.lmp);
-    if (ga) {
-      const weeksEl  = document.getElementById('ob-ga-weeks');
-      const daysEl   = document.getElementById('ob-ga-days');
-      const remainEl = document.getElementById('ob-week-remaining');
-      const trimEl   = document.getElementById('ob-trimester');
-      if (weeksEl)  weeksEl.textContent  = ga.weeks;
-      if (daysEl)   daysEl.textContent   = ga.days;
-      if (remainEl) remainEl.textContent = `Còn ${40 - ga.weeks} tuần đến ngày dự sinh`;
-      if (trimEl)   trimEl.textContent   = `Tam cá nguyệt thứ ${ga.trimester}`;
-    }
-  }
-  goTo('s-ob-home');
-}
 
 // Toggle hiển thị mật khẩu
 function togglePwd(inputId, btn) {
@@ -6914,12 +5841,16 @@ async function initObAppts() {
       const isToday = d.toDateString() === today.toDateString();
       const hasSang = sessions.some(s => s.startsWith('S'));
       const hasToi  = sessions.some(s => s.startsWith('T'));
-      cells += `<div style="flex:1;text-align:center;padding:8px 2px;${i<6?'border-right:.5px solid var(--border)':''}${isToday?';background:var(--gold-lt)':''}">
+      const dateStr = d.toISOString().split('T')[0];
+      
+      cells += `<div onclick="openPatBooking('${dateStr}', 'all')" 
+        style="flex:1;text-align:center;padding:8px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;${i<6?'border-right:.5px solid var(--border)':''}${isToday?';background:var(--gold-lt)':''}"
+        class="bs-sched-day-cell">
         <div style="font-size:9px;font-weight:700;color:${isToday?'var(--gold-dk)':'var(--muted)'};margin-bottom:3px">${DOW_LABELS[i]}</div>
         <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--gold-dk)':'var(--ink)'};line-height:1.1">${d.getDate()}</div>
-        <div style="margin-top:4px;display:flex;flex-direction:column;gap:2px;align-items:center">
-          ${hasSang ? `<div style="font-size:8px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">S</div>` : ''}
-          ${hasToi  ? `<div style="font-size:8px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:1px 4px;border-radius:3px;font-weight:700">T</div>` : ''}
+        <div style="margin-top:4px;display:flex;flex-direction:column;gap:4px;align-items:center">
+          ${hasSang ? `<div onclick="event.stopPropagation(); openPatBooking('${dateStr}', 'S')" style="font-size:8.5px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:2px 6px;border-radius:4px;font-weight:700;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.85)'" onmouseup="this.style.transform='none'">S</div>` : ''}
+          ${hasToi  ? `<div onclick="event.stopPropagation(); openPatBooking('${dateStr}', 'T')" style="font-size:8.5px;background:${isToday?'var(--gold-dk)':'rgba(184,129,74,.15)'};color:${isToday?'#fff':'var(--gold-dk)'};padding:2px 6px;border-radius:4px;font-weight:700;transition:transform 0.15s;" onmousedown="this.style.transform='scale(0.85)'" onmouseup="this.style.transform='none'">T</div>` : ''}
         </div>
       </div>`;
     }
@@ -6949,13 +5880,24 @@ async function initObAppts() {
   const dEl = document.getElementById('appts-done-list');
   const useMock = !curUser?._supabase;
 
-  const MOCK_APPTS = [
+  let MOCK_APPTS = [
     { id:1, datetime:'2026-05-29T17:30:00', type:'Khám thai tuần 28', status:'scheduled', note:'Nhịn ăn 6 tiếng trước, mang sổ khám và xét nghiệm cũ.' },
     { id:2, datetime:'2026-05-05T17:30:00', type:'Khám thai tuần 24', status:'completed', note:'' },
     { id:3, datetime:'2026-04-07T17:30:00', type:'Khám thai tuần 20', status:'completed', note:'' },
   ];
 
+  if (useMock) {
+    if (localStorage.getItem('MOCK_APPTS')) {
+      try {
+        MOCK_APPTS = JSON.parse(localStorage.getItem('MOCK_APPTS'));
+      } catch(e) {}
+    } else {
+      localStorage.setItem('MOCK_APPTS', JSON.stringify(MOCK_APPTS));
+    }
+  }
+
   const data = useMock ? MOCK_APPTS : ((await db.getMyAppointments(curUser.bn_code)).data || []);
+  window._patientApptsCache = data;
   const now = new Date();
   const upcoming = data.filter(a => (a.status === 'scheduled' || a.status === 'confirmed') && new Date(a.datetime) >= now);
   const done     = data.filter(a => a.status === 'completed' || new Date(a.datetime) < now);
@@ -7003,6 +5945,223 @@ function _renderApptCard(a, isDone = false) {
     </div>` : ''}
   </div>`;
 }
+
+// ── PATIENT APPOINTMENT BOOKING SYSTEM ──
+window._patBkSelectedDate = null;
+window._patBkSelectedShift = 'all';
+window._patBkSelectedType = 'kham_thai';
+window._patBkSelectedTime = null;
+
+window.openPatBooking = function(dateIso, shift) {
+  playTickSound();
+
+  window._patBkSelectedDate = dateIso;
+  window._patBkSelectedShift = shift; // 'S', 'T' or 'all'
+  window._patBkSelectedType = 'kham_thai';
+  window._patBkSelectedTime = null;
+
+  // Format date display
+  const d = new Date(dateIso);
+  const dateStr = formatDateShort(d) + '/' + d.getFullYear();
+  const dateStrEl = document.getElementById('pat-bk-date-str');
+  if (dateStrEl) dateStrEl.textContent = dateStr;
+  
+  // Set shift label
+  const shiftLabelEl = document.getElementById('pat-bk-shift-label');
+  if (shiftLabelEl) {
+    shiftLabelEl.textContent = shift === 'S' ? 'Ca Sáng' : shift === 'T' ? 'Ca Tối' : 'Tất cả';
+  }
+
+  // Render time slot grids
+  renderPatTimeSlots();
+
+  // Reset active classes on types
+  document.querySelectorAll('.bk-type-pill').forEach(el => {
+    el.style.border = '1px solid var(--border)';
+    el.style.background = '#fff';
+    el.style.color = 'var(--muted)';
+    el.style.fontWeight = '400';
+  });
+  
+  // Highlight default active type
+  const activeTypeEl = document.querySelector('.bk-type-pill');
+  if (activeTypeEl) {
+    activeTypeEl.style.border = '1px solid var(--gold-md)';
+    activeTypeEl.style.background = 'var(--gold-lt)';
+    activeTypeEl.style.color = 'var(--gold-dk)';
+    activeTypeEl.style.fontWeight = '600';
+  }
+
+  // Clear notes
+  const notesEl = document.getElementById('pat-bk-notes');
+  if (notesEl) notesEl.value = '';
+
+  // Show modal bottom sheet
+  const m = document.getElementById('pat-booking-modal');
+  if (m) m.style.display = 'flex';
+};
+
+window.closePatBooking = function() {
+  const m = document.getElementById('pat-booking-modal');
+  if (m) m.style.display = 'none';
+};
+
+window.selectPatBkTime = function(t, el) {
+  playTickSound();
+  window._patBkSelectedTime = t;
+  renderPatTimeSlots();
+};
+
+window.selectPatBkType = function(type, el) {
+  playTickSound();
+  window._patBkSelectedType = type;
+  
+  // Highlight active pill
+  document.querySelectorAll('.bk-type-pill').forEach(pill => {
+    pill.style.border = '1px solid var(--border)';
+    pill.style.background = '#fff';
+    pill.style.color = 'var(--muted)';
+    pill.style.fontWeight = '400';
+  });
+  
+  el.style.border = '1px solid var(--gold-md)';
+  el.style.background = 'var(--gold-lt)';
+  el.style.color = 'var(--gold-dk)';
+  el.style.fontWeight = '600';
+};
+
+window.renderPatTimeSlots = function() {
+  const dateIso = window._patBkSelectedDate;
+  const shift = window._patBkSelectedShift;
+
+  const morningGrid = document.getElementById('pat-bk-morning-grid');
+  const eveningGrid = document.getElementById('pat-bk-evening-grid');
+  const morningSection = document.getElementById('pat-bk-morning-section');
+  const eveningSection = document.getElementById('pat-bk-evening-section');
+
+  if (!morningGrid || !eveningGrid) return;
+
+  const morningSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30'];
+  const eveningSlots = ['17:00', '17:30', '18:00', '18:30', '19:00', '19:30'];
+
+  // Toggle sections depending on shift selected
+  if (shift === 'S') {
+    morningSection.style.display = 'block';
+    eveningSection.style.display = 'none';
+  } else if (shift === 'T') {
+    morningSection.style.display = 'none';
+    eveningSection.style.display = 'block';
+  } else {
+    morningSection.style.display = 'block';
+    eveningSection.style.display = 'block';
+  }
+
+  const existingAppts = window._patientApptsCache || [];
+
+  function drawGrid(slots, containerEl) {
+    containerEl.innerHTML = slots.map(t => {
+      const fullDt = `${dateIso}T${t}:00`;
+      const isBooked = existingAppts.some(a => a.datetime.slice(0, 16) === fullDt.slice(0, 16) && a.status !== 'cancelled');
+      
+      const seed = dateIso.charCodeAt(8) + dateIso.charCodeAt(9) + parseInt(t.replace(':', ''));
+      const isDemoBusy = (seed % 4 === 0) && !isBooked; 
+
+      const busy = isBooked || isDemoBusy;
+      
+      if (busy) {
+        return `<div style="padding:10px 4px;border-radius:10px;border:1px solid #f2f2f2;background:#fafafa;color:#bbb;text-align:center;font-size:12px;font-weight:500;cursor:not-allowed;">
+          ${t}<div style="font-size:8px;color:#ccc;margin-top:2px;">Bận</div>
+        </div>`;
+      } else {
+        const isSelected = window._patBkSelectedTime === t;
+        const bg = isSelected ? 'var(--gold-lt)' : '#fff';
+        const border = isSelected ? '1.5px solid var(--gold-md)' : '1px solid var(--border)';
+        const color = isSelected ? 'var(--gold-dk)' : 'var(--ink)';
+        const fw = isSelected ? '700' : '500';
+        
+        return `<div onclick="selectPatBkTime('${t}', this)" class="bk-time-slot-pill" data-time="${t}"
+          style="padding:10px 4px;border-radius:10px;border:${border};background:${bg};color:${color};font-weight:${fw};text-align:center;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.15s ease;">
+          ${t}<div style="font-size:8px;color:${isSelected ? 'var(--gold-dk)' : 'var(--muted)'};margin-top:2px;">Trống</div>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  if (morningSection.style.display !== 'none') drawGrid(morningSlots, morningGrid);
+  if (eveningSection.style.display !== 'none') drawGrid(eveningSlots, eveningGrid);
+};
+
+window.confirmPatBooking = async function() {
+  if (!window._patBkSelectedTime) {
+    toast('Vui lòng chọn khung giờ trống!', 'err');
+    return;
+  }
+
+  const name = curUser?.name || 'Mẹ';
+  const phone = curUser?.phone || '';
+  const bn_code = curUser?.bn_code || 'BN-TEST';
+  const dt = `${window._patBkSelectedDate}T${window._patBkSelectedTime}:00`;
+  const typeMap = {
+    kham_thai: 'Khám thai định kỳ',
+    sieu_am: 'Siêu âm thai',
+    xet_nghiem: 'Xét nghiệm thai kỳ',
+    tu_van: 'Tư vấn sức khỏe thai kỳ'
+  };
+  const apptType = typeMap[window._patBkSelectedType] || 'Khám thai';
+  const notes = document.getElementById('pat-bk-notes')?.value?.trim() || '';
+
+  const payload = {
+    patient_name: name,
+    phone: phone,
+    bn_code: bn_code,
+    datetime: dt,
+    appt_type: apptType,
+    notes: notes,
+    status: 'confirmed'
+  };
+
+  showLoading('Đang gửi yêu cầu đặt lịch...');
+  let success = false;
+
+  try {
+    if (curUser?._supabase) {
+      const { error } = await db.insertAppointment(payload);
+      if (error) throw error;
+      success = true;
+    } else {
+      let mockList = [];
+      try {
+        mockList = JSON.parse(localStorage.getItem('MOCK_APPTS') || '[]');
+      } catch(e) {}
+      
+      const newMock = {
+        id: Date.now(),
+        datetime: dt,
+        type: apptType,
+        status: 'confirmed',
+        note: notes
+      };
+      mockList.unshift(newMock);
+      localStorage.setItem('MOCK_APPTS', JSON.stringify(mockList));
+      success = true;
+    }
+  } catch(err) {
+    toast('Lỗi khi đặt lịch: ' + err.message, 'err');
+    console.error(err);
+  } finally {
+    hideLoading();
+  }
+
+  if (success) {
+    playTickSound();
+    setTimeout(playTickSound, 100);
+    
+    toast('🎉 Đặt lịch hẹn khám thành công!', 'ok');
+    closePatBooking();
+    
+    await initObAppts();
+  }
+};
 
 async function cancelAppt(id) {
   if (!confirm('Hủy lịch hẹn này?')) return;
@@ -7131,14 +6290,62 @@ function initKickCounter() {
   _renderKickChart();
 }
 
-function tapKick() {
+function tapKick(e) {
   if (!_kickStart) {
     _kickStart = Date.now();
     _kickTimer = setInterval(_kickTick, 1000);
-    // Visual feedback
-    const tap = document.getElementById('kick-tap');
-    if (tap) { tap.style.background = 'var(--gold-dk)'; setTimeout(() => tap.style.background = 'var(--ink)', 150); }
   }
+  
+  // 1. Âm thanh bíp pop y khoa tổng hợp (Web Audio API - không phụ thuộc asset)
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(450, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    }
+  } catch(err) {}
+
+  // 2. Rung nhẹ phản hồi (Haptic feedback trên mobile)
+  if (navigator.vibrate) {
+    navigator.vibrate(35);
+  }
+
+  // 3. Hiệu ứng gợn sóng CSS động tại điểm chạm (Dynamic Ripple)
+  const tap = document.getElementById('kick-tap');
+  if (tap && e) {
+    const rect = tap.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX) || (e.changedTouches && e.changedTouches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY) || (e.changedTouches && e.changedTouches[0]?.clientY);
+    
+    if (clientX && clientY) {
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      
+      const ripple = document.createElement('span');
+      ripple.className = 'kick-ripple-el';
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      const size = Math.max(rect.width, rect.height) * 0.8;
+      ripple.style.width = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.marginLeft = `${-size/2}px`;
+      ripple.style.marginTop = `${-size/2}px`;
+      
+      tap.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 400);
+    }
+  }
+
   _kickCount++;
   _kickLog.push(new Date().toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' }));
   _setEl('kick-count', _kickCount);

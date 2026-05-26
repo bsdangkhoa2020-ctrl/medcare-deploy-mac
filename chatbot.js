@@ -129,6 +129,57 @@ function addMsg(txt, role) {
   L.scrollTop = L.scrollHeight;
 }
 
+// ── Render message streaming (gõ chữ từng ký tự mượt mà) ──
+function addMsgStreaming(txt) {
+  return new Promise((resolve) => {
+    const L = document.getElementById('msgList');
+    const r = document.createElement('div');
+    r.className = 'mrow';
+
+    const avatarHtml = `<div class="mbot"><img src="${DOC}"></div>`;
+    const bubbleContainer = document.createElement('div');
+    bubbleContainer.style.maxWidth = '280px';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bbl bot';
+    bubble.style.lineHeight = '1.7';
+    bubble.innerHTML = '';
+
+    const meta = document.createElement('div');
+    meta.className = 'mt';
+    meta.textContent = gt();
+
+    bubbleContainer.appendChild(bubble);
+    bubbleContainer.appendChild(meta);
+
+    r.innerHTML = avatarHtml;
+    r.appendChild(bubbleContainer);
+    L.appendChild(r);
+    L.scrollTop = L.scrollHeight;
+
+    let i = 0;
+    const speed = 8; // ms per tick
+    const charsPerTick = 2; // print 2 chars at once
+
+    function type() {
+      if (i < txt.length) {
+        i += charsPerTick;
+        if (i > txt.length) i = txt.length;
+        
+        bubble.innerHTML = formatBotMsg(txt.slice(0, i));
+        L.scrollTop = L.scrollHeight;
+        setTimeout(type, speed);
+      } else {
+        bubble.innerHTML = formatBotMsg(txt);
+        L.scrollTop = L.scrollHeight;
+        resolve();
+      }
+    }
+
+    type();
+  });
+}
+
 // ── Show/hide typing ──────────────────────────────────
 function showTyping() {
   const L = document.getElementById('msgList');
@@ -422,7 +473,7 @@ async function sendMsg() {
 
     if (isEmergency(raw)) showEmergency();
 
-    addMsg(display, 'bot');
+    await addMsgStreaming(display);
     chatHist.push({ role: 'assistant', content: raw });
 
   } catch(e) {
