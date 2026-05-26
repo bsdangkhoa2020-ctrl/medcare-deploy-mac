@@ -10,7 +10,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_KEY = Deno.env.get('SB_SERVICE_KEY')!;
-const ZALO_TOKEN   = Deno.env.get('ZALO_BOT_TOKEN') || '2942065296280499653:LsDMgYWDiJmiDvXtqMtngiGuSrZzSqIkjpZnulLRwkDCAeVlJwTOEaRSXwjCiHvc';
+// Đã xóa Deno.env.get để máy chủ không bị nhầm lẫn lấy nhầm token cũ nữa!
+const ZALO_TOKEN   = '2942065296280499653:LsDMgYWDiJmiDvXtqMtngiGuSrZzSqIkjpZnulLRwkDCAeVlJwTOEaRSXwjCiHvc';
 const GEMINI_KEY   = Deno.env.get('GEMINI_API_KEY')!;
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log('[ZALO WEBHOOK]', JSON.stringify(body));
+    console.log('[WEBHOOK BODY]', JSON.stringify(body));
 
     const event    = body?.event_name;
     const zaloId   = body?.sender?.id || body?.user_id_by_app;
