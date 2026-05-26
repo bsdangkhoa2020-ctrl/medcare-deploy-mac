@@ -2856,8 +2856,8 @@ async function pdLoadRx() {
 async function admLoadInvites() {
   const list = document.getElementById('adm-invite-list');
   if (!list) return;
-  const { data } = await db.getInviteCodes();
-  const codes = (data||[]).slice(0, 20);
+  const { data } = await sb.from('invite_codes').select('*').order('created_at', { ascending: false }).limit(20);
+  const codes = data || [];
   if (!codes.length) {
     list.innerHTML = '<div style="text-align:center;padding:16px;color:#B0A490;font-size:12px;font-style:italic;">Chưa có mã mời nào</div>';
     return;
