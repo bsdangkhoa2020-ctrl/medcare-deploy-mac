@@ -1,0 +1,26 @@
+{
+  "name": "BaoBei — BS. Tuấn",
+  "short_name": "BaoBei",
+  "description": "Quản lý sản phụ khoa · BS. Hoàng Thanh Tuấn",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1C1510",
+  "theme_color": "#1C1510",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjQwIiBmaWxsPSIjMUYxQTBGIi8+PHRleHQgeD0iOTYiIHk9Ijg1IiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSI0NiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXdlaWdodD0iNDAwIiBmaWxsPSIjRThBOTNDIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CYW88L3RleHQ+PHRleHQgeD0iOTYiIHk9IjEzOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iNDYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iI0U4QTkzQyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QmVpPC90ZXh0PjxyZWN0IHg9IjQiIHk9IjQiIHdpZHRoPSIxODQiIGhlaWdodD0iMTg0IiByeD0iMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0U4QTkzQyIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI1Ii8+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjQwIiBmaWxsPSIjMUYxQTBGIi8+PHRleHQgeD0iOTYiIHk9Ijg1IiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSI0NiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXdlaWdodD0iNDAwIiBmaWxsPSIjRThBOTNDIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CYW88L3RleHQ+PHRleHQgeD0iOTYiIHk9IjEzOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iNDYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iI0U4QTkzQyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QmVpPC90ZXh0PjxyZWN0IHg9IjQiIHk9IjQiIHdpZHRoPSIxODQiIGhlaWdodD0iMTg0IiByeD0iMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0U4QTkzQyIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI1Ii8+PC9zdmc+",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

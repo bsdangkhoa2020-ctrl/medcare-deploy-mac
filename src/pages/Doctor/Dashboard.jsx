@@ -3,8 +3,10 @@ import { supabase } from '../../lib/supabase';
 import Toast from '../../components/Toast';
 import { AlertTriangle, Send, CheckCircle2, Search, FileText, X, MessageCircle, Baby, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function DoctorDashboard() {
+  const { profile } = useAuth();
   const [attachments, setAttachments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -12,6 +14,17 @@ export default function DoctorDashboard() {
   const [isSending, setIsSending] = useState(false);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
   const [activeTab, setActiveTab] = useState('red_alerts'); // 'red_alerts', 'ob', 'gy'
+
+  // Determine user permissions
+  const isAdmin = profile?.role === 'admin';
+  const isOb = isAdmin || profile?.specialty === 'ob';
+  const isGy = isAdmin || profile?.specialty === 'gy';
+
+  // If activeTab is not allowed, switch to default
+  useEffect(() => {
+    if (activeTab === 'ob' && !isOb) setActiveTab('gy');
+    if (activeTab === 'gy' && !isGy) setActiveTab('ob');
+  }, [isOb, isGy, activeTab]);
 
   const showToast = (message, type = 'info') => {
     setToast({ isVisible: true, message, type });
@@ -27,7 +40,13 @@ export default function DoctorDashboard() {
       .channel('public:attachments')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attachments' }, (payload) => {
         setAttachments((current) => [payload.new, ...current]);
-        if (payload.new.ai_extracted?.is_abnormal) {
+        
+        // Only show alert if it belongs to doctor's specialty
+        const isTargetSpecialty = isAdmin 
+          || (profile?.specialty === 'ob' && payload.new.bn_code?.startsWith('OB'))
+          || (profile?.specialty === 'gy' && payload.new.bn_code?.startsWith('GY'));
+
+        if (payload.new.ai_extracted?.is_abnormal && isTargetSpecialty) {
           showToast(`⚠️ Bệnh nhân ${payload.new.bn_code} có kết quả BẤT THƯỜNG mới!`, 'error');
         }
       })
@@ -36,7 +55,7 @@ export default function DoctorDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isAdmin, profile?.specialty]);
 
   const fetchAttachments = async () => {
     setIsLoading(true);
@@ -92,13 +111,22 @@ export default function DoctorDashboard() {
     }
   };
 
-  // Lọc dữ liệu theo Tab
-  const filteredData = attachments.filter(item => {
+  // Lọc dữ liệu theo Role & Tab
+  const allowedAttachments = attachments.filter(item => {
+    if (isAdmin) return true;
+    if (profile?.specialty === 'ob' && item.bn_code?.startsWith('OB')) return true;
+    if (profile?.specialty === 'gy' && item.bn_code?.startsWith('GY')) return true;
+    return false;
+  });
+
+  const filteredData = allowedAttachments.filter(item => {
     if (activeTab === 'red_alerts') return item.ai_extracted?.is_abnormal === true;
     if (activeTab === 'ob') return item.bn_code?.startsWith('OB');
     if (activeTab === 'gy') return item.bn_code?.startsWith('GY');
     return true;
   });
+
+  const redAlertsCount = allowedAttachments.filter(i => i.ai_extracted?.is_abnormal).length;
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
@@ -115,26 +143,32 @@ export default function DoctorDashboard() {
           >
             <AlertTriangle className={`w-4 h-4 ${activeTab === 'red_alerts' ? 'animate-pulse' : ''}`} />
             Cấp Cứu (Đỏ)
-            {attachments.filter(i => i.ai_extracted?.is_abnormal).length > 0 && (
+            {redAlertsCount > 0 && (
               <span className="bg-danger text-white text-[10px] px-2 py-0.5 rounded-full ml-1">
-                {attachments.filter(i => i.ai_extracted?.is_abnormal).length}
+                {redAlertsCount}
               </span>
             )}
           </button>
-          <button 
-            onClick={() => setActiveTab('ob')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
-          >
-            <Baby className="w-4 h-4 text-emerald-500" />
-            Sản Khoa (OB)
-          </button>
-          <button 
-            onClick={() => setActiveTab('gy')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
-          >
-            <Activity className="w-4 h-4 text-purple-500" />
-            Phụ Khoa (GY)
-          </button>
+          
+          {isOb && (
+            <button 
+              onClick={() => setActiveTab('ob')}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+            >
+              <Baby className="w-4 h-4 text-emerald-500" />
+              Sản Khoa (OB)
+            </button>
+          )}
+
+          {isGy && (
+            <button 
+              onClick={() => setActiveTab('gy')}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+            >
+              <Activity className="w-4 h-4 text-purple-500" />
+              Phụ Khoa (GY)
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,9 +1,28 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell, LogOut } from 'lucide-react';
+import { Outlet, NavLink, Navigate } from 'react-router-dom';
+import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell, LogOut, UserCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-gold-light/40 to-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full border-4 border-gold border-t-transparent animate-spin mb-4"></div>
+          <p className="text-gold-dark font-medium">Đang xác thực...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    // Redirect to Vanilla app login via window location to ensure full page reload
+    window.location.href = '/';
+    return null;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gold-light/40 to-white relative">
@@ -23,42 +42,50 @@ export default function Layout() {
         <div className="flex flex-col justify-between flex-1 mt-6">
           <nav className="space-y-2">
             <p className="px-2 text-xs font-bold tracking-widest text-ink-muted uppercase mb-4">Các cổng</p>
-            <NavLink
-              to="/letan"
-              className={({ isActive }) =>
-                `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
-                  isActive
-                    ? 'bg-ink text-gold shadow-md scale-100'
-                    : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
-                }`
-              }
-              onClick={() => setSidebarOpen(false)}
-            >
-              <FileUp className="w-5 h-5" />
-              <span className="mx-4 font-medium">Lễ Tân (Upload)</span>
-            </NavLink>
+            {(!profile || profile.role === 'admin' || profile.role === 'receptionist') && (
+              <NavLink
+                to="/letan"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-ink text-gold shadow-md scale-100'
+                      : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
+                  }`
+                }
+                onClick={() => setSidebarOpen(false)}
+              >
+                <FileUp className="w-5 h-5" />
+                <span className="mx-4 font-medium">Lễ Tân (Upload)</span>
+              </NavLink>
+            )}
 
-            <NavLink
-              to="/bacsi"
-              className={({ isActive }) =>
-                `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
-                  isActive
-                    ? 'bg-ink text-gold shadow-md scale-100'
-                    : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
-                }`
-              }
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Stethoscope className="w-5 h-5" />
-              <span className="mx-4 font-medium">Bác Sĩ (Dashboard)</span>
-            </NavLink>
+            {(!profile || profile.role === 'admin' || profile.role === 'doctor') && (
+              <NavLink
+                to="/bacsi"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-ink text-gold shadow-md scale-100'
+                      : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
+                  }`
+                }
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Stethoscope className="w-5 h-5" />
+                <span className="mx-4 font-medium">Bác Sĩ (Dashboard)</span>
+              </NavLink>
+            )}
           </nav>
 
           <div className="flex items-center px-4 py-3 mt-auto rounded-2xl bg-gold-light/50 border border-gold/10 cursor-pointer hover:bg-gold-light transition-colors">
-            <img className="object-cover w-9 h-9 rounded-full border border-gold/30" src="https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png?v=3" alt="Avatar" />
-            <div className="mx-3">
-              <h4 className="text-sm font-semibold text-ink">BS. Tuấn</h4>
-              <p className="text-xs text-ink-muted">Admin</p>
+            {profile?.avatar_url ? (
+              <img className="object-cover w-9 h-9 rounded-full border border-gold/30" src={profile.avatar_url} alt="Avatar" />
+            ) : (
+              <UserCircle className="w-9 h-9 text-gold-dark" />
+            )}
+            <div className="mx-3 truncate">
+              <h4 className="text-sm font-semibold text-ink truncate">{profile?.full_name || user.email?.split('@')[0]}</h4>
+              <p className="text-xs text-ink-muted capitalize truncate">{profile?.role || 'User'}</p>
             </div>
           </div>
         </div>
@@ -76,7 +103,14 @@ export default function Layout() {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger rounded-full border-2 border-white"></span>
             </button>
-            <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-dark bg-red-50 rounded-xl hover:bg-red-100 transition-colors shadow-sm border border-red-100">
+            <button 
+              onClick={async () => {
+                const { supabase } = await import('../lib/supabase');
+                await supabase.auth.signOut();
+                window.location.href = '/';
+              }} 
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-dark bg-red-50 rounded-xl hover:bg-red-100 transition-colors shadow-sm border border-red-100"
+            >
               <LogOut className="w-4 h-4" />
               Đăng xuất
             </button>
