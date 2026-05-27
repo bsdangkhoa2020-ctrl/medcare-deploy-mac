@@ -45,7 +45,7 @@ export default function DoctorDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, profile?.specialty]);
+  }, []);
 
   const fetchAttachments = async () => {
     setIsLoading(true);
