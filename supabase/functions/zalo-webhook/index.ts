@@ -14,6 +14,11 @@ const GEMINI_KEY   = Deno.env.get('GEMINI_API_KEY')!;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
+  }
+
   if (req.method === 'GET') {
     const url = new URL(req.url);
     const challenge = url.searchParams.get('challenge') || 'ok';
@@ -67,11 +72,6 @@ Deno.serve(async (req) => {
         status: 200,
         headers: { 'Access-Control-Allow-Origin': '*' }
       });
-    }
-
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-      return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
     }
 
     if (event === 'follow') {
