@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import ReceptionistDashboard from './pages/Receptionist/Dashboard';
 import DoctorDashboard from './pages/Doctor/Dashboard';
 import Patients from './pages/Doctor/Patients';
+import Schedule from './pages/Doctor/Schedule';
 import ComingSoon from './pages/Doctor/ComingSoon';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -16,7 +17,7 @@ function App() {
             <Route path="letan" element={<ReceptionistDashboard />} />
             <Route path="bacsi" element={<DoctorDashboard />} />
             <Route path="bacsi/patients" element={<Patients />} />
-            <Route path="bacsi/schedule" element={<ComingSoon title="Lịch & Ca Trực" />} />
+            <Route path="bacsi/schedule" element={<Schedule />} />
             <Route path="bacsi/articles" element={<ComingSoon title="Tạp chí Y khoa" />} />
           </Route>
         </Routes>
