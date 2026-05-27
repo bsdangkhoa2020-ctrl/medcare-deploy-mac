@@ -126,7 +126,7 @@ export default function DoctorDashboard() {
             className={`flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${activeTab === 'red_alerts' ? 'bg-red-50 shadow-md text-danger border border-red-100' : 'text-ink-muted hover:bg-white/50'}`}
           >
             <AlertTriangle className={`w-3.5 h-3.5 md:w-4 md:h-4 ${activeTab === 'red_alerts' ? 'animate-pulse' : ''}`} />
-            Cấp Cứu
+            Bất Thường
             {redAlertsCount > 0 && (
               <span className="bg-danger text-white text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 md:ml-1">
                 {redAlertsCount}
