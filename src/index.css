@@ -12,6 +12,13 @@
   .nav-item-active {
     @apply bg-gold/10 text-gold-dark font-semibold shadow-sm border border-gold/20;
   }
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Custom scrollbar for modern feel */

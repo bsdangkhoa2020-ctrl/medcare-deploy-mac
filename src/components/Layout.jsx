@@ -175,7 +175,7 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-6 pb-24 md:p-8 relative">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-3 pb-24 md:p-8 relative">
           {/* Overlay for mobile sidebar */}
           {sidebarOpen && (
             <div 

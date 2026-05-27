@@ -112,23 +112,23 @@ export default function DoctorDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-        <div className="relative z-10">
-          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-ink mb-1.5 flex items-center gap-3">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 md:mb-8 gap-3 md:gap-4">
+        <div className="relative z-10 w-full md:w-auto">
+          <h1 className="text-xl md:text-3xl font-serif font-semibold text-ink mb-1 flex items-center gap-2 md:gap-3">
             Hộp Thư AI (Inbox)
           </h1>
-          <p className="text-sm text-ink-muted">Duyệt kết quả xét nghiệm Sản/Phụ khoa mới và Cảnh báo đỏ tự động.</p>
+          <p className="text-xs md:text-sm text-ink-muted">Duyệt kết quả xét nghiệm Sản/Phụ khoa mới và Cảnh báo đỏ tự động.</p>
         </div>
         
-        <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-gold/20 shadow-sm w-fit">
+        <div className="flex gap-1.5 md:gap-2 bg-white/40 backdrop-blur-md p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-gold/20 shadow-sm w-full md:w-fit overflow-x-auto hide-scrollbar">
           <button 
             onClick={() => setActiveTab('red_alerts')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'red_alerts' ? 'bg-red-50 shadow-md text-danger border border-red-100' : 'text-ink-muted hover:bg-white/50'}`}
+            className={`flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${activeTab === 'red_alerts' ? 'bg-red-50 shadow-md text-danger border border-red-100' : 'text-ink-muted hover:bg-white/50'}`}
           >
-            <AlertTriangle className={`w-4 h-4 ${activeTab === 'red_alerts' ? 'animate-pulse' : ''}`} />
-            Cấp Cứu (Đỏ)
+            <AlertTriangle className={`w-3.5 h-3.5 md:w-4 md:h-4 ${activeTab === 'red_alerts' ? 'animate-pulse' : ''}`} />
+            Cấp Cứu
             {redAlertsCount > 0 && (
-              <span className="bg-danger text-white text-[10px] px-2 py-0.5 rounded-full ml-1">
+              <span className="bg-danger text-white text-[10px] px-1.5 py-0.5 rounded-full ml-0.5 md:ml-1">
                 {redAlertsCount}
               </span>
             )}
@@ -136,33 +136,33 @@ export default function DoctorDashboard() {
           
           <button 
             onClick={() => setActiveTab('ob')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+            className={`flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
           >
-            <Baby className="w-4 h-4 text-emerald-500" />
-            Sản Khoa (OB)
+            <Baby className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
+            Sản (OB)
           </button>
 
           <button 
             onClick={() => setActiveTab('gy')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+            className={`flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
           >
-            <Activity className="w-4 h-4 text-purple-500" />
-            Phụ Khoa (GY)
+            <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-500" />
+            Phụ (GY)
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-6 min-h-0">
+      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-4 md:gap-6 min-h-0">
         
         {/* LST BỆNH NHÂN */}
-        <div className={`lg:col-span-4 xl:col-span-3 w-full glass rounded-3xl overflow-hidden flex-col h-full shadow-sm ${selectedItem ? 'hidden lg:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-gold/20 bg-white/40">
+        <div className={`lg:col-span-4 xl:col-span-3 w-full glass rounded-2xl md:rounded-3xl overflow-hidden flex-col h-full shadow-sm ${selectedItem ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="p-3 md:p-4 border-b border-gold/20 bg-white/40">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input 
                 type="text" 
                 placeholder="Tìm mã BN..." 
-                className="w-full pl-9 pr-4 py-2.5 bg-white/60 border border-gold/30 rounded-xl text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-white/60 border border-gold/30 rounded-lg md:rounded-xl text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
               />
             </div>
           </div>
