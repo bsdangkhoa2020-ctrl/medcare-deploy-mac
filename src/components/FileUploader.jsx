@@ -33,7 +33,7 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
             {...getRootProps()}
             className={clsx(
               "relative group cursor-pointer flex flex-col items-center justify-center w-full h-64 px-6 py-10 border-2 border-dashed rounded-3xl transition-all duration-300 ease-in-out bg-white/40 backdrop-blur-sm",
-              isDragActive ? "border-gold-DEFAULT bg-gold-light/50" : "border-gold-DEFAULT/30 hover:border-gold-DEFAULT hover:bg-gold-light/20",
+              isDragActive ? "border-gold bg-gold-light/50" : "border-gold/30 hover:border-gold hover:bg-gold-light/20",
               isDragReject && "border-danger bg-red-50",
               isLoading && "opacity-50 cursor-not-allowed"
             )}
@@ -77,7 +77,7 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
             </button>
 
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center flex-shrink-0 border border-gold-DEFAULT/20">
+              <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center flex-shrink-0 border border-gold/20">
                 <FileType className="w-8 h-8 text-gold-dark" />
               </div>
               <div className="flex-1 min-w-0">
@@ -94,7 +94,7 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
               <button 
                 onClick={onUpload}
                 disabled={isLoading}
-                className="flex-1 py-3 px-4 bg-ink text-gold-DEFAULT font-semibold rounded-xl shadow-md hover:bg-ink/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 px-4 bg-ink text-gold font-semibold rounded-xl shadow-md hover:bg-ink/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Tiến hành tải lên & Phân tích
               </button>

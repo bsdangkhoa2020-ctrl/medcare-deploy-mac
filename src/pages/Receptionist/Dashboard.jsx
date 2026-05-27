@@ -112,12 +112,12 @@ export default function ReceptionistDashboard() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="glass rounded-3xl p-8 relative overflow-hidden shadow-lg border border-gold-DEFAULT/30"
+                className="glass rounded-3xl p-8 relative overflow-hidden shadow-lg border border-gold/30"
               >
                 {/* Background decorative element */}
                 <div className={`absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-20 ${analysisResult.is_abnormal ? 'bg-danger' : 'bg-emerald-500'}`} />
 
-                <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gold-DEFAULT/20 relative z-10">
+                <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gold/20 relative z-10">
                   <BrainCircuit className="w-8 h-8 text-gold-dark" />
                   <h3 className="text-2xl font-serif text-ink">Báo cáo bóc tách AI</h3>
                 </div>
@@ -137,7 +137,7 @@ export default function ReceptionistDashboard() {
 
                     <div className="flex-1">
                       <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest mb-1.5">Phân loại tài liệu</p>
-                      <p className="font-semibold text-ink px-3 py-1.5 bg-white/50 rounded-lg inline-block border border-gold-DEFAULT/20 uppercase text-sm">
+                      <p className="font-semibold text-ink px-3 py-1.5 bg-white/50 rounded-lg inline-block border border-gold/20 uppercase text-sm">
                         {analysisResult.doc_type || 'Khác'}
                       </p>
                     </div>
@@ -145,7 +145,7 @@ export default function ReceptionistDashboard() {
 
                   <div>
                     <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest mb-1.5">Tên Bệnh Nhân (AI Đọc Được)</p>
-                    <p className="text-xl font-medium text-ink bg-white/40 px-3 py-2 rounded-lg border border-gold-DEFAULT/10">
+                    <p className="text-xl font-medium text-ink bg-white/40 px-3 py-2 rounded-lg border border-gold/10">
                       {analysisResult.patient_name || 'Không tìm thấy tên trên phiếu'}
                     </p>
                   </div>
@@ -160,7 +160,7 @@ export default function ReceptionistDashboard() {
 
                   <div>
                     <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest mb-1.5">Tóm tắt y khoa</p>
-                    <p className="text-sm text-ink leading-relaxed bg-white/70 p-4 rounded-xl shadow-inner border border-gold-DEFAULT/20 font-medium">
+                    <p className="text-sm text-ink leading-relaxed bg-white/70 p-4 rounded-xl shadow-inner border border-gold/20 font-medium">
                       {analysisResult.summary}
                     </p>
                   </div>
@@ -168,7 +168,7 @@ export default function ReceptionistDashboard() {
 
                 <button 
                   onClick={resetUploader}
-                  className="w-full mt-8 py-3.5 bg-ink text-gold-DEFAULT font-bold rounded-xl shadow-md hover:bg-ink/90 transition-all active:scale-[0.98]"
+                  className="w-full mt-8 py-3.5 bg-ink text-gold font-bold rounded-xl shadow-md hover:bg-ink/90 transition-all active:scale-[0.98]"
                 >
                   Tải lên phiếu tiếp theo
                 </button>
@@ -179,10 +179,10 @@ export default function ReceptionistDashboard() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="h-full flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gold-DEFAULT/30 rounded-3xl bg-white/30 backdrop-blur-sm"
+                className="h-full flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gold/30 rounded-3xl bg-white/30 backdrop-blur-sm"
               >
                 <div className="w-20 h-20 bg-white/50 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                  <FileText className="w-10 h-10 text-gold-DEFAULT/50" />
+                  <FileText className="w-10 h-10 text-gold/50" />
                 </div>
                 <h3 className="text-xl font-serif text-ink mb-2">Sẵn sàng phân tích</h3>
                 <p className="text-ink-muted text-sm max-w-xs leading-relaxed">

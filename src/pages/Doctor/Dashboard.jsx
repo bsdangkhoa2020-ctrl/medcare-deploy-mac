@@ -108,7 +108,7 @@ export default function DoctorDashboard() {
           <p className="text-ink-muted">Quản lý kết quả Sản/Phụ khoa và Cảnh báo đỏ tự động.</p>
         </div>
         
-        <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-gold-DEFAULT/20 shadow-sm w-fit">
+        <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-gold/20 shadow-sm w-fit">
           <button 
             onClick={() => setActiveTab('red_alerts')}
             className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'red_alerts' ? 'bg-red-50 shadow-md text-danger border border-red-100' : 'text-ink-muted hover:bg-white/50'}`}
@@ -123,14 +123,14 @@ export default function DoctorDashboard() {
           </button>
           <button 
             onClick={() => setActiveTab('ob')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold-DEFAULT/20' : 'text-ink-muted hover:bg-white/50'}`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
           >
             <Baby className="w-4 h-4 text-emerald-500" />
             Sản Khoa (OB)
           </button>
           <button 
             onClick={() => setActiveTab('gy')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold-DEFAULT/20' : 'text-ink-muted hover:bg-white/50'}`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
           >
             <Activity className="w-4 h-4 text-purple-500" />
             Phụ Khoa (GY)
@@ -142,13 +142,13 @@ export default function DoctorDashboard() {
         
         {/* LST BỆNH NHÂN */}
         <div className="lg:col-span-4 xl:col-span-3 glass rounded-3xl overflow-hidden flex flex-col h-full shadow-sm">
-          <div className="p-4 border-b border-gold-DEFAULT/20 bg-white/40">
+          <div className="p-4 border-b border-gold/20 bg-white/40">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input 
                 type="text" 
                 placeholder="Tìm mã BN..." 
-                className="w-full pl-9 pr-4 py-2.5 bg-white/60 border border-gold-DEFAULT/30 rounded-xl text-sm focus:outline-none focus:border-gold-DEFAULT focus:ring-2 focus:ring-gold-DEFAULT/20 transition-all"
+                className="w-full pl-9 pr-4 py-2.5 bg-white/60 border border-gold/30 rounded-xl text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
               />
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function DoctorDashboard() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedItem?.id === item.id ? 'bg-gold-light/80 border-gold-DEFAULT shadow-md' : 'bg-white/40 border-gold-DEFAULT/10 hover:bg-white hover:shadow-sm hover:border-gold-DEFAULT/30'}`}
+                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedItem?.id === item.id ? 'bg-gold-light/80 border-gold shadow-md' : 'bg-white/40 border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}`}
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <span className={`font-mono font-bold px-2.5 py-1 rounded-md shadow-sm text-sm border ${item.bn_code?.startsWith('OB') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
@@ -198,7 +198,7 @@ export default function DoctorDashboard() {
                 className="flex flex-col h-full"
               >
                 {/* Header detail */}
-                <div className="p-5 border-b border-gold-DEFAULT/20 bg-white/60 flex justify-between items-center shrink-0">
+                <div className="p-5 border-b border-gold/20 bg-white/60 flex justify-between items-center shrink-0">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <h2 className="text-xl font-serif font-semibold text-ink">
@@ -224,7 +224,7 @@ export default function DoctorDashboard() {
                 {/* Content split */}
                 <div className="flex-1 overflow-y-auto flex flex-col md:flex-row">
                   {/* File Preview */}
-                  <div className="flex-1 p-0 border-b md:border-b-0 md:border-r border-gold-DEFAULT/20 bg-ink/5 flex flex-col relative min-h-[300px]">
+                  <div className="flex-1 p-0 border-b md:border-b-0 md:border-r border-gold/20 bg-ink/5 flex flex-col relative min-h-[300px]">
                     {selectedItem.ai_extracted?.public_url ? (
                       <iframe 
                         src={selectedItem.ai_extracted.public_url} 
@@ -233,7 +233,7 @@ export default function DoctorDashboard() {
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full">
-                        <FileText className="w-16 h-16 text-gold-DEFAULT/40 mb-4" />
+                        <FileText className="w-16 h-16 text-gold/40 mb-4" />
                         <p className="text-ink-muted text-sm">Không thể xem trước tệp này.</p>
                       </div>
                     )}
@@ -246,7 +246,7 @@ export default function DoctorDashboard() {
                         <span className="w-2 h-2 rounded-full bg-gold-dark"></span> 
                         AI Đánh Giá
                       </h3>
-                      <div className="p-4 rounded-xl bg-white shadow-sm border border-gold-DEFAULT/20 text-sm text-ink leading-relaxed mb-8">
+                      <div className="p-4 rounded-xl bg-white shadow-sm border border-gold/20 text-sm text-ink leading-relaxed mb-8">
                         <div className="font-semibold mb-2 text-ink">Bệnh nhân: {selectedItem.ai_extracted?.parsed?.patient_name || 'Không rõ'}</div>
                         {selectedItem.ai_extracted?.result}
                       </div>
@@ -259,15 +259,15 @@ export default function DoctorDashboard() {
                         value={doctorNote}
                         onChange={(e) => setDoctorNote(e.target.value)}
                         placeholder="Nhập lời dặn bác sĩ để gửi trực tiếp qua Zalo cho bệnh nhân..."
-                        className="w-full min-h-[160px] p-4 bg-white shadow-inner border border-gold-DEFAULT/30 rounded-xl text-sm focus:outline-none focus:border-gold-DEFAULT focus:ring-2 focus:ring-gold-DEFAULT/20 transition-all resize-none"
+                        className="w-full min-h-[160px] p-4 bg-white shadow-inner border border-gold/30 rounded-xl text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all resize-none"
                       />
                     </div>
                     
-                    <div className="p-6 pt-0 mt-auto bg-transparent border-t border-gold-DEFAULT/10">
+                    <div className="p-6 pt-0 mt-auto bg-transparent border-t border-gold/10">
                       <button 
                         onClick={handleSendZalo}
                         disabled={isSending || !doctorNote.trim()}
-                        className="w-full py-4 px-4 bg-ink text-gold-DEFAULT font-bold rounded-xl shadow-lg hover:bg-ink/90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 group"
+                        className="w-full py-4 px-4 bg-ink text-gold font-bold rounded-xl shadow-lg hover:bg-ink/90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 group"
                       >
                         {isSending ? (
                           <>Đang gửi tin Zalo...</>
@@ -289,8 +289,8 @@ export default function DoctorDashboard() {
                 exit={{ opacity: 0 }}
                 className="h-full flex flex-col items-center justify-center p-8 text-center"
               >
-                <div className="w-24 h-24 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 shadow-sm border border-gold-DEFAULT/20">
-                  <MessageCircle className="w-12 h-12 text-gold-DEFAULT/50" />
+                <div className="w-24 h-24 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 shadow-sm border border-gold/20">
+                  <MessageCircle className="w-12 h-12 text-gold/50" />
                 </div>
                 <h3 className="text-2xl font-serif text-ink mb-3">Chưa chọn hồ sơ</h3>
                 <p className="text-ink-muted text-sm max-w-sm leading-relaxed">

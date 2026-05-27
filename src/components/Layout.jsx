@@ -8,13 +8,13 @@ export default function Layout() {
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gold-light/40 to-white relative">
       {/* Dynamic Background Blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gold-DEFAULT/20 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gold/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-gold-dark/10 blur-[100px] pointer-events-none" />
 
       {/* Sidebar */}
-      <aside className={`absolute z-20 flex flex-col w-64 h-full px-4 py-8 overflow-y-auto border-r rtl:border-r-0 rtl:border-l bg-white/70 backdrop-blur-xl border-gold-DEFAULT/20 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`absolute z-20 flex flex-col w-64 h-full px-4 py-8 overflow-y-auto border-r rtl:border-r-0 rtl:border-l bg-white/70 backdrop-blur-xl border-gold/20 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center gap-3 px-2 mb-8">
-          <div className="w-10 h-10 rounded-full bg-gold-light border border-gold-DEFAULT flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-gold-light border border-gold flex items-center justify-center">
             <span className="font-serif text-gold-dark font-bold text-xl italic">B</span>
           </div>
           <span className="text-xl font-serif text-ink tracking-wide">BaoBei <span className="font-sans text-xs uppercase tracking-widest text-gold-dark font-bold ml-1">Portals</span></span>
@@ -28,7 +28,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
                   isActive
-                    ? 'bg-ink text-gold-DEFAULT shadow-md scale-100'
+                    ? 'bg-ink text-gold shadow-md scale-100'
                     : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
                 }`
               }
@@ -43,7 +43,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
                   isActive
-                    ? 'bg-ink text-gold-DEFAULT shadow-md scale-100'
+                    ? 'bg-ink text-gold shadow-md scale-100'
                     : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
                 }`
               }
@@ -54,8 +54,8 @@ export default function Layout() {
             </NavLink>
           </nav>
 
-          <div className="flex items-center px-4 py-3 mt-auto rounded-2xl bg-gold-light/50 border border-gold-DEFAULT/10 cursor-pointer hover:bg-gold-light transition-colors">
-            <img className="object-cover w-9 h-9 rounded-full border border-gold-DEFAULT/30" src="https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png?v=3" alt="Avatar" />
+          <div className="flex items-center px-4 py-3 mt-auto rounded-2xl bg-gold-light/50 border border-gold/10 cursor-pointer hover:bg-gold-light transition-colors">
+            <img className="object-cover w-9 h-9 rounded-full border border-gold/30" src="https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/bstuanhoang.png?v=3" alt="Avatar" />
             <div className="mx-3">
               <h4 className="text-sm font-semibold text-ink">BS. Tuấn</h4>
               <p className="text-xs text-ink-muted">Admin</p>

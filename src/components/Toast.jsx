@@ -21,7 +21,7 @@ export default function Toast({ message, type = 'info', isVisible, onClose }) {
   const bgColors = {
     success: 'bg-emerald-50/90 border-emerald-200',
     error: 'bg-red-50/90 border-red-200',
-    info: 'bg-gold-light/90 border-gold-DEFAULT/30'
+    info: 'bg-gold-light/90 border-gold/30'
   };
 
   return (
