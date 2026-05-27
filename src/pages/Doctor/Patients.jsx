@@ -8,7 +8,7 @@ export default function Patients() {
   const [patients, setPatients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'ob', 'gy'
+  const [activeTab, setActiveTab] = useState('ob'); // 'ob', 'gy'
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientRecords, setPatientRecords] = useState([]);
   const [isLoadingRecords, setIsLoadingRecords] = useState(false);
@@ -91,7 +91,6 @@ export default function Patients() {
         
         <div className="flex gap-1.5 md:gap-2 relative z-10 bg-white/40 p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-gold/20 shadow-sm overflow-x-auto w-full md:w-auto hide-scrollbar">
           {[
-            { id: 'all', label: 'Tất cả' },
             { id: 'ob', label: 'Sản (OB)', icon: <Baby className="w-3.5 h-3.5" /> },
             { id: 'gy', label: 'Phụ (GY)', icon: <Activity className="w-3.5 h-3.5" /> }
           ].map(tab => (
@@ -146,6 +145,11 @@ export default function Patients() {
                     <span className={`font-mono font-bold px-2.5 py-1 rounded-md shadow-sm text-sm border ${p.specialty === 'ob' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
                       {p.bn_code}
                     </span>
+                    {p.specialty === 'ob' && p.lmp && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full uppercase tracking-wider">
+                        Dự sinh: {new Date(new Date(p.lmp).getTime() + 280 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                      </span>
+                    )}
                   </div>
                   <h4 className="text-sm font-semibold text-ink truncate">{p.name || 'Chưa cập nhật tên'}</h4>
                   <p className="text-xs text-ink-muted mt-1 flex items-center gap-1">
