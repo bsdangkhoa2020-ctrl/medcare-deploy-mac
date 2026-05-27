@@ -4,9 +4,10 @@ import Toast from '../../components/Toast';
 import { AlertTriangle, Send, CheckCircle2, Search, FileText, X, MessageCircle, Baby, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 export default function DoctorDashboard() {
-  const { profile } = useAuth();
+  const { profile, appRole } = useAuth();
   const [attachments, setAttachments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -15,8 +16,13 @@ export default function DoctorDashboard() {
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
   const [activeTab, setActiveTab] = useState('red_alerts'); // 'red_alerts', 'ob', 'gy'
 
+  // Block receptionist from accessing Doctor Dashboard
+  if (appRole === 'receptionist') {
+    return <Navigate to="/letan" replace />;
+  }
+
   // Determine user permissions
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = appRole === 'superadmin';
   const isOb = isAdmin || profile?.specialty === 'ob';
   const isGy = isAdmin || profile?.specialty === 'gy';
 

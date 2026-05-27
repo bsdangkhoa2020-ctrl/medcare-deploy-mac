@@ -4,3 +4,4 @@ index.html.before-split-*
 
 # macOS
 .DS_Store
+node_modules/

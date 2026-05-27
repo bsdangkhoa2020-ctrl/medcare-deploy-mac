@@ -52,8 +52,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Compute appRole dynamically based on user and profile
+  let appRole = null;
+  if (user && profile) {
+    if (user.email === 'bstuanhoang@gmail.com') {
+      appRole = 'superadmin';
+    } else if (user.email === 'letan@gmail.com') {
+      appRole = 'receptionist';
+    } else if (profile.role === 'doctor') {
+      appRole = 'doctor';
+    } else {
+      appRole = profile.role || 'user'; // Fallback
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, appRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,12 +4,20 @@ import FileUploader from '../../components/FileUploader';
 import Toast from '../../components/Toast';
 import { CheckCircle2, FileText, BrainCircuit, Activity, Baby } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 export default function ReceptionistDashboard() {
+  const { appRole } = useAuth();
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
   const [analysisResult, setAnalysisResult] = useState(null);
+
+  // Block doctors from accessing Receptionist Dashboard
+  if (appRole === 'doctor') {
+    return <Navigate to="/bacsi" replace />;
+  }
 
   const showToast = (message, type = 'info') => {
     setToast({ isVisible: true, message, type });

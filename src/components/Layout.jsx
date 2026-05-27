@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, appRole } = useAuth();
 
   if (loading) {
     return (
@@ -42,7 +42,7 @@ export default function Layout() {
         <div className="flex flex-col justify-between flex-1 mt-6">
           <nav className="space-y-2">
             <p className="px-2 text-xs font-bold tracking-widest text-ink-muted uppercase mb-4">Các cổng</p>
-            {(!profile || profile.role === 'admin' || profile.role === 'receptionist') && (
+            {(!appRole || appRole === 'superadmin' || appRole === 'receptionist') && (
               <NavLink
                 to="/letan"
                 className={({ isActive }) =>
@@ -59,7 +59,7 @@ export default function Layout() {
               </NavLink>
             )}
 
-            {(!profile || profile.role === 'admin' || profile.role === 'doctor') && (
+            {(!appRole || appRole === 'superadmin' || appRole === 'doctor') && (
               <NavLink
                 to="/bacsi"
                 className={({ isActive }) =>
@@ -85,7 +85,7 @@ export default function Layout() {
             )}
             <div className="mx-3 truncate">
               <h4 className="text-sm font-semibold text-ink truncate">{profile?.full_name || user.email?.split('@')[0]}</h4>
-              <p className="text-xs text-ink-muted capitalize truncate">{profile?.role || 'User'}</p>
+              <p className="text-xs text-ink-muted capitalize truncate">{appRole || 'User'}</p>
             </div>
           </div>
         </div>
