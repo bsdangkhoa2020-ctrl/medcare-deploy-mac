@@ -146,6 +146,10 @@ async function _routeAfterLogin(user) {
   _history = []; // Reset history
   
   // Định tuyến nhân viên phòng khám (Staff) sang Cổng React
+  if (user.email === 'bstuanhoang@gmail.com') {
+    window.location.href = '/bacsi';
+    return;
+  }
   if (user.email === 'letan@gmail.com') {
     window.location.href = '/letan';
     return;
@@ -180,7 +184,24 @@ async function _routeAfterLogin(user) {
 function _enterApp(user) {
   if (user.role === 'admin') {
     goTo('s-admin');
-    if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
+    
+    // Check if embedded in React portal
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEmbed = urlParams.get('embed') === 'true';
+    const targetTab = urlParams.get('admTab');
+    
+    if (isEmbed) {
+      // Hide the header and tabs
+      const header = document.querySelector('#s-admin .adm-ibm');
+      if (header) header.style.display = 'none';
+    }
+
+    if (typeof initAdmin === 'function') {
+      setTimeout(() => {
+        initAdmin();
+        if (targetTab) admSwitchTab(targetTab);
+      }, 100);
+    }
     return;
   }
 

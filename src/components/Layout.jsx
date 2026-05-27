@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell, LogOut, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell, LogOut, UserCircle, Calendar, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -68,6 +68,7 @@ export default function Layout() {
             {(!appRole || appRole === 'doctor') && (
               <NavLink
                 to="/bacsi"
+                end
                 className={({ isActive }) =>
                   `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
                     isActive
@@ -78,18 +79,59 @@ export default function Layout() {
                 onClick={() => setSidebarOpen(false)}
               >
                 <Stethoscope className="w-5 h-5" />
-                <span className="mx-4 font-medium">Bác Sĩ (Dashboard)</span>
+                <span className="mx-4 font-medium">Bệnh Án Điện Tử (AI)</span>
               </NavLink>
             )}
 
             {(!appRole || appRole === 'doctor') && (
-              <a
-                href="/"
-                className="flex items-center px-4 py-3 mt-4 rounded-2xl transition-all duration-200 text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]"
+              <NavLink
+                to="/bacsi/patients"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-ink text-gold shadow-md scale-100'
+                      : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
+                  }`
+                }
+                onClick={() => setSidebarOpen(false)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
-                <span className="mx-4 font-medium">Trở về Trang Quản Trị</span>
-              </a>
+                <Users className="w-5 h-5" />
+                <span className="mx-4 font-medium">Quản lý Bệnh Nhân</span>
+              </NavLink>
+            )}
+
+            {(!appRole || appRole === 'doctor') && (
+              <NavLink
+                to="/bacsi/schedule"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-ink text-gold shadow-md scale-100'
+                      : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
+                  }`
+                }
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="mx-4 font-medium">Lịch & Ca Trực</span>
+              </NavLink>
+            )}
+
+            {(!appRole || appRole === 'doctor') && (
+              <NavLink
+                to="/bacsi/articles"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-3 rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? 'bg-ink text-gold shadow-md scale-100'
+                      : 'text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]'
+                  }`
+                }
+                onClick={() => setSidebarOpen(false)}
+              >
+                <BookOpen className="w-5 h-5" />
+                <span className="mx-4 font-medium">Tạp chí Y khoa</span>
+              </NavLink>
             )}
           </nav>
 

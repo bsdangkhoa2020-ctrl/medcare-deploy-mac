@@ -2831,7 +2831,12 @@ function admSwitchTab(tab) {
   if (tab === 'schedule') { admRenderSchedule(); admLoadQuickAppts(); admRenderCalStrip(); }
   if (tab === 'articles' && adm.articles.length === 0) admLoadArticles();
   if (tab === 'aiscan') {
-    window.location.href = '/bacsi';
+    // Check if we are inside an iframe
+    if (window.self !== window.top) {
+      window.parent.location.href = '/bacsi';
+    } else {
+      window.location.href = '/bacsi';
+    }
     return;
   }
 }
