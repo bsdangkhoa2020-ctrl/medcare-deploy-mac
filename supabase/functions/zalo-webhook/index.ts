@@ -30,32 +30,48 @@ Deno.serve(async (req) => {
     const zaloId   = body?.message?.from?.id || body?.message?.chat?.id || body?.sender?.id;
     const msgText  = body?.message?.text || body?.message?.caption || '';
 
-    if (!zaloId) {
+    if (!zaloId && event !== 'web_upload' && event !== 'doctor_note') {
       return new Response('ok', { status: 200 });
     }
 
-    // ── XỬ LÝ NHẬN ẢNH / FILE ──
-    if (event === 'message.image.received' || event === 'message.file.received' || event === 'user_send_image' || event === 'user_send_file') {
-      await handleFileUpload(zaloId, body);
+    // ── NẾU BỊ GỬI NHẦM FILE TÀI LIỆU (PDF) TỪ ZALO ──
+    if (event === 'message.unsupported.received' || event === 'message.file.received') {
+      await sendZaloMessage(zaloId, "❌ Rất tiếc, hệ thống Zalo Bot hiện tại chưa cho phép nhận File tài liệu (PDF/Word).\n👉 Bạn vui lòng **gửi File ẢNH (JPG/PNG) hoặc chụp màn hình** kết quả xét nghiệm nhé!");
       return new Response('ok', { status: 200 });
     }
 
-    // ── XỬ LÝ NHẬN TEXT ──
+    // ── XỬ LÝ NHẬN TEXT VÀ CHAT VỚI AI ──
     if (event === 'message.text.received' || event === 'user_send_text') {
       const code = msgText.trim().toUpperCase();
       if (/^(OB|GY)\d{3,}$/.test(code)) {
         await handleBnCodeLink(zaloId, code);
       } else {
-        // Chat với AI ảo
         await handleChatWithBot(zaloId, msgText);
       }
       return new Response('ok', { status: 200 });
     }
-    
-    // ── NẾU GỬI FILE PDF BỊ ZALO CHẶN ──
-    if (event === 'message.unsupported.received') {
-      await sendZaloMessage(zaloId, "❌ Rất tiếc, hệ thống Zalo Bot hiện tại chưa hỗ trợ nhận File tài liệu (PDF/Word). Bạn vui lòng **gửi File ẢNH (JPG/PNG) hoặc chụp màn hình** kết quả xét nghiệm nhé!");
-      return new Response('ok', { status: 200 });
+
+    // ── API TỪ WEB: LỄ TÂN UPLOAD ──
+    if (event === 'web_upload') {
+      const result = await processWebUpload(body);
+      return new Response(JSON.stringify(result), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      });
+    }
+
+    // ── API TỪ WEB: BÁC SĨ GỬI LỜI DẶN ──
+    if (event === 'doctor_note') {
+      await processDoctorNote(body);
+      return new Response('ok', { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' } })
     }
 
     if (event === 'follow') {
@@ -214,5 +230,75 @@ Bệnh nhân hỏi: "${userText}"`;
     await sendZaloMessage(zaloId, text);
   } catch (e) { 
     await sendZaloMessage(zaloId, "Xin lỗi, đường truyền đến AI đang bị gián đoạn.");
+  }
+}
+
+// ── API: LỄ TÂN UPLOAD WEB ──
+async function processWebUpload(body: any) {
+  const { file_url, file_name, mime_type } = body;
+  if (!file_url) return { error: 'Missing file_url' };
+
+  try {
+    const fileRes = await fetch(file_url);
+    const fileBuffer = await fileRes.arrayBuffer();
+    const base64 = arrayBufferToBase64(fileBuffer);
+    
+    // Gọi Gemini 
+    const aiResult = await analyzeWithGemini(base64, mime_type || 'application/pdf');
+
+    let matchedBnCode = null, matchedName = aiResult.patient_name || '';
+    if (matchedName) {
+      const { data: patients } = await sb.from('patients').select('bn_code, name').ilike('name', `%${matchedName}%`).limit(3);
+      if (patients?.length === 1) { 
+        matchedBnCode = patients[0].bn_code; 
+        matchedName = patients[0].name; 
+      }
+    }
+
+    // Lưu vào EMR
+    const insertData = {
+      bn_code: matchedBnCode, file_name, storage_path: file_url, 
+      file_size: fileBuffer.byteLength, mime_type, 
+      doctype: aiResult.doc_type || 'khac', scan_type: aiResult.doc_type || 'khac',
+      status: 'ai_processed', is_saved_to_emr: true,
+      ai_extracted: { result: aiResult.summary, parsed: aiResult, type: aiResult.doc_type, is_abnormal: aiResult.is_abnormal, public_url: file_url }
+    };
+    await sb.from('attachments').insert(insertData);
+
+    // Bắn thông báo Zalo nếu có BN
+    if (matchedBnCode) {
+      const { data: subs } = await sb.from('zalo_subscribers').select('zalo_id').eq('bn_code', matchedBnCode);
+      if (subs && subs.length > 0) {
+        for (const sub of subs) {
+          if (aiResult.is_abnormal) {
+            await sendZaloMessage(sub.zalo_id, `⚠️ KẾT QUẢ BẤT THƯỜNG\n👤 Tên: ${matchedName}\n📋 Tóm tắt: ${aiResult.summary}\n\n⏳ Hệ thống đã chuyển cho Bác sĩ Tuấn. Bác sĩ sẽ phản hồi sớm!`);
+          } else {
+            await sendZaloMessage(sub.zalo_id, `✅ KẾT QUẢ XÉT NGHIỆM\n👤 Tên: ${matchedName}\n🟢 Đánh giá: BÌNH THƯỜNG (Mọi chỉ số đều tốt).\nLink xem: ${file_url}`);
+          }
+        }
+      }
+    }
+    
+    return { success: true, bn_code: matchedBnCode, patient_name: matchedName, is_abnormal: aiResult.is_abnormal, summary: aiResult.summary, doc_type: aiResult.doc_type };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+// ── API: BÁC SĨ GỬI LỜI DẶN ──
+async function processDoctorNote(body: any) {
+  const { bn_code, note, file_url } = body;
+  if (!bn_code || !note) return { error: 'Missing bn_code or note' };
+
+  try {
+    const { data: subs } = await sb.from('zalo_subscribers').select('zalo_id').eq('bn_code', bn_code);
+    if (subs && subs.length > 0) {
+      for (const sub of subs) {
+        await sendZaloMessage(sub.zalo_id, `👨‍⚕️ THÔNG BÁO TỪ BÁC SĨ TUẤN\n\n💬 Lời dặn: ${note}\n\nXem lại kết quả của bạn tại đây: ${file_url || 'Hệ thống'}`);
+      }
+    }
+    return { success: true };
+  } catch (e) {
+    return { error: (e as Error).message };
   }
 }
