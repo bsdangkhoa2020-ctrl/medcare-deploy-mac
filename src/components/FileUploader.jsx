@@ -4,12 +4,16 @@ import { UploadCloud, FileType, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
-export default function FileUploader({ onUpload, file, setFile, isLoading }) {
+export default function FileUploader({ onUpload, files, setFiles, isLoading }) {
   const onDrop = useCallback(acceptedFiles => {
     if (acceptedFiles?.length > 0) {
-      setFile(acceptedFiles[0]);
+      setFiles(prev => [...prev, ...acceptedFiles].slice(0, 10)); // Max 10
     }
-  }, [setFile]);
+  }, [setFiles]);
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
@@ -17,14 +21,14 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
       'image/*': ['.png', '.jpg', '.jpeg'],
       'application/pdf': ['.pdf']
     },
-    maxFiles: 1,
+    maxFiles: 10,
     disabled: isLoading
   });
 
   return (
     <div className="w-full">
       <AnimatePresence mode="wait">
-        {!file ? (
+        {files.length === 0 ? (
           <motion.div
             key="dropzone"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -45,11 +49,11 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
             </div>
             
             <h3 className="mb-2 text-lg font-semibold text-ink font-serif">
-              {isDragActive ? "Thả file vào đây..." : "Kéo thả file xét nghiệm"}
+              {isDragActive ? "Thả file vào đây..." : "Kéo thả file kết quả xét nghiệm"}
             </h3>
             
             <p className="text-sm text-ink-muted text-center max-w-xs">
-              Hỗ trợ định dạng Ảnh (JPG, PNG) hoặc PDF. Tối đa 10MB.
+              Hỗ trợ định dạng Ảnh (JPG, PNG) hoặc PDF. Tối đa 10 file cùng lúc.
             </p>
           </motion.div>
         ) : (
@@ -58,37 +62,62 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="glass rounded-3xl p-6 relative overflow-hidden"
+            className="glass rounded-3xl p-6 relative overflow-hidden border border-gold/30"
           >
             {/* Loading Overlay */}
             {isLoading && (
               <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-gold-dark animate-spin mb-3" />
-                <p className="text-sm font-medium text-ink animate-pulse">Đang tải lên & phân tích AI...</p>
+                <p className="text-sm font-medium text-ink animate-pulse">Đang đẩy dữ liệu lên hệ thống ({files.length} file)...</p>
               </div>
             )}
 
-            <button 
-              onClick={() => !isLoading && setFile(null)}
-              disabled={isLoading}
-              className="absolute top-4 right-4 p-2 bg-red-50 text-danger rounded-full hover:bg-red-100 transition-colors z-20"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center flex-shrink-0 border border-gold/20">
-                <FileType className="w-8 h-8 text-gold-dark" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-ink truncate mb-1" title={file.name}>
-                  {file.name}
-                </p>
-                <p className="text-xs text-ink-muted">
-                  {(file.size / (1024 * 1024)).toFixed(2)} MB • {file.type || 'Unknown'}
-                </p>
-              </div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-serif text-lg font-semibold text-ink">Đã chọn {files.length} file</h3>
+              <button 
+                onClick={() => !isLoading && setFiles([])}
+                disabled={isLoading}
+                className="text-xs text-danger font-medium hover:underline disabled:opacity-50"
+              >
+                Xóa tất cả
+              </button>
             </div>
+
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+              {files.map((file, idx) => (
+                <div key={`${file.name}-${idx}`} className="flex items-center gap-4 bg-white/50 p-3 rounded-xl border border-gold/10">
+                  <div className="w-12 h-12 rounded-xl bg-gold-light flex items-center justify-center flex-shrink-0 border border-gold/20">
+                    <FileType className="w-6 h-6 text-gold-dark" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink truncate" title={file.name}>
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {(file.size / (1024 * 1024)).toFixed(2)} MB • {file.type || 'Unknown'}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => !isLoading && removeFile(idx)}
+                    disabled={isLoading}
+                    className="p-1.5 bg-red-50 text-danger rounded-full hover:bg-red-100 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Thêm khu vực drop để kéo thêm file */}
+            {files.length < 10 && !isLoading && (
+               <div 
+                 {...getRootProps()}
+                 className="mt-3 p-3 border-2 border-dashed border-gold/30 rounded-xl text-center cursor-pointer hover:bg-gold-light/20 transition-colors"
+               >
+                 <input {...getInputProps()} />
+                 <p className="text-sm font-medium text-gold-dark">+ Kéo thả hoặc bấm để thêm file (tối đa 10)</p>
+               </div>
+            )}
 
             <div className="mt-6 flex gap-3">
               <button 
@@ -96,7 +125,7 @@ export default function FileUploader({ onUpload, file, setFile, isLoading }) {
                 disabled={isLoading}
                 className="flex-1 py-3 px-4 bg-ink text-gold font-semibold rounded-xl shadow-md hover:bg-ink/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Tiến hành tải lên & Phân tích
+                Xác nhận Tải lên ({files.length} file)
               </button>
             </div>
           </motion.div>

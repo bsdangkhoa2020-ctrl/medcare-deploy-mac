@@ -7,13 +7,15 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [appRole, setAppRole] = useState(null);
+  const [patientType, setPatientType] = useState(null);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -23,10 +25,12 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       } else {
         setUser(null);
         setProfile(null);
+        setAppRole(null);
+        setPatientType(null);
         setLoading(false);
       }
     });
@@ -34,38 +38,52 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (currentUser) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('id', currentUser.id)
         .single();
         
       if (!error && data) {
         setProfile(data);
       }
+
+      // 1. Xác định appRole (Ưu tiên từ DB, dự phòng từ Email test)
+      let role = data?.role;
+      if (!role) {
+        if (currentUser.email === 'bstuanhoang@gmail.com') role = 'doctor';
+        else if (currentUser.email === 'letan@gmail.com') role = 'receptionist';
+        else role = 'patient';
+      }
+      setAppRole(role);
+
+      // 2. Nếu là Bệnh nhân, xác định patient_type
+      if (role === 'patient') {
+        const { data: ptData, error: ptError } = await supabase
+          .from('patients')
+          .select('patient_type')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (!ptError && ptData?.patient_type) {
+          setPatientType(ptData.patient_type);
+        } else {
+          // Dự phòng cho tài khoản Test nhanh khi Database chưa có cột patient_type
+          if (currentUser.email === 'obtest2026@gmail.com') setPatientType('ob');
+          else if (currentUser.email === 'gytest2026@gmail.com') setPatientType('gy');
+        }
+      }
     } catch (err) {
-      console.error("Error fetching profile:", err);
+      console.error("Error fetching auth data:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Compute appRole dynamically based on user
-  let appRole = null;
-  if (user) {
-    if (user.email === 'bstuanhoang@gmail.com') {
-      appRole = 'doctor';
-    } else if (user.email === 'letan@gmail.com') {
-      appRole = 'receptionist';
-    } else {
-      appRole = 'patient';
-    }
-  }
-
   return (
-    <AuthContext.Provider value={{ user, profile, loading, appRole }}>
+    <AuthContext.Provider value={{ user, profile, loading, appRole, patientType }}>
       {children}
     </AuthContext.Provider>
   );
