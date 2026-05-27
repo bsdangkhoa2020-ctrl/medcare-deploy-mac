@@ -79,7 +79,7 @@ export default function Layout() {
                 onClick={() => setSidebarOpen(false)}
               >
                 <Stethoscope className="w-5 h-5" />
-                <span className="mx-4 font-medium">Hộp Thư AI (Inbox)</span>
+                <span className="mx-4 font-medium">Kết Quả Xét Nghiệm</span>
               </NavLink>
             )}
 

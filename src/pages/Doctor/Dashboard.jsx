@@ -115,7 +115,7 @@ export default function DoctorDashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 md:mb-8 gap-3 md:gap-4">
         <div className="relative z-10 w-full md:w-auto">
           <h1 className="text-xl md:text-3xl font-serif font-semibold text-ink mb-1 flex items-center gap-2 md:gap-3">
-            Hộp Thư AI (Inbox)
+            Kết Quả Xét Nghiệm
           </h1>
           <p className="text-xs md:text-sm text-ink-muted">Duyệt kết quả xét nghiệm Sản/Phụ khoa mới và Cảnh báo đỏ tự động.</p>
         </div>
@@ -218,7 +218,7 @@ export default function DoctorDashboard() {
                     className="flex items-center gap-2 text-ink hover:text-gold-dark font-medium text-sm transition-colors w-fit"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
-                    Trở lại Hộp thư AI
+                    Trở lại Kết Quả Xét Nghiệm
                   </button>
                 </div>
 
