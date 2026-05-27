@@ -111,10 +111,10 @@ export default function Patients() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-6 min-h-0">
         
         {/* DANH SÁCH BỆNH NHÂN (Trái) */}
-        <div className="lg:col-span-4 xl:col-span-3 glass rounded-3xl overflow-hidden flex flex-col h-full shadow-sm">
+        <div className={`lg:col-span-4 xl:col-span-3 w-full glass rounded-3xl overflow-hidden flex-col h-full shadow-sm ${selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
           <div className="p-4 border-b border-gold/20 bg-white/40">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
@@ -158,7 +158,7 @@ export default function Patients() {
         </div>
 
         {/* CHI TIẾT BỆNH NHÂN (Phải) */}
-        <div className="lg:col-span-8 xl:col-span-9 glass rounded-3xl flex flex-col h-full overflow-hidden relative shadow-sm">
+        <div className={`lg:col-span-8 xl:col-span-9 w-full glass rounded-3xl flex-col h-full overflow-hidden relative shadow-sm ${!selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
           <AnimatePresence mode="wait">
             {selectedPatient ? (
               <motion.div 
@@ -166,11 +166,20 @@ export default function Patients() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col h-full overflow-y-auto p-6 md:p-8"
+                className="flex flex-col h-full overflow-y-auto p-4 md:p-8"
               >
+                {/* Mobile Back Button */}
+                <button 
+                  onClick={() => setSelectedPatient(null)}
+                  className="lg:hidden flex items-center gap-2 text-ink hover:text-gold-dark font-medium text-sm mb-6 pb-4 border-b border-gold/10 transition-colors w-fit"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+                  Trở lại danh sách bệnh nhân
+                </button>
+
                 {/* Header Profile */}
-                <div className="flex items-start gap-6 border-b border-gold/20 pb-8 mb-8">
-                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shadow-inner border ${selectedPatient.specialty === 'ob' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-purple-50 border-purple-200 text-purple-600'}`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 border-b border-gold/20 pb-6 mb-6">
+                  <div className={`w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-2xl flex items-center justify-center shadow-inner border ${selectedPatient.specialty === 'ob' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-purple-50 border-purple-200 text-purple-600'}`}>
                     {selectedPatient.specialty === 'ob' ? <Baby className="w-10 h-10" /> : <Activity className="w-10 h-10" />}
                   </div>
                   <div className="flex-1">

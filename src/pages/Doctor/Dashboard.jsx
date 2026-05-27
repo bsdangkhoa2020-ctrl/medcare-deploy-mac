@@ -152,10 +152,10 @@ export default function DoctorDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-6 min-h-0">
         
         {/* LST BỆNH NHÂN */}
-        <div className="lg:col-span-4 xl:col-span-3 glass rounded-3xl overflow-hidden flex flex-col h-full shadow-sm">
+        <div className={`lg:col-span-4 xl:col-span-3 w-full glass rounded-3xl overflow-hidden flex-col h-full shadow-sm ${selectedItem ? 'hidden lg:flex' : 'flex'}`}>
           <div className="p-4 border-b border-gold/20 bg-white/40">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
@@ -201,7 +201,7 @@ export default function DoctorDashboard() {
         </div>
 
         {/* CHI TIẾT & LỜI DẶN */}
-        <div className="lg:col-span-8 xl:col-span-9 glass rounded-3xl flex flex-col h-full overflow-hidden relative shadow-sm">
+        <div className={`lg:col-span-8 xl:col-span-9 w-full glass rounded-3xl flex-col h-full overflow-hidden relative shadow-sm ${!selectedItem ? 'hidden lg:flex' : 'flex'}`}>
           <AnimatePresence mode="wait">
             {selectedItem ? (
               <motion.div 
@@ -209,8 +209,19 @@ export default function DoctorDashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col h-full"
+                className="flex flex-col h-full overflow-hidden"
               >
+                {/* Mobile Back Button */}
+                <div className="lg:hidden p-4 border-b border-gold/10">
+                  <button 
+                    onClick={() => setSelectedItem(null)}
+                    className="flex items-center gap-2 text-ink hover:text-gold-dark font-medium text-sm transition-colors w-fit"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+                    Trở lại Hộp thư AI
+                  </button>
+                </div>
+
                 {/* Header detail */}
                 <div className="p-5 border-b border-gold/20 bg-white/60 flex justify-between items-center shrink-0">
                   <div>
