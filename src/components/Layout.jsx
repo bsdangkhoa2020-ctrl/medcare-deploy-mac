@@ -47,7 +47,6 @@ export default function Layout() {
 
         <div className="flex flex-col justify-between flex-1 mt-6">
           <nav className="space-y-2">
-            <p className="px-2 text-xs font-bold tracking-widest text-ink-muted uppercase mb-4">Các cổng</p>
             {(!appRole || appRole === 'doctor' || appRole === 'receptionist') && (
               <NavLink
                 to="/letan"
