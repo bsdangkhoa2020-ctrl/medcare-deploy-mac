@@ -184,24 +184,7 @@ async function _routeAfterLogin(user) {
 function _enterApp(user) {
   if (user.role === 'admin') {
     goTo('s-admin');
-    
-    // Check if embedded in React portal
-    const urlParams = new URLSearchParams(window.location.search);
-    const isEmbed = urlParams.get('embed') === 'true';
-    const targetTab = urlParams.get('admTab');
-    
-    if (isEmbed) {
-      // Hide the header and tabs
-      const header = document.querySelector('#s-admin .adm-ibm');
-      if (header) header.style.display = 'none';
-    }
-
-    if (typeof initAdmin === 'function') {
-      setTimeout(() => {
-        initAdmin();
-        if (targetTab) admSwitchTab(targetTab);
-      }, 100);
-    }
+    if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
     return;
   }
 

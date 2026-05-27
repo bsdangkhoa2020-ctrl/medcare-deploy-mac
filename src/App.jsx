@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import ReceptionistDashboard from './pages/Receptionist/Dashboard';
 import DoctorDashboard from './pages/Doctor/Dashboard';
-import AdminIframe from './pages/Doctor/AdminIframe';
+import Patients from './pages/Doctor/Patients';
+import ComingSoon from './pages/Doctor/ComingSoon';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -14,9 +15,9 @@ function App() {
             <Route index element={<Navigate to="/letan" replace />} />
             <Route path="letan" element={<ReceptionistDashboard />} />
             <Route path="bacsi" element={<DoctorDashboard />} />
-            <Route path="bacsi/patients" element={<AdminIframe tab="patients" />} />
-            <Route path="bacsi/schedule" element={<AdminIframe tab="schedule" />} />
-            <Route path="bacsi/articles" element={<AdminIframe tab="articles" />} />
+            <Route path="bacsi/patients" element={<Patients />} />
+            <Route path="bacsi/schedule" element={<ComingSoon title="Lịch & Ca Trực" />} />
+            <Route path="bacsi/articles" element={<ComingSoon title="Tạp chí Y khoa" />} />
           </Route>
         </Routes>
       </Router>

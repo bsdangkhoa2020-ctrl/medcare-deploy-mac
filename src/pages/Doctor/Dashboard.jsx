@@ -113,9 +113,11 @@ export default function DoctorDashboard() {
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-serif text-ink mb-2">Bảng Điều Khiển Bác Sĩ</h1>
-          <p className="text-ink-muted">Quản lý kết quả Sản/Phụ khoa và Cảnh báo đỏ tự động.</p>
+        <div className="relative z-10">
+          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-ink mb-1.5 flex items-center gap-3">
+            Hộp Thư AI (Inbox)
+          </h1>
+          <p className="text-sm text-ink-muted">Duyệt kết quả xét nghiệm Sản/Phụ khoa mới và Cảnh báo đỏ tự động.</p>
         </div>
         
         <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-gold/20 shadow-sm w-fit">
