@@ -43,11 +43,11 @@ Deno.serve(async (req) => {
     // ── XỬ LÝ NHẬN TEXT ──
     if (event === 'message.text.received' || event === 'user_send_text') {
       const code = msgText.trim().toUpperCase();
-      // Nếu gửi mã liên kết (VD: OB001)
       if (/^(OB|GY)\d{3,}$/.test(code)) {
         await handleBnCodeLink(zaloId, code);
       } else {
-        await sendZaloMessage(zaloId, "🌸 Xin chào! Cảm ơn bạn đã nhắn tin cho Bot của BS. Tuấn.\n\n👉 Nếu bạn là Lễ tân, hãy đính kèm ảnh chụp/PDF xét nghiệm để hệ thống tự động đọc và phân loại nhé!");
+        // Chat với AI ảo
+        await handleChatWithBot(zaloId, msgText);
       }
       return new Response('ok', { status: 200 });
     }
@@ -191,4 +191,28 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+// ── HÀM CHAT AI CHO BỆNH NHÂN ──
+async function handleChatWithBot(zaloId: string, userText: string) {
+  await sendZaloMessage(zaloId, "💭 Bác sĩ ảo đang suy nghĩ...");
+  
+  const systemPrompt = `Bạn là Trợ lý ảo AI của Phòng khám Sản phụ khoa BS CK1 Hoàng Thanh Tuấn. Bạn có kiến thức y khoa chuyên sâu. 
+Nhiệm vụ của bạn: Trả lời thân thiện, ngắn gọn (dưới 150 chữ), và luôn khuyên bệnh nhân nếu có dấu hiệu nặng thì nên đến phòng khám gặp Bác sĩ Tuấn.
+Bệnh nhân hỏi: "${userText}"`;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        contents: [{ parts: [{ text: systemPrompt }] }], 
+        generationConfig: { temperature: 0.7 } 
+      })
+    });
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Xin lỗi, não AI của tôi đang bận. Bạn thử lại sau nhé!';
+    await sendZaloMessage(zaloId, text);
+  } catch (e) { 
+    await sendZaloMessage(zaloId, "Xin lỗi, đường truyền đến AI đang bị gián đoạn.");
+  }
 }
