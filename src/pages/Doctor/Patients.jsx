@@ -80,7 +80,7 @@ export default function Patients() {
   return (
     <div className="flex flex-col h-full bg-transparent">
       {/* HEADER */}
-      <div className="glass rounded-2xl md:rounded-3xl p-4 md:p-6 mb-4 md:mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 relative overflow-hidden shadow-sm">
+      <div className="bg-transparent md:glass rounded-none md:rounded-3xl px-4 pt-4 md:p-6 mb-2 md:mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 relative overflow-hidden md:shadow-sm">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gold-light/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
         <div className="relative z-10 w-full md:w-auto">
           <h1 className="text-xl md:text-3xl font-serif font-semibold text-ink mb-1 flex items-center gap-2 md:gap-3">
@@ -110,11 +110,11 @@ export default function Patients() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-4 md:gap-6 min-h-0">
+      <div className="flex-1 flex lg:grid lg:grid-cols-12 gap-0 md:gap-6 min-h-0">
         
         {/* DANH SÁCH BỆNH NHÂN (Trái) */}
-        <div className={`lg:col-span-4 xl:col-span-3 w-full glass rounded-2xl md:rounded-3xl overflow-hidden flex-col h-full shadow-sm ${selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
-          <div className="p-3 md:p-4 border-b border-gold/20 bg-white/40">
+        <div className={`lg:col-span-4 xl:col-span-3 w-full bg-transparent md:glass rounded-none md:rounded-3xl overflow-hidden flex-col h-full md:shadow-sm ${selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="px-4 py-2 md:p-4 border-b border-gold/10 md:border-gold/20 bg-transparent md:bg-white/40">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input 
@@ -127,7 +127,7 @@ export default function Patients() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto px-0 md:p-3 space-y-0 md:space-y-2">
             {isLoading ? (
               <div className="p-8 text-center text-ink-muted animate-pulse text-sm">Đang tải danh sách...</div>
             ) : filteredPatients.length === 0 ? (
@@ -139,7 +139,7 @@ export default function Patients() {
                 <button
                   key={p.bn_code}
                   onClick={() => setSelectedPatient(p)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedPatient?.bn_code === p.bn_code ? 'bg-gold-light/80 border-gold shadow-md' : 'bg-white/40 border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}`}
+                  className={`w-full text-left p-4 md:rounded-2xl transition-all border-b md:border ${selectedPatient?.bn_code === p.bn_code ? 'bg-gold-light/80 border-gold md:shadow-md' : 'bg-transparent md:bg-white/40 border-gold/10 hover:bg-white hover:md:shadow-sm hover:md:border-gold/30'}`}
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <span className={`font-mono font-bold px-2.5 py-1 rounded-md shadow-sm text-sm border ${p.specialty === 'ob' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
@@ -162,7 +162,7 @@ export default function Patients() {
         </div>
 
         {/* CHI TIẾT BỆNH NHÂN (Phải) */}
-        <div className={`lg:col-span-8 xl:col-span-9 w-full glass rounded-3xl flex-col h-full overflow-hidden relative shadow-sm ${!selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
+        <div className={`lg:col-span-8 xl:col-span-9 w-full bg-white md:glass rounded-none md:rounded-3xl flex-col h-full overflow-hidden relative md:shadow-sm ${!selectedPatient ? 'hidden lg:flex' : 'flex'}`}>
           <AnimatePresence mode="wait">
             {selectedPatient ? (
               <motion.div 
