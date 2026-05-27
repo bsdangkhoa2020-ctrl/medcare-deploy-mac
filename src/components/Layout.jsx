@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Stethoscope, FileUp, Menu, Bell, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Layout() {
@@ -75,6 +75,10 @@ export default function Layout() {
             <button className="relative p-2 text-ink-muted bg-white/50 rounded-full hover:text-ink hover:bg-white transition-all shadow-sm">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger rounded-full border-2 border-white"></span>
+            </button>
+            <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-dark bg-red-50 rounded-xl hover:bg-red-100 transition-colors shadow-sm border border-red-100">
+              <LogOut className="w-4 h-4" />
+              Đăng xuất
             </button>
           </div>
         </header>
