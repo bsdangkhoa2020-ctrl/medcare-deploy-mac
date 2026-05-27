@@ -2830,7 +2830,10 @@ function admSwitchTab(tab) {
   if (tab === 'patients' && adm.patients.length === 0) admLoadPatients();
   if (tab === 'schedule') { admRenderSchedule(); admLoadQuickAppts(); admRenderCalStrip(); }
   if (tab === 'articles' && adm.articles.length === 0) admLoadArticles();
-  if (tab === 'aiscan') aiscanTabInit();
+  if (tab === 'aiscan') {
+    window.location.href = '/bacsi';
+    return;
+  }
 }
 
 // ────────────────────────────────────────

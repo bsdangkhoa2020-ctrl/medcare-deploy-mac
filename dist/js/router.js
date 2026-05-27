@@ -146,10 +146,6 @@ async function _routeAfterLogin(user) {
   _history = []; // Reset history
   
   // Định tuyến nhân viên phòng khám (Staff) sang Cổng React
-  if (user.email === 'bstuanhoang@gmail.com') {
-    window.location.href = '/bacsi';
-    return;
-  }
   if (user.email === 'letan@gmail.com') {
     window.location.href = '/letan';
     return;

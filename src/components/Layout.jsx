@@ -81,6 +81,16 @@ export default function Layout() {
                 <span className="mx-4 font-medium">Bác Sĩ (Dashboard)</span>
               </NavLink>
             )}
+
+            {(!appRole || appRole === 'doctor') && (
+              <a
+                href="/"
+                className="flex items-center px-4 py-3 mt-4 rounded-2xl transition-all duration-200 text-ink-muted hover:bg-gold-light/50 hover:text-ink hover:scale-[1.02]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="m15 18-6-6 6-6"/></svg>
+                <span className="mx-4 font-medium">Trở về Trang Quản Trị</span>
+              </a>
+            )}
           </nav>
 
           <div className="flex items-center px-4 py-3 mt-auto rounded-2xl bg-gold-light/50 border border-gold/10 cursor-pointer hover:bg-gold-light transition-colors">
