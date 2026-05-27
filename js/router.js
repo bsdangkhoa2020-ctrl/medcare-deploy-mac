@@ -144,20 +144,28 @@ function _resolveUser(sbUser, profile) {
 async function _routeAfterLogin(user) {
   curUser = user;
   _history = []; // Reset history
-  if (user.role === 'admin') {
-    goTo('s-admin');
-    if (typeof initAdmin === 'function') setTimeout(initAdmin, 100);
-  } else {
-    // Kiểm tra consent — nếu bảng chưa có hoặc lỗi thì cho vào app bình thường
+  
+  // Định tuyến nhân viên phòng khám (Staff) sang Cổng React
+  if (user.email === 'bstuanhoang@gmail.com') {
+    window.location.href = '/bacsi';
+    return;
+  }
+  if (user.email === 'letan@gmail.com') {
+    window.location.href = '/letan';
+    return;
+  }
+
+  // Định tuyến Bệnh nhân (Patients) vào App Vanilla
+  // Kiểm tra consent — nếu bảng chưa có hoặc lỗi thì cho vào app bình thường
+  try {
+    const { data: consent, error: consentErr } = await db.getConsent(user.id);
+    if (!consentErr && !consent) { goTo('s-consent'); return; }
+  } catch(e) {
+    console.warn('[AUTH] getConsent error (bảng chưa tồn tại?):', e.message);
+  }
+  
+  if (user.bn_code) {
     try {
-      const { data: consent, error: consentErr } = await db.getConsent(user.id);
-      if (!consentErr && !consent) { goTo('s-consent'); return; }
-    } catch(e) {
-      // Bảng consents chưa tồn tại → bỏ qua, cho vào app
-      console.warn('[AUTH] getConsent error (bảng chưa tồn tại?):', e.message);
-    }
-    if (user.bn_code) {
-      try {
         const { data: pt } = await db.getMyPatient(user.bn_code);
         if (pt) {
           if (pt.lmp)       curUser.lmp    = pt.lmp;
@@ -170,7 +178,6 @@ async function _routeAfterLogin(user) {
       } catch(e) {}
     }
     _enterApp(user);
-  }
 }
 
 

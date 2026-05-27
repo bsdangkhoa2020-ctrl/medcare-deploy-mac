@@ -69,7 +69,6 @@
     <!-- Nút gốc — giữ nguyên -->
     <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px">
       <button class="btn btn-primary" onclick="goTo('s-login')">Đăng nhập</button>
-      <button class="btn btn-ghost" onclick="goTo('s-register')">Đăng ký với mã mời</button>
     </div>
     <div style="font-size:11px;color:var(--hint);margin-top:28px">bstuan247.com · 0938 559 098</div>
   </div>
@@ -109,14 +108,6 @@
     <div id="login-err" class="err-msg"></div>
     <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Đăng nhập</button>
 
-    <div style="display:flex;align-items:center;gap:12px;margin:24px 0">
-      <div style="flex:1;height:0.5px;background:var(--border)"></div>
-      <div style="font-size:11px;color:var(--hint);letter-spacing:.06em">hoặc</div>
-      <div style="flex:1;height:0.5px;background:var(--border)"></div>
-    </div>
-
-    <button class="btn btn-ghost" onclick="goTo('s-register')">Đăng ký với mã mời</button>
-
     <!-- ── PANEL TEST NHANH ── -->
     <div style="margin-top:32px;border:1px dashed var(--gold);border-radius:14px;padding:14px 16px;background:var(--gold-lt);">
       <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px;">🧪 Tài khoản test nhanh</div>
@@ -153,166 +144,12 @@
             <div style="font-size:11px;color:var(--muted);">Chu kỳ D10 · gytest2026@gmail.com</div>
           </div>
         </button>
-        <button onclick="window.location.href='/letan'"
-          style="display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid var(--gold);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;width:100%;">
-          <span style="font-size:18px;">💁‍♀️</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--ink);">Lễ Tân — Upload Kết Quả</div>
-            <div style="font-size:11px;color:var(--muted);">Chuyển sang Giao diện React mới</div>
-          </div>
-        </button>
+
       </div>
     </div>
 
     <div style="text-align:center;margin-top:28px">
       <span onclick="goTo('s-landing')" style="font-size:12px;color:var(--hint);cursor:pointer;letter-spacing:.02em">← Quay lại trang chủ</span>
-    </div>
-  </div>
-</div>
-
-<!-- ── REGISTER ── -->
-<div class="screen" id="s-register" style="background:var(--bg)">
-  <div class="bbar" style="padding-top:max(10px,var(--sat))">
-    <div class="bbtn" onclick="goTo('s-landing')">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    </div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)" id="reg-step-label">Bước 1 / 2</div>
-    <div style="width:38px"></div>
-  </div>
-
-  <div class="scroll" style="padding:8px 32px 48px">
-    <!-- Step bar -->
-    <div class="step-bar" style="margin-bottom:36px">
-      <div class="step-seg done" id="seg1"></div>
-      <div class="step-seg" id="seg2"></div>
-      <div class="step-seg" id="seg3"></div>
-    </div>
-
-    <!-- Bước 1: Mã mời (disabled) -->
-    <div id="reg-s1" style="display:block">
-      <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Mã mời</div>
-      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Nhập mã được phòng khám cung cấp</div>
-      <div class="input-group">
-        <label class="input-label">Mã mời</label>
-        <input class="input" id="reg-code" type="text" placeholder="TEST-OB-2026"
-          autocomplete="off" maxlength="14"
-          style="text-transform:uppercase;letter-spacing:.2em;font-size:22px;font-weight:600;text-align:center;color:var(--gold-dk);font-family:var(--sans)"
-          oninput="this.value=this.value.toUpperCase()"
-          onkeydown="if(event.key==='Enter')regStep1()">
-      </div>
-      <div style="border-left:2px solid var(--gold);padding:10px 14px;margin-bottom:24px;border-radius:0">
-        <div style="font-size:12px;color:var(--muted);line-height:1.7">Mã do BS. Tuấn cung cấp sau buổi khám. Mỗi mã chỉ dùng được một lần.</div>
-      </div>
-      <div id="reg-err1" class="err-msg"></div>
-      <button class="btn btn-primary" onclick="regStep1()">Tiếp theo</button>
-    </div>
-
-    <!-- Bước 2: Thông tin -->
-    <div id="reg-s2" style="display:none">
-      <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Thông tin <em style="color:var(--gold-dk)">của bạn</em></div>
-      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:24px">Điền đầy đủ để bắt đầu hành trình sức khoẻ</div>
-      <!-- Chọn loại bệnh nhân -->
-      <div class="input-group">
-        <label class="input-label">Bạn muốn theo dõi</label>
-        <div style="display:flex;gap:10px;">
-          <button id="reg-type-ob" type="button" onclick="regSelectType('ob')"
-            style="flex:1;padding:14px 8px;border-radius:12px;border:2px solid var(--gold-dk);background:var(--gold-lt);cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:22px;margin-bottom:4px;">🤰</div>
-            <div style="font-size:13px;font-weight:600;color:var(--ink);">Thai kỳ</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Theo dõi sản khoa</div>
-          </button>
-          <button id="reg-type-gy" type="button" onclick="regSelectType('gy')"
-            style="flex:1;padding:14px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:22px;margin-bottom:4px;">🌸</div>
-            <div style="font-size:13px;font-weight:600;color:var(--muted);">Phụ khoa</div>
-            <div style="font-size:11px;color:var(--hint);margin-top:2px;">Theo dõi chu kỳ</div>
-          </button>
-        </div>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Họ và tên đầy đủ</label>
-        <input class="input" id="reg-name" type="text" placeholder="Nguyễn Thị Lan" autocomplete="name">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="input-group">
-          <label class="input-label">Ngày sinh</label>
-          <input class="input" id="reg-dob" type="date" max="2026-05-23">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Số điện thoại</label>
-          <input class="input" id="reg-phone" type="tel" placeholder="09xx xxx xxx">
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="input-group">
-          <label class="input-label">Chiều cao (cm)</label>
-          <input class="input" id="reg-height" type="number" placeholder="158" min="100" max="220"
-            style="font-size:18px;font-weight:600;color:var(--gold-dk)"
-            oninput="regCalcBMI()">
-          <div style="font-size:10px;color:var(--hint);margin-top:3px;font-style:italic">Nhập 1 lần duy nhất</div>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Cân nặng (kg)</label>
-          <input class="input" id="reg-weight" type="number" placeholder="55" min="30" max="200"
-            style="font-size:18px;font-weight:600;color:var(--gold-dk)"
-            oninput="regCalcBMI()">
-          <div style="font-size:10px;color:var(--hint);margin-top:3px;font-style:italic">Có thể cập nhật sau</div>
-        </div>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Ngày đầu kỳ kinh cuối (LMP)</label>
-        <input class="input" id="reg-lmp" type="date" max="2026-05-23">
-        <div style="font-size:11px;color:var(--hint);margin-top:4px;font-style:italic">Tính tuổi thai và ngày dự sinh (chính xác cao với phụ nữ có vòng kinh đều)</div>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Email</label>
-        <input class="input" id="reg-email" type="email" placeholder="email@gmail.com" autocomplete="email">
-      </div>
-      <div class="input-group">
-        <label class="input-label">Mật khẩu</label>
-        <div style="position:relative">
-          <input class="input" id="reg-pass" type="password" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" style="padding-right:44px">
-          <div onclick="togglePwd('reg-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--hint)">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-        </div>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Xác nhận mật khẩu</label>
-        <div style="position:relative">
-          <input class="input" id="reg-pass2" type="password" placeholder="Nhập lại mật khẩu" autocomplete="new-password" style="padding-right:44px">
-          <div onclick="togglePwd('reg-pass2',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--hint)">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-        </div>
-      </div>
-      <div id="reg-err2" class="err-msg"></div>
-      <button class="btn btn-primary" onclick="regStep2()">Tiếp theo</button>
-    </div>
-
-    <!-- Bước 3: Xác nhận -->
-    <div id="reg-s3" style="display:none">
-      <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);line-height:1.15;margin-bottom:6px">Xác nhận</div>
-      <div style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);margin-bottom:32px">Kiểm tra lại trước khi hoàn tất</div>
-
-      <div style="border:0.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px">
-        <div style="padding:16px 18px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:14px">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--gold-lt);border:0.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--gold-dk);flex-shrink:0" id="reg-confirm-avatar">—</div>
-          <div>
-            <div style="font-size:15px;font-weight:600;color:var(--ink)" id="reg-confirm-name">—</div>
-            <div style="font-size:12px;color:var(--muted)" id="reg-confirm-email">—</div>
-          </div>
-        </div>
-
-        <div style="padding:12px 18px;display:flex;justify-content:space-between;align-items:center" id="reg-confirm-type-row">
-          <div style="font-size:12px;color:var(--muted)">Loại theo dõi</div>
-          <div id="reg-confirm-type" style="font-size:13px;font-weight:700;color:var(--ink);">—</div>
-        </div>
-      </div>
-
-      <div id="reg-err3" class="err-msg"></div>
-      <button onclick="regGoBack()" style="width:100%;padding:13px;background:none;border:.5px solid var(--border);border-radius:var(--r-md);font-size:14px;color:var(--muted);cursor:pointer;margin-bottom:10px">← Quay lại chỉnh sửa</button>
-      <button class="btn btn-primary" id="reg-submit-btn" onclick="regSubmit()">Tạo tài khoản</button>
     </div>
   </div>
 </div>
