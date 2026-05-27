@@ -63,6 +63,11 @@ export default function Schedule() {
   const [slideDirHv, setSlideDirHv] = useState(0);
   const [slideDirPk, setSlideDirPk] = useState(0);
 
+  // Edit Modal State
+  const [editDay, setEditDay] = useState(null); // { date: 'YYYY-MM-DD', type: 'hv' | 'pk', currentVal: 'OFF' }
+  const [editVal, setEditVal] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     fetchScheduleData();
   }, []);
@@ -73,7 +78,7 @@ export default function Schedule() {
       // Lấy lịch từ 90 ngày trước để cover
       const fromDate = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
       const { data, error } = await supabase
-        .from('schedule')
+        .from('doctor_schedule')
         .select('*')
         .gte('date', fromDate);
       
@@ -110,6 +115,64 @@ export default function Schedule() {
     setPkOffset(prev => prev + dir);
   };
 
+  const openEditModal = (ds, type, currentVal) => {
+    setEditDay({ date: ds, type, currentVal });
+    setEditVal(currentVal);
+  };
+
+  const handleSaveShift = async () => {
+    if (!editDay) return;
+    setIsSaving(true);
+    
+    try {
+      const loc = editDay.type === 'hv' ? 'hung_vuong' : 'pk315';
+      const spec = editDay.type === 'hv' ? 'gy' : 'ob';
+      const isOff = editVal === 'OFF' || editVal === 'Nghỉ';
+      
+      // 1. Delete existing shift for this date and location
+      await supabase
+        .from('doctor_schedule')
+        .delete()
+        .eq('date', editDay.date)
+        .eq('location', loc);
+      
+      // 2. Insert new shift if not OFF
+      if (!isOff) {
+        const timeMap = {
+          'A': { s: '06:00', e: '14:00' },
+          'HC': { s: '07:15', e: '16:30' },
+          'C': { s: '09:00', e: '17:00' },
+          'Sáng': { s: '08:00', e: '11:00' },
+          'Tối': { s: '17:00', e: '20:00' },
+          'Sáng + Tối': { s: '08:00', e: '20:00' }
+        };
+        const t = timeMap[editVal] || { s: '07:00', e: '17:00' };
+        
+        const { error } = await supabase
+          .from('doctor_schedule')
+          .insert({
+            date: editDay.date,
+            location: loc,
+            shift_name: editVal,
+            start_time: t.s,
+            end_time: t.e,
+            specialty: spec
+          });
+          
+        if (error) throw error;
+      }
+      
+      showToast('Đã cập nhật lịch trực thành công');
+      fetchScheduleData(); // Reload data
+      setEditDay(null);
+    } catch (error) {
+      console.error("Error saving shift:", error);
+      showToast('Lỗi khi lưu lịch trực: ' + error.message, 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const renderGrid = (offset, shifts, caMap, type, slideDir) => {
     const dates = getWeekDates(offset);
     const today = new Date().toISOString().slice(0, 10);
@@ -134,10 +197,11 @@ export default function Schedule() {
             const isOff = shiftKey === 'OFF' || shiftKey === 'Nghỉ';
 
             return (
-              <div 
+              <button 
                 key={ds}
-                className={`flex flex-row md:flex-col items-center md:items-stretch justify-between p-3 md:p-4 rounded-xl md:rounded-2xl min-h-[60px] md:min-h-[110px] transition-all
-                  ${isToday ? 'bg-gold-light/20 border-2 border-gold ring-4 ring-gold/10 scale-[1.02] md:scale-105 z-10 shadow-md' : 'bg-white/40 border border-gold/10 hover:bg-white hover:shadow-sm'}
+                onClick={() => openEditModal(ds, type, shiftKey)}
+                className={`flex flex-row md:flex-col items-center md:items-stretch justify-between p-3 md:p-4 rounded-xl md:rounded-2xl min-h-[60px] md:min-h-[110px] transition-all text-left cursor-pointer active:scale-95
+                  ${isToday ? 'bg-gold-light/20 border-2 border-gold ring-4 ring-gold/10 md:scale-105 z-10 shadow-md' : 'bg-white/40 border border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}
                   ${isPast && !isToday ? 'opacity-60 grayscale-[0.2]' : ''}
                 `}
               >
@@ -161,7 +225,7 @@ export default function Schedule() {
                   {!isOff && <Clock className="w-3 h-3 hidden md:block" />}
                   {ca.label}
                 </div>
-              </div>
+              </button>
             );
           })}
         </motion.div>
@@ -289,6 +353,84 @@ export default function Schedule() {
 
       </div>
       
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editDay && (
+          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+              onClick={() => setEditDay(null)}
+            />
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-xl border border-gold/20"
+            >
+              <div className="flex items-center gap-3 mb-6 border-b border-gold/20 pb-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editDay.type === 'hv' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
+                  {editDay.type === 'hv' ? <Hospital className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-ink text-lg">Chỉnh sửa ca trực</h3>
+                  <p className="text-sm text-ink-muted">
+                    {editDay.type === 'hv' ? 'BV Hùng Vương' : 'Phòng Khám 315'} • {new Date(editDay.date).toLocaleDateString('vi-VN')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Chọn ca trực</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(editDay.type === 'hv' ? ['OFF', 'HC', 'A', 'C'] : ['Nghỉ', 'Sáng', 'Tối', 'Sáng + Tối']).map(preset => (
+                    <button
+                      key={preset}
+                      onClick={() => setEditVal(preset)}
+                      className={`py-3 px-4 rounded-xl text-sm font-bold transition-all border ${
+                        editVal === preset 
+                          ? 'bg-gold-light/40 border-gold text-ink shadow-sm' 
+                          : 'bg-white border-gold/20 text-ink-muted hover:border-gold hover:text-ink'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Hoặc nhập ca tùy chỉnh</label>
+                <input 
+                  type="text" 
+                  value={editVal}
+                  onChange={(e) => setEditVal(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/60 border border-gold/30 rounded-xl text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all"
+                  placeholder="Ví dụ: Hội chẩn, Nghỉ phép..."
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setEditDay(null)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-ink-muted hover:bg-gold-light/20 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={handleSaveShift}
+                  disabled={isSaving}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold bg-ink text-gold hover:bg-ink/90 transition-colors disabled:opacity-50 flex items-center justify-center"
+                >
+                  {isSaving ? (
+                    <span className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></span>
+                  ) : 'Lưu Thay Đổi'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <Toast 
         isVisible={toast.isVisible} 
         message={toast.message} 
