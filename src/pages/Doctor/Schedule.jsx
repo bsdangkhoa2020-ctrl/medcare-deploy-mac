@@ -28,29 +28,26 @@ function getWeekTag(offset) {
 }
 
 function getWeekDates(offset) {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-  d.setDate(diff); // Monday of current week
-  d.setDate(d.getDate() + offset * 7); // Apply offset
+  const now = new Date(); 
+  now.setHours(0, 0, 0, 0);
+  const dow = now.getDay() || 7;
+  const m = new Date(now); 
+  m.setDate(now.getDate() - dow + 1 + offset * 7);
   
   const dates = [];
   for (let i = 0; i < 7; i++) {
-    const nd = new Date(d);
-    nd.setDate(d.getDate() + i);
+    const nd = new Date(m);
+    nd.setDate(m.getDate() + i);
     dates.push(nd);
   }
   return dates;
 }
 
 function toLocalDateString(d) {
-  const tzo = -d.getTimezoneOffset();
-  const dif = tzo >= 0 ? '+' : '-';
-  const pad = (num) => (num < 10 ? '0' : '') + num;
-  return d.getFullYear() +
-    '-' + pad(d.getMonth() + 1) +
-    '-' + pad(d.getDate()) +
-    'T00:00:00.000' + dif + pad(Math.floor(Math.abs(tzo) / 60)) + ':' + pad(Math.abs(tzo) % 60);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 export default function Schedule() {
@@ -144,7 +141,7 @@ export default function Schedule() {
           'C': { s: '09:00', e: '17:00' },
           'Sáng': { s: '08:00', e: '11:00' },
           'Tối': { s: '17:00', e: '20:00' },
-          'Sáng + Tối': { s: '08:00', e: '20:00' }
+          'Sáng+Tối': { s: '08:00', e: '20:00' }
         };
         const t = timeMap[editVal] || { s: '07:00', e: '17:00' };
         
@@ -175,7 +172,7 @@ export default function Schedule() {
 
   const renderGrid = (offset, shifts, caMap, type, slideDir) => {
     const dates = getWeekDates(offset);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = toLocalDateString(new Date());
 
     return (
       <AnimatePresence mode="popLayout" custom={slideDir}>
@@ -382,7 +379,7 @@ export default function Schedule() {
               <div className="mb-6">
                 <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Chọn ca trực</label>
                 <div className="grid grid-cols-2 gap-3">
-                  {(editDay.type === 'hv' ? ['OFF', 'HC', 'A', 'C'] : ['Nghỉ', 'Sáng', 'Tối', 'Sáng + Tối']).map(preset => (
+                  {(editDay.type === 'hv' ? ['OFF', 'HC', 'A', 'C'] : ['Nghỉ', 'Sáng', 'Tối', 'Sáng+Tối']).map(preset => (
                     <button
                       key={preset}
                       onClick={() => setEditVal(preset)}
