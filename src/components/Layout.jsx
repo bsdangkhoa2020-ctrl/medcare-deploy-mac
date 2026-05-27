@@ -24,6 +24,12 @@ export default function Layout() {
     return null;
   }
 
+  // Chặn Bệnh Nhân khỏi cổng React (chỉ được dùng Vanilla App)
+  if (appRole === 'patient') {
+    window.location.href = '/';
+    return null;
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gold-light/40 to-white relative">
       {/* Dynamic Background Blurs */}
@@ -42,7 +48,7 @@ export default function Layout() {
         <div className="flex flex-col justify-between flex-1 mt-6">
           <nav className="space-y-2">
             <p className="px-2 text-xs font-bold tracking-widest text-ink-muted uppercase mb-4">Các cổng</p>
-            {(!appRole || appRole === 'superadmin' || appRole === 'receptionist') && (
+            {(!appRole || appRole === 'doctor' || appRole === 'receptionist') && (
               <NavLink
                 to="/letan"
                 className={({ isActive }) =>
@@ -59,7 +65,7 @@ export default function Layout() {
               </NavLink>
             )}
 
-            {(!appRole || appRole === 'superadmin' || appRole === 'doctor') && (
+            {(!appRole || appRole === 'doctor') && (
               <NavLink
                 to="/bacsi"
                 className={({ isActive }) =>

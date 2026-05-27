@@ -52,17 +52,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Compute appRole dynamically based on user and profile
+  // Compute appRole dynamically based on user
   let appRole = null;
-  if (user && profile) {
+  if (user) {
     if (user.email === 'bstuanhoang@gmail.com') {
-      appRole = 'superadmin';
+      appRole = 'doctor';
     } else if (user.email === 'letan@gmail.com') {
       appRole = 'receptionist';
-    } else if (profile.role === 'doctor') {
-      appRole = 'doctor';
     } else {
-      appRole = profile.role || 'user'; // Fallback
+      appRole = 'patient';
     }
   }
 

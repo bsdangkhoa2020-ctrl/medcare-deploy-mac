@@ -21,17 +21,6 @@ export default function DoctorDashboard() {
     return <Navigate to="/letan" replace />;
   }
 
-  // Determine user permissions
-  const isAdmin = appRole === 'superadmin';
-  const isOb = isAdmin || profile?.specialty === 'ob';
-  const isGy = isAdmin || profile?.specialty === 'gy';
-
-  // If activeTab is not allowed, switch to default
-  useEffect(() => {
-    if (activeTab === 'ob' && !isOb) setActiveTab('gy');
-    if (activeTab === 'gy' && !isGy) setActiveTab('ob');
-  }, [isOb, isGy, activeTab]);
-
   const showToast = (message, type = 'info') => {
     setToast({ isVisible: true, message, type });
   };
@@ -47,12 +36,7 @@ export default function DoctorDashboard() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attachments' }, (payload) => {
         setAttachments((current) => [payload.new, ...current]);
         
-        // Only show alert if it belongs to doctor's specialty
-        const isTargetSpecialty = isAdmin 
-          || (profile?.specialty === 'ob' && payload.new.bn_code?.startsWith('OB'))
-          || (profile?.specialty === 'gy' && payload.new.bn_code?.startsWith('GY'));
-
-        if (payload.new.ai_extracted?.is_abnormal && isTargetSpecialty) {
+        if (payload.new.ai_extracted?.is_abnormal) {
           showToast(`⚠️ Bệnh nhân ${payload.new.bn_code} có kết quả BẤT THƯỜNG mới!`, 'error');
         }
       })
@@ -117,22 +101,14 @@ export default function DoctorDashboard() {
     }
   };
 
-  // Lọc dữ liệu theo Role & Tab
-  const allowedAttachments = attachments.filter(item => {
-    if (isAdmin) return true;
-    if (profile?.specialty === 'ob' && item.bn_code?.startsWith('OB')) return true;
-    if (profile?.specialty === 'gy' && item.bn_code?.startsWith('GY')) return true;
-    return false;
-  });
-
-  const filteredData = allowedAttachments.filter(item => {
+  const filteredData = attachments.filter(item => {
     if (activeTab === 'red_alerts') return item.ai_extracted?.is_abnormal === true;
     if (activeTab === 'ob') return item.bn_code?.startsWith('OB');
     if (activeTab === 'gy') return item.bn_code?.startsWith('GY');
     return true;
   });
 
-  const redAlertsCount = allowedAttachments.filter(i => i.ai_extracted?.is_abnormal).length;
+  const redAlertsCount = attachments.filter(i => i.ai_extracted?.is_abnormal).length;
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
@@ -156,25 +132,21 @@ export default function DoctorDashboard() {
             )}
           </button>
           
-          {isOb && (
-            <button 
-              onClick={() => setActiveTab('ob')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
-            >
-              <Baby className="w-4 h-4 text-emerald-500" />
-              Sản Khoa (OB)
-            </button>
-          )}
+          <button 
+            onClick={() => setActiveTab('ob')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'ob' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+          >
+            <Baby className="w-4 h-4 text-emerald-500" />
+            Sản Khoa (OB)
+          </button>
 
-          {isGy && (
-            <button 
-              onClick={() => setActiveTab('gy')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
-            >
-              <Activity className="w-4 h-4 text-purple-500" />
-              Phụ Khoa (GY)
-            </button>
-          )}
+          <button 
+            onClick={() => setActiveTab('gy')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'gy' ? 'bg-white shadow-md text-ink border border-gold/20' : 'text-ink-muted hover:bg-white/50'}`}
+          >
+            <Activity className="w-4 h-4 text-purple-500" />
+            Phụ Khoa (GY)
+          </button>
         </div>
       </div>
 
