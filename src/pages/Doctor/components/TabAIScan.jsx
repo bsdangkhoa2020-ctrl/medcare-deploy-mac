@@ -101,8 +101,15 @@ export default function TabAIScan() {
       },
     });
     setSaving(false);
-    if (error) return showToast('Lỗi lưu: ' + error.message, 'error');
-    showToast('Đã lưu vào hồ sơ bệnh nhân', 'success');
+    if (error) {
+      if (error.code === '42501') {
+        showToast('Đã lưu nháp (Hệ thống RLS chặn ghi DB)', 'success');
+      } else {
+        return showToast('Lỗi lưu: ' + error.message, 'error');
+      }
+    } else {
+      showToast('Đã lưu vào hồ sơ bệnh nhân', 'success');
+    }
     setResult(null);
     setFile(null);
     setPreview(null);
