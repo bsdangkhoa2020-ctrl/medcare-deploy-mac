@@ -3,7 +3,10 @@ import Layout from './components/Layout';
 import OBLayout from './components/OBLayout';
 import GYLayout from './components/GYLayout';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+// ─── Auth ──────────────────────────────────────────────────────
+import Login from './pages/Auth/Login';
 
 // ─── Staff Pages ───────────────────────────────────────────────
 import ReceptionistDashboard from './pages/Receptionist/Dashboard';
@@ -11,6 +14,7 @@ import DoctorDashboard from './pages/Doctor/Dashboard';
 import Patients from './pages/Doctor/Patients';
 import Schedule from './pages/Doctor/Schedule';
 import ComingSoon from './pages/Doctor/ComingSoon';
+
 
 // ─── Sản Khoa (OB) ─────────────────────────────────────────────
 import OBDashboard    from './pages/Patient/Obstetrics/Dashboard';
@@ -31,6 +35,9 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+
+          {/* ── LOGIN — Public, không cần đăng nhập ─────────────── */}
+          <Route path="/login" element={<Login />} />
 
           {/* ── Default: redirect dựa vào role ─────────────────── */}
           <Route path="/" element={
