@@ -69,24 +69,34 @@ export default function GYDashboard() {
       {/* PK 315 Schedule */}
       <div>
         <div className="flex justify-between items-end mb-4">
-          <h3 className="text-xl font-serif text-ink font-semibold">Lịch Khám - Phòng khám 315</h3>
+          <h3 className="text-xl font-serif text-ink font-semibold">Lịch làm việc theo tuần</h3>
           <button className="text-sm font-medium text-gold-dark hover:underline flex items-center">Đặt lịch <ChevronRight className="w-4 h-4" /></button>
         </div>
-        <div className="bg-white rounded-3xl p-1 border border-gold/20 overflow-hidden shadow-sm">
-          {mockSchedule.map((sch, idx) => (
-            <div key={sch.id} className={`p-4 flex gap-4 items-start ${idx !== mockSchedule.length - 1 ? 'border-b border-gold/10' : ''}`}>
-              <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0 border border-purple-100">
-                <CalendarDays className="w-6 h-6 text-purple-600" />
-              </div>
+        
+        {/* Horizontal Scrolling Schedule Cards */}
+        <div className="flex overflow-x-auto gap-4 pb-4 -mx-1 px-1 snap-x snap-mandatory custom-scrollbar">
+          {mockSchedule.map((sch) => (
+            <div key={sch.id} className="snap-start min-w-[260px] max-w-[280px] bg-white rounded-2xl p-4 border border-gold/20 shadow-sm flex-shrink-0 flex flex-col justify-between">
               <div>
-                <p className="font-bold text-ink mb-1">{sch.date}</p>
-                <div className="flex flex-wrap gap-2 text-sm">
-                  <span className="bg-gold-light/30 px-2.5 py-1 rounded text-ink-muted font-medium">{sch.shift}</span>
-                  <span className="bg-gold-light/30 px-2.5 py-1 rounded text-ink-muted font-medium">{sch.room}</span>
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-purple-600" />
+                    <p className="font-bold text-ink">{sch.date.split(', ')[0]}</p>
+                  </div>
+                  <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-1 rounded border border-purple-100">
+                    {sch.date.split(', ')[1]}
+                  </span>
                 </div>
+                <p className="text-sm font-semibold text-ink mb-1">{sch.shift}</p>
+                <p className="text-xs text-ink-muted leading-relaxed">{sch.room}</p>
               </div>
             </div>
           ))}
+          
+          <div className="snap-start min-w-[120px] bg-white/40 rounded-2xl p-4 border border-dashed border-gold/30 flex-shrink-0 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gold-light/20 transition-colors">
+            <p className="text-sm font-medium text-gold-dark">Tuần tới</p>
+            <ChevronRight className="w-5 h-5 text-gold-dark mt-1" />
+          </div>
         </div>
       </div>
 
