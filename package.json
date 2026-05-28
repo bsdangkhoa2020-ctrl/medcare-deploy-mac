@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp index.html dist/ && cp -r css js supabase sw.js manifest.json dist/ 2>/dev/null || true",
+    "build": "vite build && cp sw.js manifest.json dist/ 2>/dev/null || true",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
