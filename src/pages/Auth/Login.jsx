@@ -322,7 +322,7 @@ const AlertIcon = () => (
 ───────────────────────────────────────────── */
 export default function Login() {
   const navigate = useNavigate();
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, appRole, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -344,10 +344,10 @@ export default function Login() {
 
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
-    if (!authLoading && user && role) {
-      navigate(getRouteForRole(role), { replace: true });
+    if (!authLoading && user && appRole) {
+      navigate(getRouteForRole(appRole), { replace: true });
     }
-  }, [user, role, authLoading, navigate]);
+  }, [user, appRole, authLoading, navigate]);
 
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
@@ -381,8 +381,8 @@ export default function Login() {
       if (data?.user) {
         // AuthContext will update and trigger useEffect redirect
         // Fallback: if role is already known, navigate now
-        if (role) {
-          navigate(getRouteForRole(role), { replace: true });
+        if (appRole) {
+          navigate(getRouteForRole(appRole), { replace: true });
         }
         // else: useEffect will fire once AuthContext refreshes
       }
