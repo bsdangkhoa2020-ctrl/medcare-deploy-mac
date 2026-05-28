@@ -107,7 +107,7 @@ function TabPatients() {
   const [filter, setFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
-  const [form, setForm] = useState({ patient_name: '', patient_type: 'ob', validity_days: '14' });
+  const [form, setForm] = useState({ patient_name: '', specialty: 'ob', validity_days: '14' });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
 
@@ -129,8 +129,8 @@ function TabPatients() {
   };
 
   const filteredPatients = patients.filter(p => {
-    const matchSearch = !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.bn_code?.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === 'all' || p.patient_type === filter;
+    const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.bn_code?.toLowerCase().includes(search.toLowerCase());
+    const matchFilter = filter === 'all' || p.specialty === filter;
     return matchSearch && matchFilter;
   });
 
@@ -142,7 +142,7 @@ function TabPatients() {
     const { error } = await supabase.from('invite_codes').insert({
       code,
       patient_name: form.patient_name,
-      patient_type: form.patient_type,
+      patient_type: form.specialty,
       validity_days: parseInt(form.validity_days),
       expires_at,
       is_used: false,
@@ -151,7 +151,7 @@ function TabPatients() {
     if (error) return showToast('Lỗi tạo mã: ' + error.message, 'error');
     showToast(`Đã tạo mã mời: ${code}`, 'success');
     setShowModal(false);
-    setForm({ patient_name: '', patient_type: 'ob', validity_days: '14' });
+    setForm({ patient_name: '', specialty: 'ob', validity_days: '14' });
     fetchAll();
   };
 
@@ -201,14 +201,14 @@ function TabPatients() {
             {filteredPatients.map(p => (
               <div key={p.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gold-lt/30 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-gold-lt flex items-center justify-center font-serif text-gold-dk font-semibold shrink-0">
-                  {(p.full_name || '?')[0]}
+                  {(p.name || '?')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-ink text-sm truncate">{p.full_name || 'Chưa đặt tên'}</p>
+                  <p className="font-medium text-ink text-sm truncate">{p.name || 'Chưa đặt tên'}</p>
                   <p className="text-xs text-ink-muted truncate">{p.phone || p.email || 'Chưa có liên hệ'}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-lg border text-xs font-semibold font-mono ${typeColor(p.patient_type)}`}>
-                  {p.bn_code || (p.patient_type?.toUpperCase())}
+                <span className={`px-2.5 py-1 rounded-lg border text-xs font-semibold font-mono ${typeColor(p.specialty)}`}>
+                  {p.bn_code || (p.specialty?.toUpperCase())}
                 </span>
                 <span className="text-xs text-ink-muted hidden sm:block">{p.created_at ? fmtDate(p.created_at) : ''}</span>
               </div>
@@ -235,17 +235,17 @@ function TabPatients() {
           <div className="divide-y divide-gold/10">
             {inviteCodes.slice(0, 20).map(c => (
               <div key={c.id} className="flex items-center gap-3 px-5 py-3.5">
-                <div className={`font-mono font-bold text-sm tracking-widest px-3 py-1.5 rounded-lg border ${typeColor(c.patient_type)}`}>
+                <div className={`font-mono font-bold text-sm tracking-widest px-3 py-1.5 rounded-lg border ${typeColor(c.specialty)}`}>
                   {c.code}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-ink font-medium truncate">{c.patient_name}</p>
+                  <p className="text-sm text-ink font-medium truncate">{c.assigned_name}</p>
                   <p className="text-xs text-ink-muted">
-                    {c.patient_type === 'ob' ? 'Sản khoa' : 'Phụ khoa'} · Hiệu lực {c.validity_days} ngày
+                    {c.specialty === 'ob' ? 'Sản khoa' : 'Phụ khoa'} · HH: {c.expires_at ? new Date(c.expires_at).toLocaleDateString('vi-VN') : '—'}
                     {c.expires_at && ` · HH: ${fmtDate(c.expires_at)}`}
                   </p>
                 </div>
-                {c.is_used ? (
+                {!!c.used_at ? (
                   <span className="text-xs text-ok bg-ok-lt px-2 py-1 rounded-full font-medium flex items-center gap-1">
                     <Icon d={ICONS.check} className="w-3 h-3" /> Đã dùng
                   </span>
@@ -265,7 +265,7 @@ function TabPatients() {
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Tạo mã mời bệnh nhân">
         <div className="space-y-4">
           <InputField label="Tên bệnh nhân" value={form.patient_name} onChange={e => setForm(f => ({ ...f, patient_name: e.target.value }))} placeholder="Nguyễn Thị A" />
-          <SelectField label="Loại khám" value={form.patient_type} onChange={e => setForm(f => ({ ...f, patient_type: e.target.value }))}>
+          <SelectField label="Loại khám" value={form.specialty} onChange={e => setForm(f => ({ ...f, patient_type: e.target.value }))}>
             <option value="ob">Sản khoa (OB)</option>
             <option value="gy">Phụ khoa (GY)</option>
           </SelectField>
@@ -376,8 +376,8 @@ function TabSchedule() {
     setAppointments(appts || []);
     const hv = {}, pk = {};
     (sched || []).forEach(r => {
-      if (r.location === 'hv') hv[r.date] = r.shift;
-      if (r.location === 'pk') pk[r.date] = r.shift;
+      if (r.location === 'hv') hv[r.date] = r.shift_name;
+      if (r.location === 'pk') pk[r.date] = r.shift_name;
     });
     setHvSchedule(hv);
     setPkSchedule(pk);
@@ -386,7 +386,7 @@ function TabSchedule() {
 
   const saveShift = async (day, shift, location) => {
     setSaving(true);
-    const { error } = await supabase.from('doctor_schedule').upsert({ date: day, shift, location }, { onConflict: 'date,location' });
+    const { error } = await supabase.from('doctor_schedule').upsert({ date: day, shift_name: shift, location }, { onConflict: 'date,location', ignoreDuplicates: false });
     setSaving(false);
     if (error) return showToast('Lỗi lưu lịch: ' + error.message, 'error');
     if (location === 'hv') setHvSchedule(s => ({ ...s, [day]: shift }));
@@ -397,12 +397,12 @@ function TabSchedule() {
 
   const saveWeek = async () => {
     setSaving(true);
-    const rows = weekDays.map(day => ({ date: day, shift: weekModal.values[day] || (weekModal.type === 'hv' ? 'HC' : 'Sáng'), location: weekModal.type }));
-    const { error } = await supabase.from('doctor_schedule').upsert(rows, { onConflict: 'date,location' });
+    const rows = weekDays.map(day => ({ date: day, shift_name: weekModal.values[day] || (weekModal.type === 'hv' ? 'HC' : 'Sáng'), location: weekModal.type }));
+    const { error } = await supabase.from('doctor_schedule').upsert(rows, { onConflict: 'date,location', ignoreDuplicates: false });
     setSaving(false);
     if (error) return showToast('Lỗi lưu lịch tuần: ' + error.message, 'error');
     const update = {};
-    rows.forEach(r => { update[r.date] = r.shift; });
+    rows.forEach(r => { update[r.date] = r.shift_name; });
     if (weekModal.type === 'hv') setHvSchedule(s => ({ ...s, ...update }));
     else setPkSchedule(s => ({ ...s, ...update }));
     showToast('Đã lưu lịch cả tuần', 'success');
@@ -619,7 +619,8 @@ function TabJournal() {
 
   const fetchArticles = async () => {
     setLoading(true);
-    const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+    const { data, error: artErr } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+    if (artErr) { console.warn('articles table:', artErr.message); }
     setArticles(data || []);
     setLoading(false);
   };
@@ -793,7 +794,7 @@ function TabAIScan() {
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
   useEffect(() => {
-    supabase.from('patients').select('id, full_name, bn_code, patient_type').order('full_name')
+    supabase.from('patients').select('id, name, bn_code, specialty').order('name', { ascending: true })
       .then(({ data }) => setPatients(data || []));
   }, []);
 
@@ -890,7 +891,7 @@ function TabAIScan() {
         <SelectField label="Chọn bệnh nhân" value={selectedPatient} onChange={e => setSelectedPatient(e.target.value)}>
           <option value="">— Không chọn (khách vãng lai) —</option>
           {patients.map(p => (
-            <option key={p.id} value={p.id}>{p.bn_code ? `[${p.bn_code}] ` : ''}{p.full_name}</option>
+            <option key={p.id} value={p.id}>{p.bn_code ? `[${p.bn_code}] ` : ''}{p.name || p.email || '?'}</option>
           ))}
         </SelectField>
         <div className="space-y-1.5">
