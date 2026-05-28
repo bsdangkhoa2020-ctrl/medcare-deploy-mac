@@ -58,14 +58,14 @@ export const AuthProvider = ({ children }) => {
       if (role === 'patient_ob') { role = 'patient'; pType = 'ob'; }
       if (role === 'patient_gy') { role = 'patient'; pType = 'gy'; }
 
-      if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@baobei.app') {
+      if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@bstuan247.com') {
         role = 'doctor';
-      } else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@baobei.app') {
+      } else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@bstuan247.com') {
         role = 'receptionist';
-      } else if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') {
+      } else if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@bstuan247.com') {
         role = 'patient';
         pType = 'ob';
-      } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') {
+      } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@bstuan247.com') {
         role = 'patient';
         pType = 'gy';
       } else if (!role) {

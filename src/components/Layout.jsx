@@ -42,7 +42,7 @@ export default function Layout() {
           <div className="w-10 h-10 rounded-full bg-gold-lt border border-gold flex items-center justify-center">
             <span className="font-serif text-gold-dk font-bold text-xl italic">B</span>
           </div>
-          <span className="text-xl font-serif text-ink tracking-wide">BaoBei <span className="font-sans text-xs uppercase tracking-widest text-gold-dk font-bold ml-1">Portals</span></span>
+          <span className="text-xl font-serif text-ink tracking-wide">bstuan247 <span className="font-sans text-xs uppercase tracking-widest text-gold-dk font-bold ml-1">Portals</span></span>
         </div>
 
         <div className="flex flex-col justify-between flex-1 mt-6">

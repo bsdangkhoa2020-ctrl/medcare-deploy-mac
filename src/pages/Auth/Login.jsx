@@ -8,10 +8,10 @@ import { useAuth } from '../../contexts/AuthContext';
    Thay email/password phù hợp với Supabase Auth
 ───────────────────────────────────────────── */
 const DEV_ACCOUNTS = [
-  { label: '🩺 Bác sĩ',   emoji: '🩺', email: 'doctor@baobei.app',       password: 'Password123!', role: 'doctor' },
-  { label: '👩‍💼 Lễ tân',  emoji: '👩‍💼', email: 'letan@baobei.app',        password: 'Password123!', role: 'receptionist' },
-  { label: '🤰 Sản khoa',  emoji: '🤰', email: 'patientob1@baobei.app',   password: 'Password123!', role: 'patient_ob' },
-  { label: '🌸 Phụ khoa',  emoji: '🌸', email: 'patientgy2@baobei.app',   password: 'Password123!', role: 'patient_gy' },
+  { label: '🩺 Bác sĩ',   emoji: '🩺', email: 'doctor@bstuan247.com',       password: 'Password123!', role: 'doctor' },
+  { label: '👩‍💼 Lễ tân',  emoji: '👩‍💼', email: 'letan@bstuan247.com',        password: 'Password123!', role: 'receptionist' },
+  { label: '🤰 Sản khoa',  emoji: '🤰', email: 'patientob1@bstuan247.com',   password: 'Password123!', role: 'patient_ob' },
+  { label: '🌸 Phụ khoa',  emoji: '🌸', email: 'patientgy2@bstuan247.com',   password: 'Password123!', role: 'patient_gy' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -423,7 +423,7 @@ export default function Login() {
             <span style={styles.logoLetter}>B</span>
           </div>
           <div>
-            <div style={styles.brandName}>BaoBei Portals</div>
+            <div style={styles.brandName}>bstuan247</div>
             <div style={styles.brandSub}>Hệ thống quản lý phòng khám</div>
           </div>
         </div>
@@ -552,7 +552,7 @@ export default function Login() {
         </form>
 
         <p style={styles.footer}>
-          © {new Date().getFullYear()} BaoBei Portals · Phòng khám BS. Hoàng Thanh Tuấn
+          © {new Date().getFullYear()} bstuan247 · Phòng khám BS. Hoàng Thanh Tuấn
         </p>
       </div>
     </div>
