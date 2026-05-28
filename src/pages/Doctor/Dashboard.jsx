@@ -179,14 +179,14 @@ export default function DoctorDashboard() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedItem?.id === item.id ? 'bg-gold-light/80 border-gold shadow-md' : 'bg-white/40 border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}`}
+                  className={`w-full text-left p-4 rounded-2xl transition-all border ${selectedItem?.id === item.id ? 'bg-gold-lt/80 border-gold shadow-md' : 'bg-white/40 border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}`}
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <span className={`font-mono font-bold px-2.5 py-1 rounded-md shadow-sm text-sm border ${item.bn_code?.startsWith('OB') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
                       {item.bn_code || 'Chưa liên kết'}
                     </span>
                     {item.ai_extracted?.is_abnormal && (
-                      <span className="flex items-center shrink-0 gap-1 text-[10px] font-bold text-danger-dark bg-red-100 px-2 py-1 rounded-full uppercase tracking-wider">
+                      <span className="flex items-center shrink-0 gap-1 text-[10px] font-bold text-danger-dk bg-red-100 px-2 py-1 rounded-full uppercase tracking-wider">
                         <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse"></span>
                         Bất thường
                       </span>
@@ -215,7 +215,7 @@ export default function DoctorDashboard() {
                 <div className="lg:hidden p-4 border-b border-gold/10">
                   <button 
                     onClick={() => setSelectedItem(null)}
-                    className="flex items-center gap-2 text-ink hover:text-gold-dark font-medium text-sm transition-colors w-fit"
+                    className="flex items-center gap-2 text-ink hover:text-gold-dk font-medium text-sm transition-colors w-fit"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
                     Trở lại Kết Quả Xét Nghiệm
@@ -230,7 +230,7 @@ export default function DoctorDashboard() {
                         Hồ Sơ: {selectedItem.bn_code || 'Khách vãng lai'}
                       </h2>
                       {selectedItem.ai_extracted?.is_abnormal ? (
-                        <span className="flex items-center gap-1.5 bg-red-100 text-danger-dark px-3 py-1 rounded-full text-xs font-bold border border-red-200">
+                        <span className="flex items-center gap-1.5 bg-red-100 text-danger-dk px-3 py-1 rounded-full text-xs font-bold border border-red-200">
                           <AlertTriangle className="w-4 h-4" /> CẦN XỬ LÝ GẤP
                         </span>
                       ) : (
@@ -268,7 +268,7 @@ export default function DoctorDashboard() {
                   <div className="w-full md:w-[400px] flex flex-col shrink-0 bg-white/40">
                     <div className="p-6 flex-1 overflow-y-auto">
                       <h3 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-gold-dark"></span> 
+                        <span className="w-2 h-2 rounded-full bg-gold-dk"></span> 
                         AI Đánh Giá
                       </h3>
                       <div className="p-4 rounded-xl bg-white shadow-sm border border-gold/20 text-sm text-ink leading-relaxed mb-8">

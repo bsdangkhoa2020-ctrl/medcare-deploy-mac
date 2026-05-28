@@ -6,10 +6,10 @@ export default function ProtectedRoute({ children, allowedRoles, allowedPatientT
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-gold-light/40 to-white">
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-gold-lt/40 to-white">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 rounded-full border-4 border-gold border-t-transparent animate-spin mb-4"></div>
-          <p className="text-gold-dark font-medium">Đang kiểm tra quyền truy cập...</p>
+          <p className="text-gold-dk font-medium">Đang kiểm tra quyền truy cập...</p>
         </div>
       </div>
     );

@@ -37,14 +37,14 @@ export default function FileUploader({ onUpload, files, setFiles, isLoading }) {
             {...getRootProps()}
             className={clsx(
               "relative group cursor-pointer flex flex-col items-center justify-center w-full h-64 px-6 py-10 border-2 border-dashed rounded-3xl transition-all duration-300 ease-in-out bg-white/40 backdrop-blur-sm",
-              isDragActive ? "border-gold bg-gold-light/50" : "border-gold/30 hover:border-gold hover:bg-gold-light/20",
+              isDragActive ? "border-gold bg-gold-lt/50" : "border-gold/30 hover:border-gold hover:bg-gold-lt/20",
               isDragReject && "border-danger bg-red-50",
               isLoading && "opacity-50 cursor-not-allowed"
             )}
           >
             <input {...getInputProps()} />
             
-            <div className="p-4 mb-4 rounded-full bg-gold-light text-gold-dark group-hover:scale-110 transition-transform duration-300 shadow-sm">
+            <div className="p-4 mb-4 rounded-full bg-gold-lt text-gold-dk group-hover:scale-110 transition-transform duration-300 shadow-sm">
               <UploadCloud className="w-10 h-10" />
             </div>
             
@@ -67,7 +67,7 @@ export default function FileUploader({ onUpload, files, setFiles, isLoading }) {
             {/* Loading Overlay */}
             {isLoading && (
               <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                <Loader2 className="w-8 h-8 text-gold-dark animate-spin mb-3" />
+                <Loader2 className="w-8 h-8 text-gold-dk animate-spin mb-3" />
                 <p className="text-sm font-medium text-ink animate-pulse">Đang đẩy dữ liệu lên hệ thống ({files.length} file)...</p>
               </div>
             )}
@@ -86,8 +86,8 @@ export default function FileUploader({ onUpload, files, setFiles, isLoading }) {
             <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
               {files.map((file, idx) => (
                 <div key={`${file.name}-${idx}`} className="flex items-center gap-4 bg-white/50 p-3 rounded-xl border border-gold/10">
-                  <div className="w-12 h-12 rounded-xl bg-gold-light flex items-center justify-center flex-shrink-0 border border-gold/20">
-                    <FileType className="w-6 h-6 text-gold-dark" />
+                  <div className="w-12 h-12 rounded-xl bg-gold-lt flex items-center justify-center flex-shrink-0 border border-gold/20">
+                    <FileType className="w-6 h-6 text-gold-dk" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-ink truncate" title={file.name}>
@@ -112,10 +112,10 @@ export default function FileUploader({ onUpload, files, setFiles, isLoading }) {
             {files.length < 10 && !isLoading && (
                <div 
                  {...getRootProps()}
-                 className="mt-3 p-3 border-2 border-dashed border-gold/30 rounded-xl text-center cursor-pointer hover:bg-gold-light/20 transition-colors"
+                 className="mt-3 p-3 border-2 border-dashed border-gold/30 rounded-xl text-center cursor-pointer hover:bg-gold-lt/20 transition-colors"
                >
                  <input {...getInputProps()} />
-                 <p className="text-sm font-medium text-gold-dark">+ Kéo thả hoặc bấm để thêm file (tối đa 10)</p>
+                 <p className="text-sm font-medium text-gold-dk">+ Kéo thả hoặc bấm để thêm file (tối đa 10)</p>
                </div>
             )}
 

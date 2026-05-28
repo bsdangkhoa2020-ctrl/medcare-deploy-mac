@@ -81,7 +81,7 @@ export default function Patients() {
     <div className="flex flex-col h-full bg-transparent">
       {/* HEADER */}
       <div className="bg-transparent md:glass rounded-none md:rounded-3xl px-4 pt-4 md:p-6 mb-2 md:mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 relative overflow-hidden md:shadow-sm">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-light/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-lt/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
         <div className="relative z-10 w-full md:w-auto">
           <h1 className="text-xl md:text-3xl font-serif font-semibold text-ink mb-1 flex items-center gap-2 md:gap-3">
             Quản Lý Bệnh Nhân
@@ -139,7 +139,7 @@ export default function Patients() {
                 <button
                   key={p.bn_code}
                   onClick={() => setSelectedPatient(p)}
-                  className={`w-full text-left p-4 md:rounded-2xl transition-all border-b md:border ${selectedPatient?.bn_code === p.bn_code ? 'bg-gold-light/80 border-gold md:shadow-md' : 'bg-transparent md:bg-white/40 border-gold/10 hover:bg-white hover:md:shadow-sm hover:md:border-gold/30'}`}
+                  className={`w-full text-left p-4 md:rounded-2xl transition-all border-b md:border ${selectedPatient?.bn_code === p.bn_code ? 'bg-gold-lt/80 border-gold md:shadow-md' : 'bg-transparent md:bg-white/40 border-gold/10 hover:bg-white hover:md:shadow-sm hover:md:border-gold/30'}`}
                 >
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <span className={`font-mono font-bold px-2.5 py-1 rounded-md shadow-sm text-sm border ${p.specialty === 'ob' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
@@ -175,7 +175,7 @@ export default function Patients() {
                 {/* Mobile Back Button */}
                 <button 
                   onClick={() => setSelectedPatient(null)}
-                  className="lg:hidden flex items-center gap-2 text-ink hover:text-gold-dark font-medium text-sm mb-6 pb-4 border-b border-gold/10 transition-colors w-fit"
+                  className="lg:hidden flex items-center gap-2 text-ink hover:text-gold-dk font-medium text-sm mb-6 pb-4 border-b border-gold/10 transition-colors w-fit"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
                   Trở lại danh sách bệnh nhân
@@ -218,7 +218,7 @@ export default function Patients() {
                 {/* Tài liệu đính kèm (Timeline) */}
                 <div>
                   <h3 className="text-lg font-serif font-semibold text-ink mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-gold-dark" />
+                    <FileText className="w-5 h-5 text-gold-dk" />
                     Hồ Sơ Y Khoa & AI Scan
                   </h3>
                   
@@ -235,11 +235,11 @@ export default function Patients() {
                         <div key={record.id} className="bg-white/60 border border-gold/20 p-5 rounded-2xl flex flex-col md:flex-row gap-6 shadow-sm hover:shadow-md transition-all">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <span className="text-xs font-bold text-ink-muted bg-gold-light/50 px-2 py-1 rounded-md">
+                              <span className="text-xs font-bold text-ink-muted bg-gold-lt/50 px-2 py-1 rounded-md">
                                 {new Date(record.created_at).toLocaleDateString('vi-VN')}
                               </span>
                               {record.ai_extracted?.is_abnormal ? (
-                                <span className="flex items-center gap-1 text-[10px] font-bold text-danger-dark bg-red-100 px-2 py-1 rounded-full uppercase tracking-wider">
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-danger-dk bg-red-100 px-2 py-1 rounded-full uppercase tracking-wider">
                                   <AlertTriangle className="w-3 h-3" /> Bất thường
                                 </span>
                               ) : (

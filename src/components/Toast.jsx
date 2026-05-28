@@ -15,13 +15,13 @@ export default function Toast({ message, type = 'info', isVisible, onClose }) {
   const icons = {
     success: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
     error: <AlertCircle className="w-5 h-5 text-danger" />,
-    info: <Info className="w-5 h-5 text-gold-dark" />
+    info: <Info className="w-5 h-5 text-gold-dk" />
   };
 
   const bgColors = {
     success: 'bg-emerald-50/90 border-emerald-200',
     error: 'bg-red-50/90 border-red-200',
-    info: 'bg-gold-light/90 border-gold/30'
+    info: 'bg-gold-lt/90 border-gold/30'
   };
 
   return (

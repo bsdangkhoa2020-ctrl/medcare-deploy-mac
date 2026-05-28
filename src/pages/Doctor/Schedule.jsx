@@ -198,13 +198,13 @@ export default function Schedule() {
                 key={ds}
                 onClick={() => openEditModal(ds, type, shiftKey)}
                 className={`flex flex-row md:flex-col items-center md:items-stretch justify-between p-3 md:p-4 rounded-xl md:rounded-2xl min-h-[60px] md:min-h-[110px] transition-all text-left cursor-pointer active:scale-95
-                  ${isToday ? 'bg-gold-light/20 border-2 border-gold ring-4 ring-gold/10 md:scale-105 z-10 shadow-md' : 'bg-white/40 border border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}
+                  ${isToday ? 'bg-gold-lt/20 border-2 border-gold ring-4 ring-gold/10 md:scale-105 z-10 shadow-md' : 'bg-white/40 border border-gold/10 hover:bg-white hover:shadow-sm hover:border-gold/30'}
                   ${isPast && !isToday ? 'opacity-60 grayscale-[0.2]' : ''}
                 `}
               >
                 {/* Mobile: Day & Date side-by-side. Desktop: Stacked */}
                 <div className="flex flex-row md:flex-col items-center gap-3 md:gap-1 text-center">
-                  <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${isToday ? 'text-gold-dark' : 'text-ink-muted'}`}>
+                  <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${isToday ? 'text-gold-dk' : 'text-ink-muted'}`}>
                     {SCH_DOW[i]}
                   </span>
                   <div className="flex items-center justify-center gap-1">
@@ -234,7 +234,7 @@ export default function Schedule() {
     <div className="flex flex-col h-full bg-transparent">
       {/* HEADER */}
       <div className="bg-transparent md:glass rounded-none md:rounded-3xl px-4 pt-4 md:p-6 mb-4 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 relative overflow-hidden md:shadow-sm">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-light/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold-lt/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
         <div className="relative z-10 w-full md:w-auto">
           <h1 className="text-xl md:text-3xl font-serif font-semibold text-ink mb-1 flex items-center gap-2 md:gap-3">
             Lịch & Ca Trực
@@ -275,7 +275,7 @@ export default function Schedule() {
             </div>
 
             <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-4 bg-white/40 md:bg-transparent p-2 md:p-0 rounded-xl md:rounded-none border border-gold/10 md:border-none">
-              <button onClick={() => handleHvNav(-1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-light hover:text-gold-dark transition-all group">
+              <button onClick={() => handleHvNav(-1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-lt hover:text-gold-dk transition-all group">
                 <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 group-active:-translate-x-1 transition-transform" />
               </button>
               
@@ -286,7 +286,7 @@ export default function Schedule() {
                 </span>
               </div>
               
-              <button onClick={() => handleHvNav(1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-light hover:text-gold-dark transition-all group">
+              <button onClick={() => handleHvNav(1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-lt hover:text-gold-dk transition-all group">
                 <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-active:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -322,7 +322,7 @@ export default function Schedule() {
             </div>
 
             <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-4 bg-white/40 md:bg-transparent p-2 md:p-0 rounded-xl md:rounded-none border border-gold/10 md:border-none">
-              <button onClick={() => handlePkNav(-1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-light hover:text-gold-dark transition-all group">
+              <button onClick={() => handlePkNav(-1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-lt hover:text-gold-dk transition-all group">
                 <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 group-active:-translate-x-1 transition-transform" />
               </button>
               
@@ -333,7 +333,7 @@ export default function Schedule() {
                 </span>
               </div>
               
-              <button onClick={() => handlePkNav(1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-light hover:text-gold-dark transition-all group">
+              <button onClick={() => handlePkNav(1)} className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-white text-ink border border-gold/20 shadow-sm hover:bg-gold-lt hover:text-gold-dk transition-all group">
                 <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-active:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -385,7 +385,7 @@ export default function Schedule() {
                       onClick={() => setEditVal(preset)}
                       className={`py-3 px-4 rounded-xl text-sm font-bold transition-all border ${
                         editVal === preset 
-                          ? 'bg-gold-light/40 border-gold text-ink shadow-sm' 
+                          ? 'bg-gold-lt/40 border-gold text-ink shadow-sm' 
                           : 'bg-white border-gold/20 text-ink-muted hover:border-gold hover:text-ink'
                       }`}
                     >
@@ -409,7 +409,7 @@ export default function Schedule() {
               <div className="flex gap-3">
                 <button 
                   onClick={() => setEditDay(null)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-ink-muted hover:bg-gold-light/20 transition-colors"
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-ink-muted hover:bg-gold-lt/20 transition-colors"
                 >
                   Hủy
                 </button>
