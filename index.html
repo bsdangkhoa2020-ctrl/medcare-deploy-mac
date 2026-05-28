@@ -4027,18 +4027,19 @@ function _renderMockDocSchedule() {
   if (!grid) return;
   const DAY_LABELS = ['T2','T3','T4','T5','T6','T7','CN'];
   const SESSIONS = [
-    ['17h-20h'],              // T2
-    ['17h-20h'],              // T3
-    ['17h-20h'],              // T4
-    ['17h-20h'],              // T5
-    ['17h-20h'],              // T6
-    ['8h-11h','17h-20h'],  // T7
-    ['8h-11h','17h-20h'],  // CN
+    ['T 17h–20h'],              // T2
+    ['T 17h–20h'],              // T3
+    ['T 17h–20h'],              // T4
+    ['T 17h–20h'],              // T5
+    ['T 17h–20h'],              // T6
+    ['S 8h–11h','T 17h–20h'],  // T7
+    ['S 8h–11h','T 17h–20h'],  // CN
   ];
-  
-  // Hiển thị 7 ngày tới
+  const todayDow = new Date().getDay(); // 0=CN
+
+  // Hiện hôm nay + 2 ngày kế tiếp
   const upcoming = [];
-  for (let offset = 0; offset < 7; offset++) {
+  for (let offset = 0; offset < 7 && upcoming.length < 3; offset++) {
     const d = new Date();
     d.setDate(d.getDate() + offset);
     const dow = d.getDay();
@@ -4047,20 +4048,14 @@ function _renderMockDocSchedule() {
     upcoming.push({ label: DAY_LABELS[idx], sessions: SESSIONS[idx], isToday: offset === 0, date: d });
   }
 
-  grid.style.display = 'flex';
-  grid.style.gap = '8px';
-  grid.style.overflowX = 'auto';
-  grid.style.paddingBottom = '4px';
-  grid.style.marginTop = '10px';
-  // Ẩn thanh cuộn trên webkit
-  grid.style.scrollbarWidth = 'none'; 
-
   grid.innerHTML = upcoming.map(({ label, sessions, isToday, date }) => {
     const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
-    return `<div style="min-width: 54px; text-align: center; background: ${isToday ? 'var(--gold)' : 'var(--surface)'}; border: .5px solid var(--gold-md); border-radius: 8px; padding: 8px 4px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.02)">
-      <div style="font-size:9px; font-weight:600; color:${isToday?'#fff':'var(--gold-dk)'}; margin-bottom: 2px;">${label}</div>
-      <div style="font-size:11px; font-weight:700; color:${isToday?'#fff':'var(--ink)'}; margin-bottom: 6px;">${dateStr}</div>
-      <div style="font-size:8px; color:${isToday?'rgba(255,255,255,0.9)':'var(--muted)'}; font-weight:500; line-height:1.4">${sessions.join('<br>')}</div>
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(184,129,74,.15)">
+      <div style="font-size:12px;font-weight:${isToday?'600':'500'};color:var(--gold-dk);opacity:${isToday?'1':'0.7'}">${label} ${dateStr}</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:11px;color:var(--gold-dk);opacity:${isToday?'0.8':'0.4'};font-weight:500">${sessions.join(' · ')}</div>
+        ${isToday ? `<div style="width:6px;height:6px;border-radius:50%;background:var(--gold-dk);flex-shrink:0"></div>` : `<div style="width:6px;height:6px;flex-shrink:0"></div>`}
+      </div>
     </div>`;
   }).join('');
 }

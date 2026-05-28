@@ -177,7 +177,16 @@ async function _routeAfterLogin(user) {
         }
       } catch(e) {}
     }
-    _enterApp(user);
+
+    // ĐƯA BỆNH NHÂN SANG APP REACT MỚI THAY VÌ _enterApp CỦA VANILLA
+    if (user.patient_type === 'gy') {
+      window.location.href = '/phukhoa';
+      return;
+    }
+    
+    // Mặc định Sản Khoa (ob)
+    window.location.href = '/sankhoa';
+    return;
 }
 
 
