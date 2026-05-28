@@ -1,0 +1,229 @@
+{
+  "name": "Zalo Bot Onboarding (bstuan247)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zalo-webhook",
+        "options": {}
+      },
+      "id": "e0a11234-1234",
+      "name": "Webhook (Zalo)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [ 0, 0 ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.body.message.type}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "image"
+            },
+            {
+              "value2": "text"
+            }
+          ]
+        }
+      },
+      "id": "e0a21234-1234",
+      "name": "Switch (Image vs Text)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [ 200, 0 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-vision:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contents",
+              "value": "={{ [ { \"parts\": [ { \"text\": \"Trích xuất các thông tin sau từ ảnh y tế này và trả về định dạng JSON: { 'Tên_Bệnh_Nhân': '', 'Chẩn_Đoán': '', 'Đơn_Thuốc': [] }\" }, { \"inline_data\": { \"mime_type\": \"image/jpeg\", \"data\": \"{{$json.image_base64}}\" } } ] } ] }}"
+            }
+          ]
+        }
+      },
+      "id": "e0a31234-1234",
+      "name": "Gemini 1.5 Pro (OCR)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [ 400, -100 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dify.ai/v1/chat-messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_DIFY_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "{}"
+            },
+            {
+              "name": "query",
+              "value": "={{$json.body.message.text}}"
+            },
+            {
+              "name": "user",
+              "value": "={{$json.body.sender.id}}"
+            }
+          ]
+        }
+      },
+      "id": "e0a71234-1234",
+      "name": "Dify.ai (RAG & QnA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [ 400, 150 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.error ? false : true}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "e0a41234-1234",
+      "name": "IF OCR Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [ 600, -100 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bstuan247.com/api/create-patient",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "patientData",
+              "value": "={{$json.gemini_output}}"
+            },
+            {
+              "name": "phone",
+              "value": "={{$json.phone_number}}"
+            }
+          ]
+        }
+      },
+      "id": "e0a51234-1234",
+      "name": "Create Patient DB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [ 800, -200 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bstuan247.com/api/receptionist/fallback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{$json.image_url}}"
+            }
+          ]
+        }
+      },
+      "id": "e0a61234-1234",
+      "name": "Send to Receptionist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [ 800, 0 ]
+    }
+  ],
+  "connections": {
+    "Webhook (Zalo)": {
+      "main": [
+        [
+          {
+            "node": "Switch (Image vs Text)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch (Image vs Text)": {
+      "main": [
+        [
+          {
+            "node": "Gemini 1.5 Pro (OCR)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dify.ai (RAG & QnA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 1.5 Pro (OCR)": {
+      "main": [
+        [
+          {
+            "node": "IF OCR Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF OCR Success": {
+      "main": [
+        [
+          {
+            "node": "Create Patient DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send to Receptionist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
