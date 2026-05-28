@@ -30,22 +30,24 @@ function ScheduleBlock({ title, location, shifts, weekDays, schedule, onEdit, on
           <Icon d={ICONS.edit} className="w-3.5 h-3.5" /> Sửa lịch tuần
         </button>
       </div>
-      <div className="grid grid-cols-7 divide-x divide-gold/15">
-        {weekDays.map(day => {
-          const d = new Date(day);
-          const isToday = day === today();
-          const shift = schedule[day] || '—';
-          return (
-            <button key={day} onClick={() => onEdit(day, shift)}
-              className={`flex flex-col items-center py-4 gap-2 hover:bg-gold-lt/30 transition-colors ${isToday ? 'bg-gold-lt/50' : ''}`}>
-              <span className={`text-[11px] font-bold uppercase tracking-wider ${isToday ? 'text-gold-dk' : 'text-ink-muted'}`}>{DOW_VI[d.getDay()]}</span>
-              <span className={`font-serif text-xl sm:text-2xl font-bold ${isToday ? 'text-gold-dk' : 'text-ink'}`}>{d.getDate()}</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-md border font-bold shadow-sm ${SHIFT_COLOR[shift] || 'bg-surface text-ink-muted border-gold/20'}`}>
-                {shift}
-              </span>
-            </button>
-          );
-        })}
+      <div className="overflow-x-auto hide-scrollbar">
+        <div className="grid grid-cols-7 divide-x divide-gold/15 min-w-[600px] md:min-w-0">
+          {weekDays.map(day => {
+            const d = new Date(day);
+            const isToday = day === today();
+            const shift = schedule[day] || '—';
+            return (
+              <button key={day} onClick={() => onEdit(day, shift)}
+                className={`flex flex-col items-center py-4 gap-2 hover:bg-gold-lt/30 transition-colors ${isToday ? 'bg-gold-lt/50' : ''}`}>
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${isToday ? 'text-gold-dk' : 'text-ink-muted'}`}>{DOW_VI[d.getDay()]}</span>
+                <span className={`font-serif text-xl sm:text-2xl font-bold ${isToday ? 'text-gold-dk' : 'text-ink'}`}>{d.getDate()}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-md border font-bold shadow-sm ${SHIFT_COLOR[shift] || 'bg-surface text-ink-muted border-gold/20'}`}>
+                  {shift}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -156,18 +158,20 @@ export default function TabSchedule() {
           <div className="px-6 py-4 border-b border-gold/20 bg-[#FDFBF7]">
             <h3 className="font-serif text-lg font-bold text-ink">Lịch hẹn trong 7 ngày tới</h3>
           </div>
-          <div className="flex divide-x divide-gold/15 flex-1 items-stretch">
-            {strip7.map(day => {
-              const d = new Date(day);
-              const isSelected = day === selectedDate;
-              return (
-                <button key={day} onClick={() => setSelectedDate(day)}
-                  className={`flex-1 min-w-[48px] flex flex-col justify-center items-center py-4 gap-1.5 transition-all ${isSelected ? 'bg-ink text-gold-lt shadow-inner' : 'hover:bg-gold-lt/40 text-ink'}`}>
-                  <span className={`text-[11px] font-bold uppercase tracking-wider ${isSelected ? 'text-gold-lt' : 'text-ink-muted'}`}>{DOW_VI[d.getDay()]}</span>
-                  <span className="font-serif text-2xl font-bold">{d.getDate()}</span>
-                </button>
-              );
-            })}
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="flex divide-x divide-gold/15 flex-1 items-stretch min-w-[500px] md:min-w-0">
+              {strip7.map(day => {
+                const d = new Date(day);
+                const isSelected = day === selectedDate;
+                return (
+                  <button key={day} onClick={() => setSelectedDate(day)}
+                    className={`flex-1 min-w-[48px] flex flex-col justify-center items-center py-4 gap-1.5 transition-all ${isSelected ? 'bg-ink text-gold-lt shadow-inner' : 'hover:bg-gold-lt/40 text-ink'}`}>
+                    <span className={`text-[11px] font-bold uppercase tracking-wider ${isSelected ? 'text-gold-lt' : 'text-ink-muted'}`}>{DOW_VI[d.getDay()]}</span>
+                    <span className="font-serif text-2xl font-bold">{d.getDate()}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
