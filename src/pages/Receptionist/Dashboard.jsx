@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../../lib/supabase';
 import FileUploader from '../../components/FileUploader';
 import Toast from '../../components/Toast';
@@ -81,20 +82,38 @@ export default function ReceptionistDashboard() {
     }
   };
 
-  return (
-    // Dùng fixed, inset-0 và z-[100] để phủ kín toàn màn hình, che đi Layout menu bên trái theo yêu cầu mà không cần sửa Layout.jsx
-    <div className="fixed inset-0 z-[100] bg-[#F5EBE3] overflow-y-auto">
-      <div className="min-h-screen p-4 sm:p-6 md:p-8 font-sans flex flex-col items-center justify-center">
-        <div className="w-full max-w-2xl mx-auto space-y-6 md:space-y-8">
+  const content = (
+    // Dùng createPortal và z-[9999] để thoát khỏi stacking context của Layout, 
+    // che khuất hoàn toàn sidebar menu (z-20) và AI Chatbot (z-50) ở global App.jsx.
+    <div className="fixed inset-0 z-[9999] bg-[#F5EBE3] overflow-y-auto">
+      <div className="min-h-screen p-4 sm:p-6 md:p-8 font-sans flex flex-col items-center justify-center relative">
+        
+        {/* Nút Đăng xuất thủ công vì Header mặc định đã bị che khuất */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+           <button 
+             onClick={async () => {
+               await supabase.auth.signOut();
+               window.location.href = '/';
+             }}
+             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-dark bg-white rounded-xl shadow-sm border border-[#C7A47B]/20 hover:bg-red-50 transition-colors"
+           >
+             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+             </svg>
+             Đăng xuất
+           </button>
+        </div>
+
+        <div className="w-full max-w-2xl mx-auto space-y-6 md:space-y-8 mt-12 sm:mt-0">
           <div className="text-center bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-[#C7A47B]/20">
             <div className="w-16 h-16 bg-[#F5EBE3] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#C7A47B]/30 shadow-sm">
               <svg className="w-8 h-8 text-[#3E2A3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif text-[#3E2A3D] mb-3">Cổng Nhập Liệu Hồ Sơ</h1>
+            <h1 className="text-2xl md:text-3xl font-serif text-[#3E2A3D] mb-3">Khu vực dành riêng cho Lễ Tân</h1>
             <p className="text-[#3E2A3D]/70 text-sm md:text-base px-2">
-              Khu vực dành riêng cho Lễ tân tải lên file PDF/Ảnh xét nghiệm cũ. AI sẽ tự động đọc hiểu và phân bổ.
+              Tải lên file PDF hoặc ảnh kết quả các xét nghiệm.
             </p>
           </div>
 
@@ -117,4 +136,6 @@ export default function ReceptionistDashboard() {
       />
     </div>
   );
+
+  return createPortal(content, document.body);
 }
