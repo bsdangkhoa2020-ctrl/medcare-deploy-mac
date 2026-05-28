@@ -276,18 +276,15 @@ const styles = {
 /* ─────────────────────────────────────────────
    Role → route mapping
 ───────────────────────────────────────────── */
-function getRouteForRole(role) {
-  switch (role) {
-    case 'doctor':
-      return '/bacsi';
-    case 'receptionist':
-      return '/letan';
-    case 'patient_ob':
-      return '/sankhoa';
-    case 'patient_gy':
-      return '/phukhoa';
-    default:
-      return '/';
+function getRouteForRole(role, patientType) {
+  if (role === 'doctor') return '/bacsi';
+  if (role === 'receptionist') return '/letan';
+  if (role === 'patient') {
+    if (patientType === 'ob') return '/sankhoa';
+    if (patientType === 'gy') return '/phukhoa';
+    return '/sankhoa'; // fallback
+  }
+  return '/';
   }
 }
 
@@ -322,7 +319,7 @@ const AlertIcon = () => (
 ───────────────────────────────────────────── */
 export default function Login() {
   const navigate = useNavigate();
-  const { user, appRole, loading: authLoading } = useAuth();
+  const { user, appRole, patientType, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -345,9 +342,9 @@ export default function Login() {
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
     if (!authLoading && user && appRole) {
-      navigate(getRouteForRole(appRole), { replace: true });
+      navigate(getRouteForRole(appRole, patientType), { replace: true });
     }
-  }, [user, appRole, authLoading, navigate]);
+  }, [user, appRole, patientType, authLoading, navigate]);
 
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
@@ -382,7 +379,7 @@ export default function Login() {
         // AuthContext will update and trigger useEffect redirect
         // Fallback: if role is already known, navigate now
         if (appRole) {
-          navigate(getRouteForRole(appRole), { replace: true });
+          navigate(getRouteForRole(appRole, patientType), { replace: true });
         }
         // else: useEffect will fire once AuthContext refreshes
       }
