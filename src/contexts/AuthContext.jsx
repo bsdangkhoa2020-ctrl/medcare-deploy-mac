@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [appRole, setAppRole] = useState(null);
   const [patientType, setPatientType] = useState(null);
+  const [patientLmp, setPatientLmp] = useState(null);
 
   useEffect(() => {
     // Get initial session
@@ -65,6 +66,9 @@ export const AuthProvider = ({ children }) => {
       } else if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@bstuan247.com') {
         role = 'patient';
         pType = 'ob';
+        const fallbackLmp = new Date();
+        fallbackLmp.setDate(fallbackLmp.getDate() - 199); // ~28 tuần 3 ngày
+        setPatientLmp(fallbackLmp.toISOString().split('T')[0]);
       } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@bstuan247.com') {
         role = 'patient';
         pType = 'gy';
@@ -72,16 +76,17 @@ export const AuthProvider = ({ children }) => {
         role = 'patient';
       }
 
-      // 2. Nếu là Bệnh nhân và chưa có pType (tức là không phải tài khoản test)
-      if (role === 'patient' && !pType) {
+      // 2. Nếu là Bệnh nhân, thử fetch thêm thông tin chuyên sâu
+      if (role === 'patient') {
         const { data: ptData, error: ptError } = await supabase
           .from('patients')
-          .select('patient_type')
+          .select('patient_type, lmp')
           .eq('id', currentUser.id)
           .single();
 
-        if (!ptError && ptData?.patient_type) {
-          pType = ptData.patient_type;
+        if (!ptError && ptData) {
+          if (!pType && ptData.patient_type) pType = ptData.patient_type;
+          if (ptData.lmp) setPatientLmp(ptData.lmp);
         }
       }
       
@@ -98,7 +103,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, appRole, patientType }}>
+    <AuthContext.Provider value={{ user, profile, loading, appRole, patientType, patientLmp }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,71 +1,51 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
+import HeroTracker from '../OB/HeroTracker';
 
 export default function OBDashboard() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, patientLmp } = useAuth();
   const firstName = profile?.full_name?.split(' ').pop() || 'Mẹ';
+
+  const [todayCheckin, setTodayCheckin] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('medcare_ob_checkin');
+    if (saved) {
+      try {
+        const checkins = JSON.parse(saved);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const found = checkins.find(c => c.date === todayStr);
+        if (found) setTodayCheckin(found);
+      } catch(e){}
+    }
+  }, []);
+
+  // Calculate Gestational Age
+  let week = 28, day = 3;
+  if (patientLmp) {
+    const lmpDate = new Date(patientLmp);
+    const today = new Date();
+    const diffTime = today.getTime() - lmpDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    week = Math.floor(diffDays / 7);
+    day = diffDays % 7;
+    // Fallback if lmp is in the future or corrupted
+    if (week < 0 || week > 42) { week = 28; day = 3; }
+  }
+
+  const handleSettingsClick = () => {
+    supabase.auth.signOut().then(() => window.location.href = '/');
+  };
 
   return (
     <div className="pb-20" style={{ background: 'var(--bg, #FEFAF5)' }}>
 
       {/* ═══ HERO ═══ */}
-      <div
-        className="relative overflow-hidden"
-        style={{
-          background: '#1C1510',
-          color: '#FEFAF5',
-          padding: 'calc(env(safe-area-inset-top) + 24px) 28px 36px 28px',
-        }}
-      >
-        {/* Orbs */}
-        <div className="ob-orb1 absolute -right-5 -top-5 w-[140px] h-[140px] rounded-full border-[0.5px] border-[rgba(184,129,74,.15)]" />
-        <div className="ob-orb2 absolute -left-8 -bottom-8 w-[110px] h-[110px] rounded-full border-[0.5px] border-[rgba(184,129,74,.1)]" />
-
-        {/* Top bar */}
-        <div className="ob-fade1 flex justify-end mb-4 relative z-10">
-          <button
-            onClick={() => supabase.auth.signOut().then(() => window.location.href = '/')}
-            className="w-9 h-9 border-[0.5px] border-[rgba(184,129,74,.4)] rounded-full flex items-center justify-center cursor-pointer"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(184,129,74,.9)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Greeting */}
-        <div className="ob-fade2 font-serif font-light text-[28px] leading-[1.2] tracking-[-0.02em] text-white mb-7 relative z-10 pl-1.5">
-          Chào <em className="italic text-[#B8814A]">{firstName}</em>,<br />bé đang lớn từng ngày
-        </div>
-
-        {/* Big week number */}
-        <div className="ob-fade3 text-center cursor-pointer relative z-10 mb-5">
-          <div className="inline-flex items-baseline gap-1.5">
-            <span className="ob-float inline-block font-serif font-light text-[clamp(72px,18vw,96px)] leading-[.85] tracking-[-0.04em] text-white">28</span>
-            <span className="font-serif italic text-[clamp(22px,5vw,28px)] text-[#B8814A] tracking-[-0.01em]"> tuần</span>
-            <span className="font-serif font-light text-[clamp(44px,11vw,60px)] leading-[.85] tracking-[-0.04em] text-white">3</span>
-            <span className="font-serif italic text-[clamp(18px,4vw,22px)] text-[#B8814A] tracking-[-0.01em]"> ngày</span>
-          </div>
-          <div className="text-[10px] tracking-[.28em] text-[rgba(245,235,227,.55)] uppercase font-semibold mt-3">Còn 11 tuần đến ngày dự sinh</div>
-        </div>
-
-        {/* Trimester bar */}
-        <div className="relative z-10 px-1.5">
-          <div className="flex text-[8.5px] tracking-[.22em] text-[rgba(184,129,74,.7)] uppercase font-bold mb-2">
-            <div className="flex-1">TCN 1</div>
-            <div className="flex-1 text-center">TCN 2</div>
-            <div className="flex-1 text-right">TCN 3</div>
-          </div>
-          <div className="relative h-[1px] bg-[rgba(199,164,123,.25)]">
-            <div className="absolute left-0 top-0 h-[1px] bg-[#B8814A] transition-all duration-500" style={{ width: `${(28 / 40) * 100}%` }} />
-            <div className="absolute left-[33.3%] top-[-3px] w-[1px] h-[7px] bg-[rgba(184,129,74,.4)]" />
-            <div className="absolute left-[66.6%] top-[-3px] w-[1px] h-[7px] bg-[rgba(184,129,74,.4)]" />
-            <div className="absolute top-[-4px] w-[9px] h-[9px] bg-[#B8814A] rounded-full -translate-x-1/2 shadow-[0_0_0_3px_rgba(184,129,74,.2)] transition-all duration-500" style={{ left: `${(28 / 40) * 100}%` }} />
-          </div>
-          <div className="text-center mt-2 text-[10px] tracking-[.12em] text-[rgba(184,129,74,.8)] font-semibold">TAM CÁ NGUYỆT 3</div>
-        </div>
+      <div className="mx-[22px] mt-[calc(env(safe-area-inset-top)+14px)] mb-5">
+        <HeroTracker week={week} day={day} firstName={firstName} onSettingsClick={handleSettingsClick} />
       </div>
 
       {/* ═══ LỊCH HẸN + LỊCH BS ═══ */}
@@ -124,16 +104,22 @@ export default function OBDashboard() {
             <div className="text-[9px] text-white/45 mt-1 tracking-[.06em]">— BS. Hoàng Thanh Tuấn</div>
           </div>
           <div className="grid grid-cols-3 gap-2 mb-3.5 pointer-events-none">
-            {['Tình trạng', 'Cân nặng', 'Cử động bé'].map((label) => (
-              <div key={label} className="bg-white/7 border-[0.5px] border-[rgba(184,129,74,.25)] rounded-[10px] p-[9px_8px] text-center">
-                <div className="text-[9px] tracking-[.1em] text-white/50 uppercase font-semibold mb-1">{label}</div>
-                <div className="font-serif text-[12px] text-white/75">Chưa ghi</div>
+            {[
+              { label: 'Tình trạng', val: todayCheckin?.mood ? 'Đã ghi' : 'Chưa ghi' },
+              { label: 'Cân nặng', val: todayCheckin?.weight ? `${todayCheckin.weight} kg` : 'Chưa ghi' },
+              { label: 'Cử động bé', val: todayCheckin?.kick ? 'Đã đếm' : 'Chưa đếm' }
+            ].map((item) => (
+              <div key={item.label} className="bg-white/7 border-[0.5px] border-[rgba(184,129,74,.25)] rounded-[10px] p-[9px_8px] text-center">
+                <div className="text-[9px] tracking-[.1em] text-white/50 uppercase font-semibold mb-1">{item.label}</div>
+                <div className="font-serif text-[12px] text-white/75">{item.val}</div>
               </div>
             ))}
           </div>
           <div className="flex items-center justify-between pt-2.5 border-t-[0.5px] border-[rgba(184,129,74,.2)]">
             <div className="flex gap-1.5" />
-            <div className="text-[9px] tracking-[.2em] text-[#B8814A] uppercase font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Bắt đầu →</div>
+            <div className="text-[9px] tracking-[.2em] text-[#B8814A] uppercase font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>
+              {todayCheckin ? 'Cập nhật →' : 'Bắt đầu →'}
+            </div>
           </div>
         </div>
       </div>
