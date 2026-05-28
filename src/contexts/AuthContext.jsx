@@ -52,32 +52,40 @@ export const AuthProvider = ({ children }) => {
 
       // 1. Xác định appRole (Ghi đè cho tài khoản test, dự phòng từ DB)
       let role = data?.role;
+      let pType = null;
+
+      // Chuẩn hóa role nếu trong DB lỡ lưu là patient_ob hoặc patient_gy
+      if (role === 'patient_ob') { role = 'patient'; pType = 'ob'; }
+      if (role === 'patient_gy') { role = 'patient'; pType = 'gy'; }
+
       if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@baobei.app') {
         role = 'doctor';
       } else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@baobei.app') {
         role = 'receptionist';
+      } else if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') {
+        role = 'patient';
+        pType = 'ob';
+      } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') {
+        role = 'patient';
+        pType = 'gy';
       } else if (!role) {
         role = 'patient';
       }
 
-      // 2. Nếu là Bệnh nhân, xác định patient_type
-      if (role === 'patient') {
+      // 2. Nếu là Bệnh nhân và chưa có pType (tức là không phải tài khoản test)
+      if (role === 'patient' && !pType) {
         const { data: ptData, error: ptError } = await supabase
           .from('patients')
           .select('patient_type')
           .eq('id', currentUser.id)
           .single();
 
-        let pType = (!ptError && ptData?.patient_type) ? ptData.patient_type : null;
-        
-        // Luôn ghi đè cho tài khoản Test nhanh
-        if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') {
-          pType = 'ob';
-        } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') {
-          pType = 'gy';
+        if (!ptError && ptData?.patient_type) {
+          pType = ptData.patient_type;
         }
-        setPatientType(pType);
       }
+      
+      setPatientType(pType);
       
       // Update both roles simultaneously to prevent race conditions in useEffects
       setAppRole(role);
