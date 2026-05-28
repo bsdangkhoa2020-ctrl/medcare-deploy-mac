@@ -53,8 +53,8 @@ export const AuthProvider = ({ children }) => {
       // 1. Xác định appRole (Ưu tiên từ DB, dự phòng từ Email test)
       let role = data?.role;
       if (!role) {
-        if (currentUser.email === 'bstuanhoang@gmail.com') role = 'doctor';
-        else if (currentUser.email === 'letan@gmail.com') role = 'receptionist';
+        if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@baobei.app') role = 'doctor';
+        else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@baobei.app') role = 'receptionist';
         else role = 'patient';
       }
       setAppRole(role);
@@ -71,8 +71,8 @@ export const AuthProvider = ({ children }) => {
           setPatientType(ptData.patient_type);
         } else {
           // Dự phòng cho tài khoản Test nhanh khi Database chưa có cột patient_type
-          if (currentUser.email === 'obtest2026@gmail.com') setPatientType('ob');
-          else if (currentUser.email === 'gytest2026@gmail.com') setPatientType('gy');
+          if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') setPatientType('ob');
+          else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') setPatientType('gy');
         }
       }
     } catch (err) {

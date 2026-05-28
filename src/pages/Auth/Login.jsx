@@ -8,10 +8,10 @@ import { useAuth } from '../../contexts/AuthContext';
    Thay email/password phù hợp với Supabase Auth
 ───────────────────────────────────────────── */
 const DEV_ACCOUNTS = [
-  { label: '🩺 Bác sĩ',   emoji: '🩺', email: 'bstuan@bstuan247.com',   password: 'Bstuan@2024', role: 'doctor' },
-  { label: '👩‍💼 Lễ tân',  emoji: '👩‍💼', email: 'letan@bstuan247.com',    password: 'Letan@2024',  role: 'receptionist' },
-  { label: '🤰 Sản khoa',  emoji: '🤰', email: 'bnsankhoa@bstuan247.com', password: 'Bn@2024',     role: 'patient_ob' },
-  { label: '🌸 Phụ khoa',  emoji: '🌸', email: 'bnphukhoa@bstuan247.com', password: 'Bn@2024',     role: 'patient_gy' },
+  { label: '🩺 Bác sĩ',   emoji: '🩺', email: 'doctor@baobei.app',       password: 'Password123!', role: 'doctor' },
+  { label: '👩‍💼 Lễ tân',  emoji: '👩‍💼', email: 'letan@baobei.app',        password: 'Password123!', role: 'receptionist' },
+  { label: '🤰 Sản khoa',  emoji: '🤰', email: 'patientob1@baobei.app',   password: 'Password123!', role: 'patient_ob' },
+  { label: '🌸 Phụ khoa',  emoji: '🌸', email: 'patientgy2@baobei.app',   password: 'Password123!', role: 'patient_gy' },
 ];
 
 /* ─────────────────────────────────────────────
