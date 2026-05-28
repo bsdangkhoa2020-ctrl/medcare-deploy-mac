@@ -50,12 +50,14 @@ export const AuthProvider = ({ children }) => {
         setProfile(data);
       }
 
-      // 1. Xác định appRole (Ưu tiên từ DB, dự phòng từ Email test)
+      // 1. Xác định appRole (Ghi đè cho tài khoản test, dự phòng từ DB)
       let role = data?.role;
-      if (!role) {
-        if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@baobei.app') role = 'doctor';
-        else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@baobei.app') role = 'receptionist';
-        else role = 'patient';
+      if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@baobei.app') {
+        role = 'doctor';
+      } else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@baobei.app') {
+        role = 'receptionist';
+      } else if (!role) {
+        role = 'patient';
       }
       setAppRole(role);
 
@@ -67,13 +69,15 @@ export const AuthProvider = ({ children }) => {
           .eq('id', currentUser.id)
           .single();
 
-        if (!ptError && ptData?.patient_type) {
-          setPatientType(ptData.patient_type);
-        } else {
-          // Dự phòng cho tài khoản Test nhanh khi Database chưa có cột patient_type
-          if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') setPatientType('ob');
-          else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') setPatientType('gy');
+        let pType = (!ptError && ptData?.patient_type) ? ptData.patient_type : null;
+        
+        // Luôn ghi đè cho tài khoản Test nhanh
+        if (currentUser.email === 'obtest2026@gmail.com' || currentUser.email === 'patientob1@baobei.app') {
+          pType = 'ob';
+        } else if (currentUser.email === 'gytest2026@gmail.com' || currentUser.email === 'patientgy2@baobei.app') {
+          pType = 'gy';
         }
+        setPatientType(pType);
       }
     } catch (err) {
       console.error("Error fetching auth data:", err);
