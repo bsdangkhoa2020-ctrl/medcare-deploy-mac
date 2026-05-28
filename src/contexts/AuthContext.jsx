@@ -59,7 +59,6 @@ export const AuthProvider = ({ children }) => {
       } else if (!role) {
         role = 'patient';
       }
-      setAppRole(role);
 
       // 2. Nếu là Bệnh nhân, xác định patient_type
       if (role === 'patient') {
@@ -79,6 +78,10 @@ export const AuthProvider = ({ children }) => {
         }
         setPatientType(pType);
       }
+      
+      // Update both roles simultaneously to prevent race conditions in useEffects
+      setAppRole(role);
+
     } catch (err) {
       console.error("Error fetching auth data:", err);
     } finally {

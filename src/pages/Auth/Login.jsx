@@ -341,6 +341,7 @@ export default function Login() {
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
     if (!authLoading && user && appRole) {
+      if (appRole === 'patient' && !patientType) return; // Wait for patientType
       navigate(getRouteForRole(appRole, patientType), { replace: true });
     }
   }, [user, appRole, patientType, authLoading, navigate]);
@@ -378,6 +379,7 @@ export default function Login() {
         // AuthContext will update and trigger useEffect redirect
         // Fallback: if role is already known, navigate now
         if (appRole) {
+          if (appRole === 'patient' && !patientType) return; // Wait for useEffect
           navigate(getRouteForRole(appRole, patientType), { replace: true });
         }
         // else: useEffect will fire once AuthContext refreshes
