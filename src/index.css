@@ -10,7 +10,7 @@
     @apply bg-ink/80 backdrop-blur-lg border border-ink-muted/30 shadow-lg text-white;
   }
   .nav-item-active {
-    @apply bg-gold/10 text-gold-dark font-semibold shadow-sm border border-gold/20;
+    @apply bg-gold/10 text-gold-dk font-semibold shadow-sm border border-gold/20;
   }
   .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
@@ -33,7 +33,7 @@
   @apply bg-gold/40 rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gold-dark/60;
+  @apply bg-gold-dk/60;
 }
 
 body {
