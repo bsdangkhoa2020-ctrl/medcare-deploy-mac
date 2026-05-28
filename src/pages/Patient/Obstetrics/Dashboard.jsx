@@ -158,14 +158,40 @@ export default function OBDashboard() {
             Ở tuần 28, bé bắt đầu chuẩn bị cho tư thế chào đời. Mẹ có thể cảm nhận nhiều cử động hơn, đặc biệt vào buổi tối.
           </div>
         </div>
-        <div className="bg-gold-lt p-[12px_14px_14px]">
-          <div className="text-[9px] tracking-[.14em] uppercase text-gold-dk font-semibold mb-2">BS khuyên dùng</div>
-          {['Canxi 600mg · sau bữa ăn', 'Sắt 60mg · trước khi ngủ', 'DHA 200mg · sau ăn sáng'].map((item) => (
-            <div key={item} className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0" />
-              <span className="text-[12px] text-ink-muted">{item}</span>
+        <div className="bg-gold-lt p-[16px_16px_18px]">
+          <div className="flex justify-between items-center mb-3.5">
+            <div className="text-[9px] tracking-[.14em] uppercase text-gold-dk font-semibold flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              BS khuyên dùng
             </div>
-          ))}
+            <div className="text-[9px] font-bold text-[#B8814A] tracking-[.06em] cursor-pointer hover:underline">Mua chính hãng →</div>
+          </div>
+          
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {/* Sản phẩm 1 */}
+            <div className="bg-white rounded-[12px] border-[0.5px] border-border p-3 w-[140px] flex-shrink-0 flex flex-col shadow-sm cursor-pointer hover:border-[#B8814A]/40 transition-colors">
+              <div className="w-full aspect-square bg-[#FEFAF5] rounded-lg mb-2 flex items-center justify-center p-2">
+                <img src="https://data-service.pharmacity.io/pmc-upload-media/production/pmc-ecm-asm/products/P01170_1.jpg" alt="Canxi" className="w-full h-full object-contain mix-blend-multiply" />
+              </div>
+              <div className="text-[11px] font-bold text-ink leading-[1.3] mb-1">NextG Cal</div>
+              <div className="text-[9px] text-ink-muted mb-2 line-clamp-2">Canxi hữu cơ dễ hấp thu, không gây táo bón.</div>
+              <div className="mt-auto">
+                <button className="w-full py-1.5 rounded-full border border-[#B8814A] text-[#B8814A] text-[9px] font-bold uppercase tracking-wide hover:bg-[#B8814A] hover:text-white transition-colors">Tìm hiểu ngay</button>
+              </div>
+            </div>
+            
+            {/* Sản phẩm 2 */}
+            <div className="bg-white rounded-[12px] border-[0.5px] border-border p-3 w-[140px] flex-shrink-0 flex flex-col shadow-sm cursor-pointer hover:border-[#B8814A]/40 transition-colors">
+              <div className="w-full aspect-square bg-[#FEFAF5] rounded-lg mb-2 flex items-center justify-center p-2">
+                <img src="https://data-service.pharmacity.io/pmc-upload-media/production/pmc-ecm-core/products/P18073_1.jpg" alt="Elevit" className="w-full h-full object-contain mix-blend-multiply" />
+              </div>
+              <div className="text-[11px] font-bold text-ink leading-[1.3] mb-1">Vitamin Elevit</div>
+              <div className="text-[9px] text-ink-muted mb-2 line-clamp-2">Vitamin tổng hợp số 1 cho mẹ bầu.</div>
+              <div className="mt-auto">
+                <button className="w-full py-1.5 rounded-full border border-[#B8814A] text-[#B8814A] text-[9px] font-bold uppercase tracking-wide hover:bg-[#B8814A] hover:text-white transition-colors">Tìm hiểu ngay</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
