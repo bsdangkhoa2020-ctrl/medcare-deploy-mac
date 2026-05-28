@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Layout from './components/Layout';
 import OBLayout from './components/OBLayout';
 import GYLayout from './components/GYLayout';
@@ -50,7 +50,7 @@ function App() {
           {/* ── DOCTOR ─────────────────────────────────────────── */}
           <Route element={
             <ProtectedRoute allowedRoles={['doctor']}>
-              <Layout />
+              <Outlet />
             </ProtectedRoute>
           }>
             <Route path="bacsi"           element={<DoctorDashboard />} />
