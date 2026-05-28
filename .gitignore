@@ -5,3 +5,15 @@ index.html.before-split-*
 # macOS
 .DS_Store
 node_modules/
+
+# Environment variables (chứa API keys, KHÔNG push lên GitHub)
+.env
+.env.local
+.env.production
+
+# Node archives (nếu có tải thủ công)
+*.tar.gz
+node-v*/
+
+# Build output (Vercel tự build)
+dist/

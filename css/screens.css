@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+.adm-lora { font-family: 'Lora', serif !important; }
+.adm-ibm  { font-family: 'IBM Plex Sans', sans-serif !important; }
+/* Tabs */
+#s-admin .adm-tab      { transition: color .15s, border-color .15s; }
+/* List rows */
+.adm-pt-row:hover      { background: #FEFAF3 !important; }
+/* Init avatar */
+.adm-init { width:36px;height:36px;border-radius:8px;background:#F5F0E8;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:11px;color:#7A6F5C;flex-shrink:0;font-style:italic;font-weight:500;letter-spacing:.01em; }
+.adm-init-gy { background:#FEF5F7; }
+/* Badge */
+.adm-badge-ob { background:#1F1A0F;color:#E8A93C;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
+.adm-badge-gy { background:#FFF0F4;color:#C96080;border:1px solid #F5D0DC;font-size:9px;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:4px; }
+/* ── iOS Auto-zoom fix: font-size tối thiểu 16px cho tất cả input ── */
+input, textarea, select {
+  font-size: 16px !important;
+}
+/* ── AI CHAT ── */
+#s-chat { background: #1A1710; }
+#chat-header { background: #1A1710; }
+.chat-bubble { max-width: 82%; border-radius: 18px; padding: 10px 14px; font-size: 13px; line-height: 1.6; }
+.chat-bubble-user { background: #E8A93C; color: #1F1A0F; margin-left: auto; border-bottom-right-radius: 4px; font-weight: 500; }
+.chat-bubble-ai { background: rgba(255,255,255,.1); color: #EDE8DF; margin-right: auto; border-bottom-left-radius: 4px; }
+.chat-bubble-ai strong { color: #E8C96A; font-weight: 600; }
+.chat-bubble-ai em { color: rgba(255,255,255,.7); }
+.chat-ts { font-size: 9px; color: rgba(255,255,255,.3); margin-top: 3px; }
+.chat-ts-user { text-align: right; }
+.chat-chip { background: rgba(232,169,60,.15); border: 1px solid rgba(232,169,60,.3); color: #E8C96A; font-size: 11px; padding: 6px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: 'IBM Plex Sans', sans-serif; }
+.chat-chip:active { background: rgba(232,169,60,.3); }
+.chat-typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: rgba(255,255,255,.1); border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+.chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.4); animation: chatDot 1.2s infinite; }
+.chat-typing span:nth-child(2) { animation-delay: .2s; }
+.chat-typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes chatDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+.chat-mic-active { background: #D64545 !important; animation: micPulse 1s infinite; }
+@keyframes micPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* @media print — PDF export */
+@media print {
+  body > *:not(#print-frame) { display: none !important; }
+  #print-frame { display: block !important; position: fixed; inset: 0; background: #fff; z-index: 999999; }
+  #print-frame * { color: #000 !important; background: #fff !important; border-color: #ccc !important; }
+  @page { margin: 15mm; size: A4; }
+}
+#print-frame { display: none; }
+/* Emergency */
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+/* Triage levels */
+.triage-ok   { background:rgba(58,125,92,.12); border-left:3px solid #3A7D5C; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
+.triage-warn { background:rgba(184,129,74,.12); border-left:3px solid #B8814A; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
+.triage-err  { background:rgba(192,48,48,.12);  border-left:3px solid #C03030; padding:8px 12px; border-radius:0 8px 8px 0; margin:6px 0; }
+/* TTS */
+.chat-tts-btn { background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.5; padding:2px 4px; transition:opacity .15s; }
+.chat-tts-btn:hover { opacity:1; }
+.chat-tts-btn.speaking { opacity:1; animation:ttsPulse .8s infinite; }
+@keyframes ttsPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* Wake word indicator */
+#wake-indicator { position:fixed; top: calc(var(--sat) + 8px); left:50%; transform:translateX(-50%); background:#D64545; color:#fff; font-size:11px; font-weight:700; padding:6px 16px; border-radius:20px; z-index:9999; display:none; letter-spacing:.06em; }
+/* Status dot */
+.adm-dot-ok { width:7px;height:7px;border-radius:50%;background:#3DAA72;flex-shrink:0; }

@@ -1,0 +1,94 @@
+import { useNavigate } from 'react-router-dom';
+
+export default function GYAppointments() {
+  const navigate = useNavigate();
+
+  const schedule = [
+    { day: 'T2', date: '11/5', session: '17h–20h', today: true },
+    { day: 'T3', date: '12/5', session: '17h–20h' },
+    { day: 'T4', date: '13/5', session: '17h–20h' },
+    { day: 'T5', date: '14/5', session: 'Nghỉ' },
+    { day: 'T6', date: '15/5', session: '17h–20h' },
+    { day: 'T7', date: '16/5', session: 'SA+Khám' },
+    { day: 'CN', date: '17/5', session: 'Nghỉ' },
+  ];
+
+  const pastVisits = [
+    { date: '10/04/2026', type: 'Siêu âm nang noãn', note: 'Nang noãn đa dạng, không polycystic. Theo dõi tiếp.' },
+    { date: '10/03/2026', type: 'Khám phụ khoa tổng quát', note: 'Không phát hiện bất thường. Chu kỳ ổn định 28 ngày.' },
+  ];
+
+  return (
+    <div className="min-h-screen" style={{ background: '#FDEEF0' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-[22px] pt-[calc(env(safe-area-inset-top)+14px)] pb-0 bg-[#FDEEF0]">
+        <button onClick={() => navigate('/phukhoa')} className="w-9 h-9 flex items-center justify-center">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A6070" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </button>
+        <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[#9A6070]">Lịch hẹn</div>
+        <div className="w-9" />
+      </div>
+
+      <div className="px-[22px] pt-3.5 pb-24 space-y-5">
+        {/* Hero */}
+        <div className="rounded-[20px] p-[18px_20px]" style={{ background: '#2A1015' }}>
+          <div className="text-[9px] font-bold tracking-[.2em] uppercase text-[rgba(240,184,192,.6)] mb-1.5">Lịch hẹn tiếp theo</div>
+          <div className="flex items-baseline gap-2 mb-1">
+            <div className="font-serif text-[28px] font-light text-white leading-none">15 tháng 5</div>
+            <div className="text-[13px] text-[#F0B8C0] italic font-serif">09:00</div>
+          </div>
+          <div className="text-[12px] text-white/50 mb-2.5">BS. Hoàng Thanh Tuấn · PK Phụ Sản 315</div>
+          <div className="text-[13px] font-semibold text-white">Siêu âm nang noãn</div>
+        </div>
+
+        {/* Lịch BS */}
+        <div>
+          <div className="flex items-center gap-2 mb-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#FFF0F2] border-[0.5px] border-[#E8B8C4] flex-shrink-0 flex items-center justify-center text-[14px]">👨‍⚕️</div>
+            <div className="text-[10px] font-bold tracking-[.2em] uppercase text-[#2A1015]">Lịch BS Tuấn · Tuần này</div>
+          </div>
+          <div className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] overflow-hidden">
+            {schedule.map((s, i) => (
+              <div key={i} className={`flex justify-between items-center px-4 py-3 ${i < schedule.length - 1 ? 'border-b-[0.5px] border-[#E8B8C4]' : ''} ${s.today ? 'bg-[#FFF0F2]' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <span className={`text-[11px] font-bold w-6 ${s.today ? 'text-[#C96080]' : 'text-[#9A6070]'}`}>{s.day}</span>
+                  <span className={`text-[12px] ${s.today ? 'text-[#2A1015] font-semibold' : 'text-[#2A1015]'}`}>{s.date}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[11px] ${s.session === 'Nghỉ' ? 'text-[#9A6070] italic' : s.today ? 'text-[#C96080] font-semibold' : 'text-[#9A6070]'}`}>{s.session}</span>
+                  {s.today && <span className="text-[9px] font-bold bg-[#C96080] text-white px-2 py-0.5 rounded-full">Hôm nay</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Nút đặt lịch */}
+        <button className="w-full py-3.5 rounded-[12px] text-white font-bold text-[14px] tracking-[.06em]" style={{ background: '#C96080' }}>
+          Đặt lịch khám mới
+        </button>
+
+        {/* Lịch sử */}
+        <div>
+          <div className="flex items-center gap-2 mb-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#FFF0F2] border-[0.5px] border-[#E8B8C4] flex-shrink-0 flex items-center justify-center text-[14px]">📋</div>
+            <div className="text-[10px] font-bold tracking-[.2em] uppercase text-[#2A1015]">Lịch sử đã khám</div>
+          </div>
+          <div className="space-y-2">
+            {pastVisits.map((v, i) => (
+              <div key={i} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4">
+                <div className="flex justify-between items-start mb-1.5">
+                  <div className="font-semibold text-[13px] text-[#2A1015]">{v.type}</div>
+                  <div className="text-[11px] text-[#9A6070]">{v.date}</div>
+                </div>
+                <div className="font-serif italic text-[12px] text-[#9A6070] leading-[1.6] border-l-2 border-[#E8B8C4] pl-3">{v.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

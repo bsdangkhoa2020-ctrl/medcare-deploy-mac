@@ -10,6 +10,11 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        portal: path.resolve(__dirname, 'portal.html')
+      }
+    }
   }
 })

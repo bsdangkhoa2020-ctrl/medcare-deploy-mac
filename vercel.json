@@ -1,13 +1,19 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/manifest.json",     "destination": "/manifest.json" },
+    { "source": "/sankhoa(.*)",       "destination": "/portal.html" },
+    { "source": "/phukhoa(.*)",       "destination": "/portal.html" },
+    { "source": "/letan(.*)",         "destination": "/portal.html" },
+    { "source": "/bacsi(.*)",         "destination": "/portal.html" },
+    { "source": "/login",             "destination": "/portal.html" },
+    { "source": "/(.*)",              "destination": "/portal.html" }
   ],
   "headers": [
     {
       "source": "/manifest.json",
       "headers": [
-        { "key": "Content-Type", "value": "application/manifest+json" },
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "Content-Type",   "value": "application/manifest+json" },
+        { "key": "Cache-Control",  "value": "public, max-age=86400" }
       ]
     }
   ]
