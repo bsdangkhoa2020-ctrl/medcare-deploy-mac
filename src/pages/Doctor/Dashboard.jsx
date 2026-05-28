@@ -55,11 +55,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={() => navigate('/doctor/chat')}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gold-dk text-white rounded-xl text-sm font-bold hover:bg-gold transition-all shadow-sm">
-              <Icon d={ICONS.chat} className="w-4 h-4" /> Trợ lý AI
-            </button>
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 border border-gold-md/50 text-gold-md rounded-xl text-sm font-bold hover:bg-gold-lt hover:text-ink transition-all">

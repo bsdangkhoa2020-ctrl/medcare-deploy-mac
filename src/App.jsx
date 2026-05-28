@@ -4,7 +4,7 @@ import OBLayout from './components/OBLayout';
 import GYLayout from './components/GYLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import FloatingChat from './components/Chatbot/FloatingChat';
+
 
 // ─── Auth ──────────────────────────────────────────────────────
 import Login from './pages/Auth/Login';
@@ -101,7 +101,7 @@ function App() {
           </Route>
 
         </Routes>
-        <FloatingChat />
+
       </Router>
     </AuthProvider>
   );
