@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 
 export default function OBDashboard() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const firstName = profile?.full_name?.split(' ').pop() || 'Mẹ';
 
@@ -70,7 +71,7 @@ export default function OBDashboard() {
       {/* ═══ LỊCH HẸN + LỊCH BS ═══ */}
       <div className="grid grid-cols-[2fr_3fr] gap-2.5 mt-5 mx-[22px]">
         {/* Lịch hẹn tiếp */}
-        <div className="bg-surface border-[0.5px] border-gold-md rounded-[14px] p-3.5 cursor-pointer" onClick={() => {}}>
+        <div className="bg-surface border-[0.5px] border-gold-md rounded-[14px] p-3.5 cursor-pointer" onClick={() => navigate('/sankhoa/lich-hen')}>
           <div className="text-[9px] tracking-[.2em] uppercase text-ink-muted font-semibold mb-2">Lịch hẹn tiếp theo</div>
           <div className="font-serif font-light text-[38px] leading-[.9] tracking-[-0.03em] text-ink">20</div>
           <div className="font-serif italic text-[12px] text-gold-dk mt-1.5">tháng 6</div>
@@ -78,7 +79,7 @@ export default function OBDashboard() {
         </div>
 
         {/* Lịch BS — cuộn ngang */}
-        <div className="bg-gold-lt border-[0.5px] border-gold-md rounded-[14px] p-3.5 cursor-pointer">
+        <div className="bg-gold-lt border-[0.5px] border-gold-md rounded-[14px] p-3.5 cursor-pointer" onClick={() => navigate('/sankhoa/lich-hen')}>
           <div className="flex justify-between items-center mb-2.5">
             <div className="text-[9px] tracking-[.2em] uppercase text-gold-dk font-semibold">Lịch BS Tuấn</div>
             <div className="text-[9px] text-gold-dk font-semibold tracking-[.06em]">Xem →</div>
@@ -102,6 +103,7 @@ export default function OBDashboard() {
 
       {/* ═══ CHECK-IN BUỔI TỐI ═══ */}
       <div
+        onClick={() => navigate('/sankhoa/check-in')}
         className="mx-[22px] mt-4 rounded-[20px] relative overflow-hidden cursor-pointer"
         style={{ background: '#B8814A' }}
       >
@@ -137,7 +139,7 @@ export default function OBDashboard() {
       </div>
 
       {/* ═══ BÉ TUẦN NÀY ═══ */}
-      <div className="mx-[22px] mt-3.5 border-[0.5px] border-border rounded-[20px] overflow-hidden bg-surface border-t-2 border-t-[#B8814A]">
+      <div className="mx-[22px] mt-3.5 border-[0.5px] border-border rounded-[20px] overflow-hidden bg-surface border-t-2 border-t-[#B8814A] cursor-pointer" onClick={() => navigate('/sankhoa/kien-thuc')}>
         <div className="p-[20px_20px_16px]">
           <div className="flex justify-between items-center mb-2.5">
             <div className="text-[10px] tracking-[.28em] uppercase text-gold-dk font-semibold">Bé tuần này</div>
@@ -190,7 +192,7 @@ export default function OBDashboard() {
         <a
           href="https://tnehhratorbrxjwzqnds.supabase.co/storage/v1/object/public/public-assets/ManHinhCho_WS_NextG_Cal_Final.PNG"
           target="_blank" rel="noopener noreferrer"
-          className="block border-[0.5px] border-border rounded-[20px] overflow-hidden no-underline"
+          className="block border-[0.5px] border-border rounded-[20px] overflow-hidden no-underline cursor-pointer"
         >
           <div className="relative">
             <img
@@ -221,9 +223,9 @@ export default function OBDashboard() {
       <div className="mx-[22px] mt-6">
         <div className="flex justify-between items-baseline mb-3">
           <div className="text-[10px] font-bold tracking-[.2em] uppercase text-ink">Tạp chí sức khỏe</div>
-          <div className="font-serif italic text-[13px] text-gold-dk cursor-pointer">Kiến thức thai kỳ →</div>
+          <div className="font-serif italic text-[13px] text-gold-dk cursor-pointer" onClick={() => navigate('/sankhoa/kien-thuc')}>Kiến thức thai kỳ →</div>
         </div>
-        <div className="bg-ink rounded-[20px] p-[24px_22px_20px] cursor-pointer">
+        <div className="bg-ink rounded-[20px] p-[24px_22px_20px] cursor-pointer" onClick={() => navigate('/sankhoa/kien-thuc')}>
           <div className="text-[9px] font-bold tracking-[.22em] uppercase text-[#B8814A] mb-3.5">TIÊU ĐIỂM · TAM CÁ NGUYỆT 3</div>
           <div className="font-serif text-[26px] font-normal text-white leading-[1.2] mb-3">
             7 dấu hiệu mẹ bầu <em className="italic text-[#B8814A]">không nên bỏ qua</em> trong 3 tháng cuối
