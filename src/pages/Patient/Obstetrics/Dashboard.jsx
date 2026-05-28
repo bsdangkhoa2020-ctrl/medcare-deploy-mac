@@ -88,37 +88,53 @@ export default function OBDashboard() {
         </div>
       </div>
 
-      {/* Hung Vuong Schedule */}
-      <div>
-        <div className="flex justify-between items-end mb-4">
-          <h3 className="text-xl font-serif text-ink font-semibold">Lịch làm việc theo tuần</h3>
-          <button className="text-sm font-medium text-gold-dark hover:underline flex items-center">Đặt lịch <ChevronRight className="w-4 h-4" /></button>
-        </div>
-        
-        {/* Horizontal Scrolling Schedule Cards */}
-        <div className="flex overflow-x-auto gap-4 pb-4 -mx-1 px-1 snap-x snap-mandatory custom-scrollbar">
-          {mockSchedule.map((sch) => (
-            <div key={sch.id} className="snap-start min-w-[260px] max-w-[280px] bg-white rounded-2xl p-4 border border-gold/20 shadow-sm flex-shrink-0 flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-emerald-600" />
-                    <p className="font-bold text-ink">{sch.date.split(', ')[0]}</p>
-                  </div>
-                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100">
-                    {sch.date.split(', ')[1]}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-ink mb-1">{sch.shift}</p>
-                <p className="text-xs text-ink-muted leading-relaxed">{sch.room}</p>
-              </div>
+      {/* Schedule Cards Row */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Next Appointment Card */}
+        <div className="bg-white rounded-[20px] p-5 border border-gold/20 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest mb-4">Lịch hẹn tiếp theo</p>
+            <div className="mb-2">
+              <span className="text-4xl font-serif text-ink">3</span>
             </div>
-          ))}
+            <p className="text-xs text-gold-dark font-medium italic mb-2">T4 • tháng 6</p>
+          </div>
+          <div>
+            <p className="text-xs text-ink-muted leading-relaxed">
+              Khám thai định kỳ<br />Tuần thứ 4 • 00:30
+            </p>
+          </div>
+        </div>
+
+        {/* Doctor Schedule Card */}
+        <div className="bg-[#FCF7F0] rounded-[20px] p-5 border border-gold/20 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-[10px] font-bold text-ink uppercase tracking-widest">Lịch BS Tuấn</p>
+            <button className="text-[10px] font-medium text-ink flex items-center gap-1 hover:underline">
+              Xem &rarr;
+            </button>
+          </div>
           
-          {/* Nút xem thêm lịch hoặc thẻ trống nếu ít lịch */}
-          <div className="snap-start min-w-[120px] bg-white/40 rounded-2xl p-4 border border-dashed border-gold/30 flex-shrink-0 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gold-light/20 transition-colors">
-            <p className="text-sm font-medium text-gold-dark">Tuần tới</p>
-            <ChevronRight className="w-5 h-5 text-gold-dark mt-1" />
+          <div className="space-y-3.5">
+            {[
+              { day: 'T5', date: '28/5', time: 'Tối 17:00-20:00', hasDot: true },
+              { day: 'T6', date: '29/5', time: 'Tối 17:00-20:00' },
+              { day: 'T7', date: '30/5', time: 'Tối 17:00-20:00' },
+              { day: 'CN', date: '31/5', time: 'Tối 17:00-20:00' },
+              { day: 'T2', date: '1/6', time: 'Tối 17:00-20:00' },
+            ].map((sch, idx) => (
+              <div key={idx} className="flex justify-between items-center text-xs">
+                <span className="font-semibold text-ink w-12">{sch.day} {sch.date}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-ink-muted">{sch.time}</span>
+                  {sch.hasDot ? (
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#8A7052]"></div>
+                  ) : (
+                    <div className="w-1.5 h-1.5"></div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
