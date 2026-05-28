@@ -285,7 +285,6 @@ function getRouteForRole(role, patientType) {
     return '/sankhoa'; // fallback
   }
   return '/';
-  }
 }
 
 /* ─────────────────────────────────────────────
