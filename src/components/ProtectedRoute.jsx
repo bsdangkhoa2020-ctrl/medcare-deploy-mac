@@ -15,22 +15,23 @@ export default function ProtectedRoute({ children, allowedRoles, allowedPatientT
     );
   }
 
-  // 1. Chưa đăng nhập -> Đá về trang chủ (HTML cũ)
+  // 1. Chưa đăng nhập -> Đá về trang Đăng nhập
   if (!user) {
-    window.location.href = '/';
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
-  // 2. Kiểm tra quyền Role (Doctor, Receptionist, Patient)
+  // 2. Kiểm tra quyền Role (Doctor, Receptionist, Patient, Admin)
   if (allowedRoles && !allowedRoles.includes(appRole)) {
     // Nếu đi sai phòng, tự động đá về đúng phòng của họ
+    if (appRole === 'admin') return <Navigate to="/admin" replace />;
     if (appRole === 'doctor') return <Navigate to="/bacsi" replace />;
     if (appRole === 'receptionist') return <Navigate to="/letan" replace />;
     if (appRole === 'patient') {
       if (patientType === 'ob') return <Navigate to="/sankhoa" replace />;
       if (patientType === 'gy') return <Navigate to="/phukhoa" replace />;
-      return <Navigate to="/" replace />; // Lỗi không xác định được loại bệnh nhân
+      return <Navigate to="/login" replace />; // Lỗi không xác định được loại bệnh nhân
     }
+    return <Navigate to="/login" replace />;
   }
 
   // 3. Nếu là Bệnh nhân, kiểm tra tiếp patient_type (Sản hay Phụ khoa)

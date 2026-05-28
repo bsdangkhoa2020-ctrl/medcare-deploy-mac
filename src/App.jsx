@@ -4,7 +4,12 @@ import PatientLayout from './components/PatientLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 
+// Auth Pages
+import Login from './pages/Auth/Login';
+import Consent from './pages/Auth/Consent';
+
 // Pages
+import AdminDashboard from './pages/Admin/Dashboard';
 import ReceptionistDashboard from './pages/Receptionist/Dashboard';
 import DoctorDashboard from './pages/Doctor/Dashboard';
 import Patients from './pages/Doctor/Patients';
@@ -18,14 +23,27 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Default Route: Tự động rẽ nhánh dựa vào appRole thay vì mặc định vào /letan */}
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/consent" element={<Consent />} />
+
+          {/* Trang chủ mặc định: tự redirect theo role qua ProtectedRoute */}
           <Route path="/" element={
             <ProtectedRoute>
               <Navigate to="/letan" replace />
             </ProtectedRoute>
           } />
 
-          {/* DOCTOR ROUTES (Chỉ Bác sĩ) */}
+          {/* ADMIN ROUTES */}
+          <Route element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route path="admin" element={<AdminDashboard />} />
+          </Route>
+
+          {/* DOCTOR ROUTES */}
           <Route element={
             <ProtectedRoute allowedRoles={['doctor']}>
               <Layout />
@@ -37,7 +55,7 @@ function App() {
             <Route path="bacsi/articles" element={<ComingSoon title="Tạp chí Y khoa" />} />
           </Route>
 
-          {/* RECEPTIONIST ROUTES (Chỉ Lễ tân) */}
+          {/* RECEPTIONIST ROUTES */}
           <Route element={
             <ProtectedRoute allowedRoles={['receptionist']}>
               <Layout />
@@ -46,7 +64,7 @@ function App() {
             <Route path="letan" element={<ReceptionistDashboard />} />
           </Route>
 
-          {/* PATIENT ROUTES (Bệnh nhân) */}
+          {/* PATIENT ROUTES */}
           <Route element={
             <ProtectedRoute allowedRoles={['patient']}>
               <PatientLayout />
@@ -63,7 +81,9 @@ function App() {
               </ProtectedRoute>
             } />
           </Route>
-
+          
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

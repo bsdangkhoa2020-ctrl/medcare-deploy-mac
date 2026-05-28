@@ -1,10 +1,5 @@
 {
   "rewrites": [
-    { "source": "/manifest.json", "destination": "/manifest.json" },
-    { "source": "/sankhoa(.*)", "destination": "/portal.html" },
-    { "source": "/phukhoa(.*)", "destination": "/portal.html" },
-    { "source": "/letan(.*)", "destination": "/portal.html" },
-    { "source": "/bacsi(.*)", "destination": "/portal.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
