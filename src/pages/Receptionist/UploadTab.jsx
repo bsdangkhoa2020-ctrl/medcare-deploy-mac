@@ -1,0 +1,100 @@
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import FileUploader from '../../components/FileUploader';
+import Toast from '../../components/Toast';
+
+export default function UploadTab() {
+  const [files, setFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
+
+  const showToast = (message, type = 'info') => {
+    setToast({ isVisible: true, message, type });
+  };
+
+  const handleUpload = async () => {
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    let successCount = 0;
+    
+    try {
+      showToast(`Đang đẩy ${files.length} file lên hệ thống...`, 'info');
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `receptionist_uploads/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('records')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          showToast(`Lỗi tải lên file ${file.name}`, 'error');
+          continue;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('records')
+          .getPublicUrl(filePath);
+
+        const fileUrl = publicUrlData.publicUrl;
+        const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zalo-webhook`;
+        
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event_name: 'web_upload',
+              file_url: fileUrl,
+              file_name: file.name,
+              mime_type: file.type
+            })
+          });
+          successCount++;
+        } catch (webhookErr) {
+           console.error("Webhook trigger error for", file.name, webhookErr);
+           successCount++; 
+        }
+      }
+
+      if (successCount > 0) {
+        showToast(`Đã đẩy thành công ${successCount}/${files.length} file vào hệ thống!`, 'success');
+      }
+      
+    } catch (error) {
+      console.error(error);
+      showToast(`Lỗi hệ thống: ${error.message}`, 'error');
+    } finally {
+      setIsUploading(false);
+      setFiles([]);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="mb-4">
+        <h2 className="text-2xl font-serif text-[#3E2A3D] mb-2">Cổng Nhập Liệu Hồ Sơ Cũ</h2>
+        <p className="text-[#3E2A3D]/70 text-sm">Tải lên hàng loạt file PDF/Ảnh xét nghiệm. AI sẽ tự động đọc hiểu và phân bổ về đúng hồ sơ Bệnh nhân.</p>
+      </div>
+
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-[#C7A47B]/20">
+        <FileUploader 
+          files={files} 
+          setFiles={setFiles} 
+          onUpload={handleUpload}
+          isLoading={isUploading}
+        />
+      </div>
+
+      <Toast 
+        isVisible={toast.isVisible} 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast(t => ({ ...t, isVisible: false }))} 
+      />
+    </div>
+  );
+}
