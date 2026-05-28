@@ -13,7 +13,7 @@ export default function GYDashboard() {
         {/* Top bar: cycle month + logout */}
         <div className="flex items-center justify-between mb-3 pl-1.5">
           <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-gy-muted">Chu kỳ tháng 5</div>
-          <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="w-[34px] h-[34px] border-[0.5px] border-gy-md rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 hover:bg-gy-lt transition-colors">
+          <button onClick={() => supabase.auth.signOut()} className="w-[34px] h-[34px] border-[0.5px] border-gy-md rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 hover:bg-gy-lt transition-colors">
             <LogOut className="w-[15px] h-[15px] text-gy-muted" />
           </button>
         </div>

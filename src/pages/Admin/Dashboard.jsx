@@ -42,7 +42,7 @@ export default function AdminDashboard() {
             <p className="text-muted">Xin chào, {profile?.full_name || 'Admin'}</p>
           </div>
           <button 
-            onClick={() => supabase.auth.signOut().then(() => window.location.href='/')}
+            onClick={() => supabase.auth.signOut()}
             className="flex items-center gap-2 px-4 py-2 bg-surface border-[0.5px] border-borderMd rounded-full text-muted hover:bg-gold-lt hover:text-gold-dk transition-colors"
           >
             <LogOut size={16} />

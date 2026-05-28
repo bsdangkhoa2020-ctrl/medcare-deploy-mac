@@ -19,15 +19,12 @@ export default function Layout() {
   }
 
   if (!user) {
-    // Redirect to Vanilla app login via window location to ensure full page reload
-    window.location.href = '/';
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
-  // Chặn Bệnh Nhân khỏi cổng React (chỉ được dùng Vanilla App)
+  // Chặn Bệnh Nhân khỏi cổng Layout này vì họ dùng PatientLayout
   if (appRole === 'patient') {
-    window.location.href = '/';
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return (
@@ -164,7 +161,7 @@ export default function Layout() {
               onClick={async () => {
                 const { supabase } = await import('../lib/supabase');
                 await supabase.auth.signOut();
-                window.location.href = '/';
+                // Context will handle redirect on auth state change
               }} 
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-danger-dark bg-red-50 rounded-xl hover:bg-red-100 transition-colors shadow-sm border border-red-100"
             >

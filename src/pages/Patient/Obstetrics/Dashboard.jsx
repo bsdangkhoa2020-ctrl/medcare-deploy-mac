@@ -20,9 +20,9 @@ export default function OBDashboard() {
         {/* Top bar */}
         <div className="flex justify-end items-start mb-4 relative z-10 animate-[ob-fade-up_0.45s_ease_both]">
           <div className="flex gap-2">
-            <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="w-9 h-9 border-[0.5px] border-gold/40 rounded-full flex items-center justify-center cursor-pointer text-gold/90 hover:bg-gold/10">
-              <LogOut className="w-[15px] h-[15px]" />
-            </button>
+            <button onClick={() => supabase.auth.signOut()} className="w-[34px] h-[34px] border border-gold/30 rounded-full flex items-center justify-center bg-black/10 backdrop-blur-sm cursor-pointer ml-auto flex-shrink-0 relative z-10 transition-colors hover:bg-black/20">
+            <LogOut className="w-[15px] h-[15px] text-gold" />
+          </button>
           </div>
         </div>
 
