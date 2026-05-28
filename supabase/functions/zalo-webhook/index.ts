@@ -7,8 +7,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_KEY = Deno.env.get('SB_SERVICE_KEY')!;
-// Đã xóa lệnh đọc két sắt cũ để máy chủ BẮT BUỘC dùng token mới:
-const ZALO_TOKEN   = '2942065296280499653:LsDMgYWDiJmiDvXtqMtngiGuSrZzSqIkjpZnulLRwkDCAeVlJwTOEaRSXwjCiHvc';
+// Đã khôi phục lệnh đọc từ môi trường và fallback bằng token mới:
+const ZALO_TOKEN   = Deno.env.get('ZALO_BOT_TOKEN') || '2942065296280499653:omLZHfVyvJAiHhWKZburnsSOPhzWqhmrVoWRvodfmZogKSiASWqUJCuFNrFEtIgM';
 const GEMINI_KEY   = Deno.env.get('GEMINI_API_KEY')!;
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -16,6 +16,10 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 Deno.serve(async (req) => {
   if (req.method === 'GET') {
     const url = new URL(req.url);
+    if (url.searchParams.get('test_gemini')) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}`);
+      return new Response(await res.text(), { status: 200 });
+    }
     const challenge = url.searchParams.get('challenge') || 'ok';
     return new Response(challenge, { status: 200 });
   }
@@ -27,10 +31,11 @@ Deno.serve(async (req) => {
     console.log('🔴 [WEBHOOK PAYLOAD]:', JSON.stringify(body));
 
     const event    = body?.event_name;
-    const zaloId   = body?.message?.from?.id || body?.message?.chat?.id || body?.sender?.id;
-    const msgText  = body?.message?.text || body?.message?.caption || '';
+    const zaloId   = body?.message?.from?.id || body?.message?.chat?.id || body?.sender?.id || body?.follower?.id || body?.user_id_by_app;
+    let msgText  = body?.message?.text || body?.message?.caption || '';
 
     if (!zaloId) {
+      console.error('🔴 KHÔNG TÌM THẤY ZALO ID TRONG PAYLOAD:', JSON.stringify(body));
       return new Response('ok', { status: 200 });
     }
 
@@ -41,13 +46,33 @@ Deno.serve(async (req) => {
     }
 
     // ── XỬ LÝ NHẬN TEXT ──
-    if (event === 'message.text.received' || event === 'user_send_text') {
+    if (event === 'message.text.received' || event === 'user_send_text' || msgText.trim() !== '') {
       const code = msgText.trim().toUpperCase();
-      if (/^(OB|GY)\d{3,}$/.test(code)) {
+      const phoneRegex = /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+      
+      if (code === '/START' || code === 'BẮT ĐẦU') {
+        const { data: sub } = await sb.from('zalo_subscribers').select('zalo_id').eq('zalo_id', zaloId).maybeSingle();
+        if (sub) {
+          const magicLink = `https://bstuan247.com/login?token=${zaloId}`;
+          await sendZaloMessage(zaloId, `🌸 Chào mừng chị quay trở lại!\n\nHồ sơ của chị đã sẵn sàng. Chị có thể hỏi em bất cứ vấn đề gì về sức khoẻ, hoặc bấm vào link dưới đây để xem hồ sơ bệnh án nhé:\n👉 ${magicLink}`);
+        } else {
+          await sendZaloMessage(zaloId, '🌸 Pk Bs Hoàng Thanh Tuấn, xin chào!\nĐể có thể tư vấn chính xác nhất, chị vui lòng "Chụp Ảnh Toa Thuốc" gần nhất gửi vào đây để đăng ký tài khoản nhé. 🙇‍♀️🙇‍♀️🙇‍♀️');
+        }
+      } else if (/^(OB|GY)\d{3,}$/.test(code)) {
         await handleBnCodeLink(zaloId, code);
+      } else if (phoneRegex.test(code)) {
+        const phone = code.match(phoneRegex)[0];
+        await handlePhoneVerification(zaloId, phone);
       } else {
-        // Chat với AI ảo
-        await handleChatWithBot(zaloId, msgText);
+        // Kiểm tra xem bệnh nhân đã đăng ký chưa
+        const { data: sub } = await sb.from('zalo_subscribers').select('zalo_id').eq('zalo_id', zaloId).maybeSingle();
+        if (sub) {
+          // Đã đăng ký -> Cho phép chat với AI ảo
+          await handleChatWithBot(zaloId, msgText);
+        } else {
+          // Chưa đăng ký -> Yêu cầu chụp ảnh toa thuốc
+          await sendZaloMessage(zaloId, '🌸 Pk Bs Hoàng Thanh Tuấn, xin chào!\nĐể có thể tư vấn chính xác nhất, chị vui lòng "Chụp Ảnh Toa Thuốc" gần nhất gửi vào đây để đăng ký tài khoản nhé. 🙇‍♀️🙇‍♀️🙇‍♀️');
+        }
       }
       return new Response('ok', { status: 200 });
     }
@@ -59,7 +84,13 @@ Deno.serve(async (req) => {
     }
 
     if (event === 'follow') {
-      await sendZaloMessage(zaloId, '🌸 Chào mừng bạn đến với Bot của BS. Hoàng Thanh Tuấn!\n\nĐể liên kết tài khoản, hãy nhắn mã BN (ví dụ: OB001)');
+      const { data: sub } = await sb.from('zalo_subscribers').select('zalo_id').eq('zalo_id', zaloId).maybeSingle();
+      if (sub) {
+        const magicLink = `https://bstuan247.com/login?token=${zaloId}`;
+        await sendZaloMessage(zaloId, `🌸 Chào mừng chị quay trở lại!\n\nHồ sơ của chị đã sẵn sàng. Chị có thể hỏi em bất cứ vấn đề gì về sức khoẻ, hoặc bấm vào link dưới đây để xem hồ sơ bệnh án nhé:\n👉 ${magicLink}`);
+      } else {
+        await sendZaloMessage(zaloId, '🌸 Pk Bs Hoàng Thanh Tuấn, xin chào!\nĐể có thể tư vấn chính xác nhất, chị vui lòng "Chụp Ảnh Toa Thuốc" gần nhất gửi vào đây để đăng ký tài khoản nhé. 🙇‍♀️🙇‍♀️🙇‍♀️');
+      }
     }
 
     return new Response('ok', { status: 200 });
@@ -85,7 +116,7 @@ async function handleFileUpload(zaloId: string, body: any) {
     return; 
   }
   
-  await sendZaloMessage(zaloId, `📥 Đã nhận một tài liệu mới. Đang nạp vào kho AI Gemini để phân tích... ⏳`);
+  await sendZaloMessage(zaloId, `📥 Hệ thống nhận được "Toa Thuốc" của chị, đang tiến hành tạo tài khoản...`);
 
   try {
     const fileRes = await fetch(fileUrl);
@@ -126,18 +157,16 @@ async function handleFileUpload(zaloId: string, body: any) {
     });
 
     // Thông báo
-    if (matchedBnCode) {
+    if (matchedBnCode || matchedName) {
       if (aiResult.is_abnormal) {
         await sendZaloMessage(zaloId, `⚠️ KẾT QUẢ BẤT THƯỜNG\n👤 Bệnh nhân: ${matchedName}\n📋 Tóm tắt: ${aiResult.summary}\n\n⏳ Kết quả đã được đưa vào diện cảnh báo và đang chờ Bác sĩ duyệt.`);
       } else {
-        const { data: sub } = await sb.from('zalo_subscribers').select('zalo_id').eq('bn_code', matchedBnCode).maybeSingle();
-        if (sub?.zalo_id) {
-          await sendZaloMessage(sub.zalo_id, `🌸 Chào ${matchedName}! Phòng khám đã nhận được kết quả khám của bạn. Mọi thứ bình thường.\n📄 Xem chi tiết: ${urlData?.publicUrl}`);
-        }
-        await sendZaloMessage(zaloId, `✅ Đã lưu hồ sơ thành công!\n👤 Bệnh nhân: ${matchedName}\n🟢 Đánh giá: Bình thường (Đã tự động gửi kết quả cho bệnh nhân).`);
+        const dobStr = aiResult.dob ? `\n- Sinh ngày: ${aiResult.dob}` : '';
+        const nextAppStr = aiResult.next_appointment ? `\n- Ngày tái khám tiếp theo là ${aiResult.next_appointment}.` : '';
+        await sendZaloMessage(zaloId, `Em xin được tóm tắt hồ sơ:\n- Chị "${matchedName.toUpperCase()}",${dobStr}\n- Chẩn đoán: ${aiResult.summary}${nextAppStr}\nĐể hoàn tất, chị vui lòng cho em xin **Số Điện Thoại** nhé !`);
       }
     } else {
-      await sendZaloMessage(zaloId, `📥 Đã lưu tài liệu thành công.\n👤 Tên trong phiếu: ${matchedName || 'Không rõ'}\n⚠️ Không tìm thấy mã hồ sơ trên hệ thống web để tự động liên kết.`);
+      await sendZaloMessage(zaloId, `📥 Đã lưu tài liệu thành công.\n👤 Tên trong phiếu: Không rõ\n⚠️ Không tìm thấy tên trên phiếu, chị vui lòng chụp lại rõ nét hơn nhé.`);
     }
   } catch (e) { 
     await sendZaloMessage(zaloId, `❌ Lỗi xử lý AI/Storage: ${(e as Error).message}`); 
@@ -145,9 +174,9 @@ async function handleFileUpload(zaloId: string, body: any) {
 }
 
 async function analyzeWithGemini(base64: string, mimeType: string) {
-  const prompt = `Trích xuất thông tin y tế dưới dạng JSON THUẦN TÚY: {"patient_name": "Tên bệnh nhân nếu có", "doc_type": "xet_nghiem/don_thuoc/khac", "summary": "Tóm tắt ngắn gọn", "abnormal_items": ["..."], "is_abnormal": true/false (nếu có bất thường cần bác sĩ xem)`;
+  const prompt = `Trích xuất thông tin y tế dưới dạng JSON THUẦN TÚY: {"patient_name": "Tên bệnh nhân nếu có", "dob": "Ngày tháng năm sinh nếu có (VD: 01/01/1990), nếu không có để trống", "doc_type": "xet_nghiem/don_thuoc/khac", "summary": "Chẩn đoán ngắn gọn (VD: thai 5 tuần)", "next_appointment": "Ngày tái khám tiếp theo nếu có (VD: 19/05/2026), nếu không để trống", "abnormal_items": ["..."], "is_abnormal": true/false (nếu có bất thường cần bác sĩ xem)}`;
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType, data: base64 } }] }], generationConfig: { temperature: 0.1 } })
     });
@@ -169,6 +198,15 @@ async function handleBnCodeLink(zaloId: string, code: string) {
   } else {
     await sendZaloMessage(zaloId, `❌ Không tìm thấy hồ sơ mang mã ${code}. Bạn vui lòng kiểm tra lại nhé.`);
   }
+}
+
+async function handlePhoneVerification(zaloId: string, phone: string) {
+  // Lưu user vào bảng zalo_subscribers để đánh dấu là Đã Đăng Ký
+  await sb.from('zalo_subscribers').upsert({ zalo_id: zaloId, bn_code: `TEMP_${phone}`, name: 'Bệnh nhân' }, { onConflict: 'zalo_id' });
+
+  const magicLink = `https://bstuan247.com/login?token=${zaloId}`;
+  const msg = `✅ Tài khoản đã được tạo! Để xem hồ sơ bệnh án, kết quả xét nghiệm, toa thuốc của mình, chị hãy ấn vào link bên dưới:\n\n👉 ${magicLink}\n\nTừ bây giờ, chị có thể hỏi em bất cứ vấn đề gì về sức khoẻ nhé!`;
+  await sendZaloMessage(zaloId, msg);
 }
 
 async function sendZaloMessage(toId: string, content: string) {
@@ -197,12 +235,23 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 async function handleChatWithBot(zaloId: string, userText: string) {
   await sendZaloMessage(zaloId, "💭 Bác sĩ ảo đang suy nghĩ...");
   
-  const systemPrompt = `Bạn là Trợ lý ảo AI của Phòng khám Sản phụ khoa BS CK1 Hoàng Thanh Tuấn. Bạn có kiến thức y khoa chuyên sâu. 
-Nhiệm vụ của bạn: Trả lời thân thiện, ngắn gọn (dưới 150 chữ), và luôn khuyên bệnh nhân nếu có dấu hiệu nặng thì nên đến phòng khám gặp Bác sĩ Tuấn.
-Bệnh nhân hỏi: "${userText}"`;
+  const systemPrompt = `Bạn là Trợ lý ảo Y khoa cao cấp của Hệ thống Y tế Bstuan247 (Phòng khám Sản Phụ khoa BS CK1 Hoàng Thanh Tuấn).
+🎯 PHONG CÁCH GIAO TIẾP:
+- Ấm áp, thấu cảm, lịch sự và mang hơi hướng phòng khám "boutique" cao cấp.
+- Xưng hô: "Trợ lý ảo" hoặc "Phòng khám" và gọi người dùng là "chị" hoặc "bạn".
+- Luôn dùng emoji nhẹ nhàng (🌸, 💖, 🩺). Câu văn ngắn gọn, dễ hiểu, chia đoạn rõ ràng (tối đa 150-200 chữ).
+
+🩺 NGUYÊN TẮC Y KHOA TỐI THƯỢNG:
+1. Đưa ra lời khuyên tham khảo, trấn an tâm lý. TUYỆT ĐỐI KHÔNG kê đơn thuốc hay chẩn đoán xác định.
+2. Dấu hiệu NGUY HIỂM (đau bụng dữ dội, ra máu thai kỳ, thai ít máy...): Phải cảnh báo KHẨN CẤP và khuyên đến phòng khám ngay lập tức.
+3. Luôn khéo léo mời bệnh nhân đặt lịch đến phòng khám để BS Tuấn trực tiếp siêu âm/thăm khám.
+4. Nhắc nhẹ: Bệnh nhân có thể gửi ẢNH chụp kết quả siêu âm/xét nghiệm vào đây, AI sẽ tự động đọc và báo cáo cho Bác sĩ.
+
+💬 CÂU HỎI CỦA BỆNH NHÂN:
+"${userText}"`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         contents: [{ parts: [{ text: systemPrompt }] }], 

@@ -17,3 +17,4 @@ node-v*/
 
 # Build output (Vercel tự build)
 dist/
+.vercel
