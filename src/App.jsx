@@ -83,6 +83,8 @@ function App() {
             <Route path="sankhoa/check-in"    element={<OBCheckin />} />
             <Route path="sankhoa/cu-dong"     element={<KickCounter />} />
             <Route path="sankhoa/kien-thuc"   element={<OBKnowledge />} />
+            <Route path="sankhoa/be-tuan-nay" element={<OBKnowledge />} />
+            <Route path="sankhoa/tap-chi"     element={<ComingSoon title="Tạp chí Y khoa" />} />
           </Route>
 
           {/* ══════════════════════════════════════════════════════
