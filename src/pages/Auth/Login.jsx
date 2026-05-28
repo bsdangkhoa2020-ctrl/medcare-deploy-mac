@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,21 @@ export default function Login() {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
+
+  const { user, appRole, patientType } = useAuth();
+
+  useEffect(() => {
+    if (user && appRole) {
+      if (appRole === 'admin') navigate('/admin');
+      else if (appRole === 'doctor') navigate('/bacsi');
+      else if (appRole === 'receptionist') navigate('/letan');
+      else if (appRole === 'patient') {
+        if (patientType === 'ob') navigate('/sankhoa');
+        else if (patientType === 'gy') navigate('/phukhoa');
+        else navigate('/sankhoa'); // Dự phòng
+      }
+    }
+  }, [user, appRole, patientType, navigate]);
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
@@ -34,9 +50,8 @@ export default function Login() {
         return;
       }
       
-      // auth context will automatically detect the session and ProtectedRoute will handle redirect
-      // but to be safe, we can force a reload or let context react.
-      window.location.href = '/';
+      // Không dùng window.location.href nữa để tránh reload trắng trang.
+      // useEffect ở trên sẽ tự động bắt lấy state user và navigate đi mượt mà.
 
     } catch (err) {
       setError('Lỗi kết nối. Vui lòng thử lại.');
