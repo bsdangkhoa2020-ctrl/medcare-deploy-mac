@@ -87,28 +87,6 @@ export default function ReceptionistDashboard() {
             } else {
                showToast(`📥 File tải lên thành công, nhưng AI không tìm thấy tên.`, 'info');
             }
-
-            // [LỖI THIẾU TỪ TRƯỚC]: Phải ghi kết quả vào bảng attachments để Bác sĩ/Bệnh nhân thấy
-            if (aiResult.matchedBnCode) {
-               const { error: insertErr } = await supabase.from('attachments').insert({
-                 bn_code: aiResult.matchedBnCode,
-                 patient_id: aiResult.patient_id || null,
-                 file_name: file.name,
-                 scan_type: 'Hồ sơ tải lên từ Lễ tân',
-                 doctype: aiResult.doc_type || 'khac',
-                 ai_extracted: {
-                   result: aiResult.summary,
-                   is_abnormal: aiResult.is_abnormal,
-                   public_url: fileUrl,
-                 }
-               });
-               
-               if (insertErr) {
-                 showToast(`Lỗi đính kèm file: ${insertErr.message}`, 'error');
-               } else {
-                 showToast(`Đã lưu file kết quả vào hồ sơ thành công!`, 'success');
-               }
-            }
           } else {
             console.error("AI Scan failed", await aiRes.text());
             showToast(`Lỗi khi phân tích AI`, 'error');

@@ -253,9 +253,25 @@ export default function TabPatients() {
                   </div>
                 ) : (
                   <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gold/40 before:via-gold/20 before:to-transparent">
-                    {attachments.filter(a => attFilter === 'all' || a.scan_type === attFilter).map((att, idx) => {
+                    {attachments.filter(a => {
+                      if (attFilter === 'all') return true;
+                      
+                      // Map raw doc_type from AI to UI filter
+                      let uiType = a.scan_type;
+                      if (uiType === 'xet_nghiem') uiType = 'Xét nghiệm';
+                      else if (uiType === 'sieu_am') uiType = 'Siêu âm';
+                      else if (uiType === 'don_thuoc') uiType = 'Đơn thuốc';
+                      
+                      return uiType === attFilter || a.scan_type === attFilter;
+                    }).map((att, idx) => {
                       const ai = att.ai_extracted;
                       const isAbnormal = ai?.is_abnormal;
+                      
+                      // Map scan type for UI Display
+                      let displayType = att.scan_type;
+                      if (displayType === 'xet_nghiem') displayType = 'Xét nghiệm';
+                      else if (displayType === 'sieu_am') displayType = 'Siêu âm';
+                      else if (displayType === 'don_thuoc') displayType = 'Đơn thuốc';
                       
                       return (
                         <div key={att.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
@@ -269,7 +285,7 @@ export default function TabPatients() {
                             <div className="flex justify-between items-start mb-3 border-b border-gold/15 pb-3">
                               <div>
                                 <span className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md mb-2 inline-block ${isAbnormal ? 'bg-danger-lt text-danger-dk' : 'bg-gold-lt text-gold-dk'}`}>
-                                  {att.scan_type}
+                                  {displayType}
                                 </span>
                                 <h5 className="font-bold text-ink text-base line-clamp-1" title={att.file_name}>{att.file_name}</h5>
                               </div>

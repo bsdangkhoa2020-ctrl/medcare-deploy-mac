@@ -56,8 +56,8 @@ export default function OBRecords() {
     }
   }, [profile]);
 
-  const xnDocs = attachments.filter(a => a.scan_type === 'Xét nghiệm' || a.scan_type === 'Hồ sơ giấy');
-  const saDocs = attachments.filter(a => a.scan_type === 'Siêu âm');
+  const xnDocs = attachments.filter(a => a.scan_type === 'Xét nghiệm' || a.scan_type === 'xet_nghiem' || a.scan_type === 'Hồ sơ giấy');
+  const saDocs = attachments.filter(a => a.scan_type === 'Siêu âm' || a.scan_type === 'sieu_am');
 
   const handleOpenPdf = (url, title) => {
     if (!url) return;

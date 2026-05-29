@@ -68,8 +68,8 @@ export default function GYRecords() {
   };
 
   // Phân loại attachments
-  const xnRecords = attachments.filter(a => a.doctype === 'xet_nghiem' || a.doctype === 'khac' || !a.doctype);
-  const saRecords = attachments.filter(a => a.doctype === 'sieu_am');
+  const xnDocs = attachments.filter(a => a.scan_type === 'Xét nghiệm' || a.scan_type === 'xet_nghiem' || a.scan_type === 'Hồ sơ giấy');
+  const saDocs = attachments.filter(a => a.scan_type === 'Siêu âm' || a.scan_type === 'sieu_am');
 
   return (
     <div style={{ background: '#FDEEF0', minHeight: '100vh' }}>
@@ -138,8 +138,8 @@ export default function GYRecords() {
         {/* Xét nghiệm (REAL DATA) */}
         {activeTab === 'xn' && (
           isLoading ? <div className="text-center text-sm text-[#9A6070] p-4">Đang tải...</div> :
-          xnRecords.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả xét nghiệm</div> :
-          xnRecords.map((record) => (
+          xnDocs.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả xét nghiệm</div> :
+          xnDocs.map((record) => (
           <div key={record.id} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
               <div className="font-semibold text-[13px] text-[#2A1015]">{record.file_name}</div>
@@ -164,8 +164,8 @@ export default function GYRecords() {
         {/* Siêu âm (REAL DATA) */}
         {activeTab === 'sa' && (
           isLoading ? <div className="text-center text-sm text-[#9A6070] p-4">Đang tải...</div> :
-          saRecords.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả siêu âm</div> :
-          saRecords.map((record) => (
+          saDocs.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả siêu âm</div> :
+          saDocs.map((record) => (
           <div key={record.id} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
               <div className="font-semibold text-[13px] text-[#2A1015]">{record.file_name}</div>

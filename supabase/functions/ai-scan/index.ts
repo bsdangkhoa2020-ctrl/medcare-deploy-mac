@@ -163,6 +163,11 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
         }
       }
 
+      let finalScanType = 'Khác';
+      if (resultJson.doc_type === 'xet_nghiem') finalScanType = 'Xét nghiệm';
+      else if (resultJson.doc_type === 'sieu_am') finalScanType = 'Siêu âm';
+      else if (resultJson.doc_type === 'don_thuoc') finalScanType = 'Đơn thuốc';
+
       if (matchedBnCode && !dbError) {
         const { error: aErr } = await sb.from('attachments').insert({
           bn_code: matchedBnCode,
@@ -171,7 +176,7 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           file_size: file_info.file_size,
           mime_type: file_info.mime_type,
           doctype: resultJson.doc_type || 'khac',
-          scan_type: resultJson.doc_type || 'khac',
+          scan_type: finalScanType,
           status: 'ai_processed',
           is_saved_to_emr: true,
           ai_extracted: {
