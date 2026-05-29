@@ -81,6 +81,18 @@ export default function ReceptionistDashboard() {
         let matchedDob = aiResult.dob || '';
         let isNewPatient = false;
         
+        // Hàm chuyển đổi dob từ AI (text) sang định dạng YYYY-MM-DD an toàn cho PostgreSQL
+        const formatDbDate = (dStr) => {
+           if (!dStr) return null;
+           const s = dStr.trim();
+           if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+           const dmYMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+           if (dmYMatch) return `${dmYMatch[3]}-${dmYMatch[2].padStart(2,'0')}-${dmYMatch[1].padStart(2,'0')}`;
+           const yearMatch = s.match(/^(\d{4})$/);
+           if (yearMatch) return `${yearMatch[1]}-01-01`;
+           return null; // Bỏ qua nếu là chuỗi không hợp lệ (như "36 tuổi")
+        };
+        
         if (matchedName) {
           const { data: patients } = await supabase
             .from('patients')
@@ -91,59 +103,62 @@ export default function ReceptionistDashboard() {
           
           if (patients && patients.length > 0) {
             if (matchedDob) {
-               // Ưu tiên trùng tên VÀ trùng ngày sinh (so sánh chuỗi linh hoạt)
                foundPatient = patients.find(p => p.dob && (p.dob.includes(matchedDob) || matchedDob.includes(p.dob)));
             }
-            
             if (!foundPatient && !matchedDob) {
-               // AI không đọc được DOB, tạm thời lấy bệnh nhân đầu tiên trùng tên
                foundPatient = patients[0];
             }
           }
           
           if (foundPatient) {
-            // Bệnh nhân cũ
             matchedBnCode = foundPatient.bn_code; 
             matchedName = foundPatient.name; 
           } else {
-            // Bệnh nhân mới (Không có tên trong DB, hoặc trùng tên nhưng khác DOB)
             isNewPatient = true;
             matchedBnCode = 'BN_' + Math.random().toString(36).substring(2, 7).toUpperCase();
             
+            const dbDob = formatDbDate(matchedDob);
             const { error: insertErr } = await supabase.from('patients').insert({
                bn_code: matchedBnCode,
                name: matchedName,
-               dob: matchedDob || null,
-               specialty: 'khac'
+               dob: dbDob
             });
             
             if (insertErr) {
                console.error("Lỗi tạo bệnh nhân mới:", insertErr);
-               matchedBnCode = null; // Reset nếu lỗi
+               matchedBnCode = null; 
                isNewPatient = false;
             }
           }
         }
 
         // 4. Lưu hồ sơ vào database
-        await supabase.from('attachments').insert({
-          bn_code: matchedBnCode, 
-          file_name: fileName, 
-          storage_path: filePath, 
-          file_size: file.size,
-          mime_type: file.type, 
-          doctype: 'khac', 
-          scan_type: 'Hồ sơ Lễ tân',
-          status: 'ai_processed', 
-          is_saved_to_emr: true,
-          ai_extracted: { 
-            result: aiResult.summary, 
-            parsed: aiResult, 
-            type: 'khac', 
-            is_abnormal: aiResult.is_abnormal, 
-            public_url: fileUrl 
+        if (matchedBnCode) {
+          const { error: attachErr } = await supabase.from('attachments').insert({
+            bn_code: matchedBnCode, 
+            file_name: fileName, 
+            storage_path: filePath, 
+            file_size: file.size,
+            mime_type: file.type, 
+            doctype: 'khac', 
+            scan_type: 'Hồ sơ Lễ tân',
+            status: 'ai_processed', 
+            is_saved_to_emr: true,
+            ai_extracted: { 
+              result: aiResult.summary, 
+              parsed: aiResult, 
+              type: 'khac', 
+              is_abnormal: aiResult.is_abnormal, 
+              public_url: fileUrl 
+            }
+          });
+          
+          if (attachErr) {
+            console.error("Lỗi lưu attachments:", attachErr);
           }
-        });
+        } else {
+          console.warn("Bỏ qua lưu file do không xác định được mã bệnh nhân hợp lệ.");
+        }
 
         successCount++;
 
@@ -153,7 +168,7 @@ export default function ReceptionistDashboard() {
         } else if (matchedBnCode) {
            showToast(`✅ Đã gán hồ sơ vào Bệnh nhân cũ: ${matchedName}`, 'success');
         } else if (aiResult.extracted_name) {
-           showToast(`⚠️ File đã lưu. Tên trên phiếu: ${aiResult.extracted_name} (Lỗi tạo DB)`, 'info');
+           showToast(`⚠️ File đã lưu. Tên trên phiếu: ${aiResult.extracted_name} (Lỗi tạo DB)`, 'warning');
         } else {
            showToast(`📥 File đã lưu nhưng AI không đọc được tên bệnh nhân.`, 'info');
         }
