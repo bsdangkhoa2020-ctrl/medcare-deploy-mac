@@ -365,7 +365,7 @@ export default function Login() {
             borderRadius: 0, 
             border: 'none', 
             boxShadow: 'none', 
-            padding: '32px 24px', 
+            padding: '32px 20px', 
             backgroundColor: '#FFFFFF',
             display: 'flex',
             flexDirection: 'column',
@@ -378,21 +378,21 @@ export default function Login() {
 
         {/* Brand */}
         <div style={styles.brandRow}>
-          <div style={styles.logoCircle}>
-            <span style={styles.logoLetter}>B</span>
+          <div style={{ ...styles.logoCircle, ...(isMobile ? { width: '64px', height: '64px' } : {}) }}>
+            <span style={{ ...styles.logoLetter, ...(isMobile ? { fontSize: '32px' } : {}) }}>B</span>
           </div>
           <div>
-            <div style={styles.brandName}>bstuan247</div>
-            <div style={styles.brandSub}>Hệ thống quản lý phòng khám</div>
+            <div style={{ ...styles.brandName, ...(isMobile ? { fontSize: '26px' } : {}) }}>bstuan247</div>
+            <div style={{ ...styles.brandSub, ...(isMobile ? { fontSize: '12.5px' } : {}) }}>Hệ thống quản lý phòng khám</div>
           </div>
         </div>
 
         <div style={styles.divider} />
-        <p style={styles.tagline}>
+        <p style={{ ...styles.tagline, ...(isMobile ? { fontSize: '15px', marginBottom: '44px' } : {}) }}>
           BS. CK1 Hoàng Thanh Tuấn — Sản Phụ khoa
         </p>
 
-        <h1 style={styles.heading}>Đăng nhập</h1>
+        <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng nhập</h1>
 
         <form onSubmit={handleSubmit} noValidate>
           {/* Email */}
@@ -414,6 +414,7 @@ export default function Login() {
                 required
                 style={{
                   ...styles.input,
+                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
                   ...(emailFocused ? styles.inputFocus : {}),
                 }}
               />
@@ -440,6 +441,7 @@ export default function Login() {
                 style={{
                   ...styles.input,
                   paddingRight: '46px',
+                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
                   ...(passFocused ? styles.inputFocus : {}),
                 }}
               />
@@ -471,6 +473,7 @@ export default function Login() {
             onMouseLeave={() => setBtnHovered(false)}
             style={{
               ...styles.submitBtn,
+              ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
               ...(btnHovered && !loading ? styles.submitBtnHover : {}),
               ...(loading || !email.trim() || !password ? styles.submitBtnDisabled : {}),
             }}
