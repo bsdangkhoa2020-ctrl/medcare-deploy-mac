@@ -274,6 +274,14 @@ export default function Login() {
   const [passFocused, setPassFocused] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
 
+  /* ── Responsive Mobile State ── */
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
     if (!authLoading && user && appRole) {
@@ -342,8 +350,29 @@ export default function Login() {
   }
 
   return (
-    <div style={styles.page} className="mobile-fullscreen-page">
-      <div style={styles.card} className="mobile-fullscreen-card">
+    <div 
+      style={{ 
+        ...styles.page, 
+        ...(isMobile ? { padding: 0, backgroundColor: '#FEFAF5' } : {}) 
+      }} 
+    >
+      <div 
+        style={{ 
+          ...styles.card, 
+          ...(isMobile ? { 
+            maxWidth: '100%', 
+            minHeight: '100dvh', 
+            borderRadius: 0, 
+            border: 'none', 
+            boxShadow: 'none', 
+            padding: '32px 24px', 
+            backgroundColor: '#FEFAF5',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          } : {}) 
+        }} 
+      >
         {/* Gold accent bar */}
         <div style={styles.cardAccent} />
 
