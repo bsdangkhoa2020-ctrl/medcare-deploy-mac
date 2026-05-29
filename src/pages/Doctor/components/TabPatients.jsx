@@ -43,7 +43,7 @@ export default function TabPatients() {
     setSelectedPatient(patient);
     setAttFilter('all');
     setLoadingAttachments(true);
-    const { data } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('created_at', { ascending: false });
+    const { data } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('uploaded_at', { ascending: false });
     setAttachments(data || []);
     setLoadingAttachments(false);
   };
@@ -52,7 +52,7 @@ export default function TabPatients() {
     if (!selectedPatient) return;
     const channel = supabase.channel(`public:attachments:${selectedPatient.bn_code}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `bn_code=eq.${selectedPatient.bn_code}` }, async () => {
-        const { data } = await supabase.from('attachments').select('*').eq('bn_code', selectedPatient.bn_code).order('created_at', { ascending: false });
+        const { data } = await supabase.from('attachments').select('*').eq('bn_code', selectedPatient.bn_code).order('uploaded_at', { ascending: false });
         setAttachments(data || []);
       })
       .subscribe();

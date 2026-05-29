@@ -41,11 +41,11 @@ export default function OBRecords() {
     if (profile?.id) {
       const fetchDocs = async () => {
         setLoading(true);
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('attachments')
           .select('*')
           .eq('patient_id', profile.id)
-          .order('created_at', { ascending: false });
+          .order('uploaded_at', { ascending: false });
         
         if (data) setAttachments(data);
         setLoading(false);

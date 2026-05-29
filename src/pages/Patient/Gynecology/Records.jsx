@@ -55,7 +55,7 @@ export default function GYRecords() {
         .from('attachments')
         .select('*')
         .eq('bn_code', profile.bn_code)
-        .order('created_at', { ascending: false });
+        .order('uploaded_at', { ascending: false });
       
       if (!error && data) {
         setAttachments(data);
