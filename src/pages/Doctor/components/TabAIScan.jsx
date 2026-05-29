@@ -50,7 +50,8 @@ export default function TabAIScan() {
     setResult(null);
     try {
       // Upload file to Supabase storage
-      const path = `scan/${Date.now()}_${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      const path = `scan/${Date.now()}_${safeName}`;
       const { data: uploaded, error: upErr } = await supabase.storage.from('attachments').upload(path, file, { upsert: true });
       if (upErr) throw upErr;
 
