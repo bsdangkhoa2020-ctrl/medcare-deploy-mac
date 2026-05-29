@@ -100,7 +100,22 @@ export default function TabSchedule() {
 
   const saveShift = async (day, shift, location) => {
     setSaving(true);
-    const { error } = await supabase.from('doctor_schedule').upsert({ date: day, shift_name: shift, location }, { onConflict: 'date,location', ignoreDuplicates: false });
+    let s = '07:00', e = '17:00';
+    if (shift === 'HC') { s = '07:15'; e = '16:30'; }
+    else if (shift === 'A' || shift === 'Sáng') { s = '06:00'; e = '14:00'; }
+    else if (shift === 'C' || shift === 'Tối') { s = '14:00'; e = '22:00'; }
+    else if (shift === 'Sáng+Tối') { s = '08:00'; e = '20:00'; }
+    
+    const spec = location === 'hv' ? 'gy' : 'ob';
+    
+    const { error } = await supabase.from('doctor_schedule').upsert({ 
+      date: day, 
+      shift_name: shift, 
+      location,
+      start_time: s,
+      end_time: e,
+      specialty: spec
+    }, { onConflict: 'date,location', ignoreDuplicates: false });
     setSaving(false);
     if (error) return showToast('Lỗi lưu lịch: ' + error.message, 'error');
     if (location === 'hv') setHvSchedule(s => ({ ...s, [day]: shift }));
@@ -111,7 +126,25 @@ export default function TabSchedule() {
 
   const saveWeek = async () => {
     setSaving(true);
-    const rows = weekDays.map(day => ({ date: day, shift_name: weekModal.values[day] || (weekModal.type === 'hv' ? 'HC' : 'Sáng'), location: weekModal.type }));
+    const rows = weekDays.map(day => {
+      const shift = weekModal.values[day] || (weekModal.type === 'hv' ? 'HC' : 'Sáng');
+      let s = '07:00', e = '17:00';
+      if (shift === 'HC') { s = '07:15'; e = '16:30'; }
+      else if (shift === 'A' || shift === 'Sáng') { s = '06:00'; e = '14:00'; }
+      else if (shift === 'C' || shift === 'Tối') { s = '14:00'; e = '22:00'; }
+      else if (shift === 'Sáng+Tối') { s = '08:00'; e = '20:00'; }
+      
+      const spec = weekModal.type === 'hv' ? 'gy' : 'ob';
+      
+      return { 
+        date: day, 
+        shift_name: shift, 
+        location: weekModal.type,
+        start_time: s,
+        end_time: e,
+        specialty: spec
+      };
+    });
     const { error } = await supabase.from('doctor_schedule').upsert(rows, { onConflict: 'date,location', ignoreDuplicates: false });
     setSaving(false);
     if (error) return showToast('Lỗi lưu lịch tuần: ' + error.message, 'error');
