@@ -64,14 +64,20 @@ export default function TabAIScan() {
       }
 
       // Call AI scan edge function
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ file_url: publicUrl, scan_type: scanType, patient_id: selectedPatient }),
-      });
+      let res;
+      try {
+        res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ file_url: publicUrl, scan_type: scanType, patient_id: selectedPatient }),
+        });
+      } catch (fetchErr) {
+        console.warn('Fetch error (possibly CORS due to missing function), falling back to demo:', fetchErr.message);
+        res = { ok: false };
+      }
 
       if (!res.ok) {
         // Fallback: mock result for demo
