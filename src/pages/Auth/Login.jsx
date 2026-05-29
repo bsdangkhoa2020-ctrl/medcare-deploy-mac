@@ -385,8 +385,8 @@ export default function Login() {
 
         {/* Brand */}
         <div style={styles.brandRow}>
-          <div style={{ ...styles.logoCircle, ...(isMobile ? { width: '64px', height: '64px' } : {}) }}>
-            <span style={{ ...styles.logoLetter, ...(isMobile ? { fontSize: '32px' } : {}) }}>B</span>
+          <div style={{ ...styles.logoCircle, overflow: 'hidden', ...(isMobile ? { width: '64px', height: '64px' } : {}) }}>
+            <img src="/doctor-tuan-avatar.jpg" alt="Doctor Tuan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <div style={{ ...styles.brandName, ...(isMobile ? { fontSize: '26px' } : {}) }}>bstuan247</div>
