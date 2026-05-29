@@ -460,30 +460,7 @@ export default function Register() {
             </div>
           </div>
 
-          {/* DOB */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="register-dob" style={styles.label}>
-              Ngày tháng năm sinh
-            </label>
-            <div style={styles.inputWrapper}>
-              <input
-                id="register-dob"
-                type="text"
-                placeholder="Ví dụ: 20/10/1990"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                onFocus={() => setDobFocused(true)}
-                onBlur={() => setDobFocused(false)}
-                disabled={loading}
-                required
-                style={{
-                  ...styles.input,
-                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(dobFocused ? styles.inputFocus : {}),
-                }}
-              />
-            </div>
-          </div>
+
 
           {/* Phone */}
           <div style={styles.fieldGroup}>
@@ -541,32 +518,60 @@ export default function Register() {
             </div>
           </div>
 
-          {/* LMP (Only if Obstetrics) */}
-          {department === 'ob' && (
-            <div style={styles.fieldGroup}>
-              <label htmlFor="register-lmp" style={styles.label}>
-                Ngày đầu của kỳ kinh cuối
+          {/* Combined DOB and LMP Row */}
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+            {/* DOB */}
+            <div style={{ flex: 1 }}>
+              <label htmlFor="register-dob" style={styles.label}>
+                Ngày sinh
               </label>
               <div style={styles.inputWrapper}>
                 <input
-                  id="register-lmp"
+                  id="register-dob"
                   type="text"
-                  placeholder="Ví dụ: 20/10/1990"
-                  value={lmp}
-                  onChange={(e) => setLmp(e.target.value)}
-                  onFocus={() => setLmpFocused(true)}
-                  onBlur={() => setLmpFocused(false)}
+                  placeholder="20/10/1990"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  onFocus={() => setDobFocused(true)}
+                  onBlur={() => setDobFocused(false)}
                   disabled={loading}
                   required
                   style={{
                     ...styles.input,
                     ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                    ...(lmpFocused ? styles.inputFocus : {}),
+                    ...(dobFocused ? styles.inputFocus : {}),
                   }}
                 />
               </div>
             </div>
-          )}
+
+            {/* LMP (Only if Obstetrics) */}
+            {department === 'ob' && (
+              <div style={{ flex: 1 }}>
+                <label htmlFor="register-lmp" style={styles.label}>
+                  Kỳ kinh cuối
+                </label>
+                <div style={styles.inputWrapper}>
+                  <input
+                    id="register-lmp"
+                    type="text"
+                    placeholder="20/10/2026"
+                    value={lmp}
+                    onChange={(e) => setLmp(e.target.value)}
+                    onFocus={() => setLmpFocused(true)}
+                    onBlur={() => setLmpFocused(false)}
+                    disabled={loading}
+                    required
+                    style={{
+                      ...styles.input,
+                      ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
+                      ...(lmpFocused ? styles.inputFocus : {}),
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Password */}
           <div style={styles.fieldGroup}>
