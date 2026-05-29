@@ -300,6 +300,25 @@ export default function Register() {
     }
   }, [user, appRole, patientType, authLoading, navigate]);
 
+  /* ── EDD Calculation ── */
+  const calculateEDD = (lmpStr) => {
+    if (!lmpStr) return '';
+    const match = lmpStr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const year = parseInt(match[3], 10);
+      const lmpDate = new Date(year, month, day);
+      if (!isNaN(lmpDate.getTime())) {
+        const eddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+        return `${eddDate.getDate().toString().padStart(2, '0')}/${(eddDate.getMonth() + 1).toString().padStart(2, '0')}/${eddDate.getFullYear()}`;
+      }
+    }
+    return '';
+  };
+
+  const eddValue = department === 'ob' ? calculateEDD(lmp) : '';
+
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -332,7 +351,8 @@ export default function Register() {
             phone: phone.trim(),
             dob: dob,
             department: department,
-            lmp: lmp
+            lmp: lmp,
+            edd: eddValue
           }
         }
       });
@@ -568,6 +588,11 @@ export default function Register() {
                   }}
                 />
               </div>
+              {eddValue && (
+                <div style={{ marginTop: '6px', fontSize: '13px', color: '#27ae60', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+                  Dự sinh: <strong>{eddValue}</strong>
+                </div>
+              )}
             </div>
           </div>
 
