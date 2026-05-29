@@ -390,7 +390,7 @@ export default function Login() {
           </div>
           <div>
             <div style={{ ...styles.brandName, ...(isMobile ? { fontSize: '26px' } : {}) }}>bstuan247</div>
-            <div style={{ ...styles.brandSub, ...(isMobile ? { fontSize: '12.5px' } : {}) }}>Hệ thống quản lý phòng khám</div>
+            <div style={{ ...styles.brandSub, ...(isMobile ? { fontSize: '12.5px' } : {}) }}>HỆ THỐNG CHĂM SÓC KHÁCH HÀNG</div>
           </div>
         </div>
 
@@ -497,7 +497,7 @@ export default function Login() {
         </form>
 
         <p style={styles.footer}>
-          © {new Date().getFullYear()} bstuan247 · Phòng khám BS. Hoàng Thanh Tuấn
+          © {new Date().getFullYear()} bstuan247.com
         </p>
       </div>
     </div>
