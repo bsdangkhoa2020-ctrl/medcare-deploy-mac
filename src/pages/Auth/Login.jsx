@@ -343,32 +343,6 @@ export default function Login() {
 
   return (
     <div style={styles.page} className="mobile-fullscreen-page">
-      {/* Global keyframe for spinner */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        @media (max-width: 768px) {
-          .mobile-fullscreen-card {
-            max-width: 100% !important;
-            min-height: 100dvh !important;
-            border-radius: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 40px 24px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            background-color: #FEFAF5 !important;
-          }
-          .mobile-fullscreen-page {
-            padding: 0 !important;
-            background: none !important;
-            background-color: #FEFAF5 !important;
-          }
-        }
-      `}</style>
-
       <div style={styles.card} className="mobile-fullscreen-card">
         {/* Gold accent bar */}
         <div style={styles.cardAccent} />

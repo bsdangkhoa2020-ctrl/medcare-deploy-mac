@@ -67,3 +67,28 @@ html {
   66%     { transform:translate(-6px,5px) scale(.96); }
 }
 
+/* Auth Login Global Styles */
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+@media (max-width: 768px) {
+  .mobile-fullscreen-card {
+    max-width: 100% !important;
+    min-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 32px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    background-color: #FEFAF5 !important;
+    margin: 0 !important;
+  }
+  .mobile-fullscreen-page {
+    padding: 0 !important;
+    background: none !important;
+    background-color: #FEFAF5 !important;
+  }
+}
