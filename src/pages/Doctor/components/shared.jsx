@@ -54,12 +54,12 @@ export function get7Days(base) {
   });
 }
 
-export function Modal({ open, onClose, title, children, wide }) {
+export function Modal({ open, onClose, title, children, wide, full }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-bg rounded-t-3xl sm:rounded-3xl shadow-2xl w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'} max-h-[90vh] flex flex-col z-10 border border-gold/30`}>
+      <div className={`relative bg-bg rounded-t-3xl sm:rounded-3xl shadow-2xl w-full ${full ? 'sm:max-w-5xl h-[95vh]' : wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'} ${!full && 'max-h-[90vh]'} flex flex-col z-10 border border-gold/30`}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-gold/20 shrink-0">
           <h3 className="text-xl font-serif font-bold text-ink">{title}</h3>
           <button onClick={onClose} className="p-2 rounded-full bg-gold-lt hover:bg-gold/30 text-gold-dk transition-colors">
