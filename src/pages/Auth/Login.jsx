@@ -395,10 +395,28 @@ export default function Login() {
         </div>
 
         <div style={styles.divider} />
-        <p style={{ ...styles.tagline, ...(isMobile ? { fontSize: '15px', marginBottom: '44px' } : {}) }}>
-          BS. Ck1 Hoàng Thanh Tuấn<br />
-          Sản - Phụ khoa - Hiếm muộn
-        </p>
+        <div style={{ marginBottom: isMobile ? '44px' : '36px' }}>
+          <div style={{ 
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: isMobile ? '18px' : '16px',
+            fontWeight: 600,
+            color: '#1A1A1A',
+            letterSpacing: '0.02em',
+            marginBottom: '6px'
+          }}>
+            BS. CK1 Hoàng Thanh Tuấn
+          </div>
+          <div style={{
+            fontFamily: "'Be Vietnam Pro', sans-serif",
+            fontSize: isMobile ? '11.5px' : '10.5px',
+            fontWeight: 500,
+            color: '#B8814A',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase'
+          }}>
+            Sản - Phụ Khoa - Hiếm Muộn
+          </div>
+        </div>
 
         <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng nhập</h1>
 
