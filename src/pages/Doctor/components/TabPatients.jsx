@@ -9,6 +9,9 @@ export default function TabPatients() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ob');
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [attachments, setAttachments] = useState([]);
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
 
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
@@ -28,6 +31,14 @@ export default function TabPatients() {
     const matchFilter = p.specialty === filter;
     return matchSearch && matchFilter;
   });
+
+  const handleSelectPatient = async (patient) => {
+    setSelectedPatient(patient);
+    setLoadingAttachments(true);
+    const { data } = await supabase.from('attachments').select('*').eq('patient_id', patient.id).order('created_at', { ascending: false });
+    setAttachments(data || []);
+    setLoadingAttachments(false);
+  };
 
 
 
@@ -78,7 +89,7 @@ export default function TabPatients() {
         ) : (
           <div className="divide-y divide-gold/15">
             {filteredPatients.map(p => (
-              <div key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gold-lt/20 transition-colors">
+              <div key={p.id} onClick={() => handleSelectPatient(p)} className="flex items-center gap-4 px-6 py-4 hover:bg-gold-lt/30 transition-colors cursor-pointer">
                 <div className="w-10 h-10 rounded-full bg-gold-lt flex items-center justify-center font-serif text-gold-dk font-bold text-lg shrink-0 border border-gold/30">
                   {(p.name || '?')[0].toUpperCase()}
                 </div>
@@ -97,6 +108,64 @@ export default function TabPatients() {
       </div>
 
 
+
+      {/* Patient Detail Modal */}
+      {selectedPatient && (
+        <Modal title={`Hồ sơ: ${selectedPatient.name}`} onClose={() => setSelectedPatient(null)}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm mb-6 bg-surface p-4 rounded-xl border border-gold/20">
+              <div>
+                <span className="text-ink-muted text-xs block uppercase">Mã BN</span>
+                <p className="font-bold font-mono">{selectedPatient.bn_code || '---'}</p>
+              </div>
+              <div>
+                <span className="text-ink-muted text-xs block uppercase">Chuyên khoa</span>
+                <p className="font-bold">{selectedPatient.specialty === 'ob' ? 'Sản khoa' : 'Phụ khoa'}</p>
+              </div>
+              <div>
+                <span className="text-ink-muted text-xs block uppercase">Ngày sinh</span>
+                <p className="font-bold">{selectedPatient.dob || '---'}</p>
+              </div>
+              <div>
+                <span className="text-ink-muted text-xs block uppercase">Liên hệ</span>
+                <p className="font-bold truncate">{selectedPatient.phone || selectedPatient.email || '---'}</p>
+              </div>
+            </div>
+
+            <h4 className="font-serif font-bold text-ink border-b border-gold/20 pb-2">Tài liệu xét nghiệm (AI Scan)</h4>
+            {loadingAttachments ? (
+              <div className="flex justify-center py-8">
+                <svg className="w-5 h-5 animate-spin text-gold-dk" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+              </div>
+            ) : attachments.length === 0 ? (
+              <p className="text-sm text-ink-muted py-8 text-center italic bg-surface/50 rounded-xl border border-dashed border-gold/30">Chưa có kết quả xét nghiệm nào.</p>
+            ) : (
+              <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                {attachments.map(att => (
+                  <div key={att.id} className="p-4 border border-gold/30 rounded-xl bg-surface shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <span className="font-bold text-ink block">{att.file_name}</span>
+                        <span className="text-xs text-ink-muted font-mono">{att.scan_type}</span>
+                      </div>
+                      <span className="text-xs text-ink-muted font-medium bg-gold-lt/30 px-2 py-1 rounded-md">{fmtDate(att.created_at)}</span>
+                    </div>
+                    {att.ai_extracted ? (
+                       <div className="bg-white p-3 rounded-lg border border-gold/20 shadow-inner">
+                         <pre className="whitespace-pre-wrap font-mono text-xs overflow-x-auto text-ink-muted">
+                           {JSON.stringify(att.ai_extracted, null, 2)}
+                         </pre>
+                       </div>
+                    ) : (
+                       <p className="text-xs italic text-ink-muted">Đang cập nhật dữ liệu AI...</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
 
       <Toast isVisible={toast.isVisible} message={toast.message} type={toast.type} onClose={() => setToast(t => ({ ...t, isVisible: false }))} />
     </div>
