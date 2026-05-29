@@ -1,0 +1,259 @@
+/* 
+  Boutique & Editorial Design cho Phụ Khoa (GY)
+  Milk White: #FDFCF0 (Nền chính)
+  Pastel Pink: #FCE4EC (Điểm nhấn nhẹ)
+  Deep Plum: #4A2E3B (Chữ chính)
+  Rosewood: #8B455A (Chữ nhấn)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+.gy-workspace {
+  --gy-bg-primary: #FDFCF0;
+  --gy-bg-card: #FFFFFF;
+  --gy-pink-light: #FCE4EC;
+  --gy-pink-accent: #F8BBD0;
+  --gy-plum-dark: #4A2E3B;
+  --gy-plum-light: #7A5B69;
+  --gy-rosewood: #8B455A;
+  --gy-text-muted: #A38C95;
+  --gy-border: #F3E5E8;
+
+  font-family: 'Inter', sans-serif;
+  background-color: var(--gy-bg-primary);
+  color: var(--gy-plum-dark);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+.gy-workspace h1, 
+.gy-workspace h2, 
+.gy-workspace h3, 
+.gy-workspace h4, 
+.gy-workspace .serif-font {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.gy-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.gy-header {
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+}
+
+.gy-header-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--gy-plum-dark);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.gy-header-subtitle {
+  font-size: 1rem;
+  color: var(--gy-plum-light);
+  font-weight: 300;
+}
+
+.gy-card {
+  background: var(--gy-bg-card);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(74, 46, 59, 0.05);
+  border: 1px solid var(--gy-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(74, 46, 59, 0.08);
+}
+
+.gy-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  color: var(--gy-plum-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gy-btn-primary {
+  background-color: var(--gy-pink-light);
+  color: var(--gy-rosewood);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.gy-btn-primary:hover {
+  background-color: var(--gy-pink-accent);
+  color: var(--gy-plum-dark);
+}
+
+/* Micro animations */
+@keyframes pulse-soft {
+  0% { box-shadow: 0 0 0 0 rgba(248, 187, 208, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(248, 187, 208, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 187, 208, 0); }
+}
+
+.gy-alert-urgent {
+  border: 1px solid var(--gy-pink-accent);
+  background: linear-gradient(to bottom right, var(--gy-bg-card), var(--gy-pink-light));
+}
+
+.gy-alert-urgent .gy-btn-primary {
+  background-color: var(--gy-rosewood);
+  color: white;
+  animation: pulse-soft 2s infinite;
+}
+
+.gy-alert-urgent .gy-btn-primary:hover {
+  background-color: var(--gy-plum-dark);
+}
+
+/* Calendar styling for Cycle Tracker */
+.gy-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.gy-calendar-day-header {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gy-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.gy-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  color: var(--gy-plum-dark);
+  position: relative;
+  font-weight: 500;
+}
+
+.gy-calendar-day.empty {
+  visibility: hidden;
+}
+
+.gy-calendar-day.menstruation {
+  background-color: var(--gy-pink-light);
+  color: var(--gy-rosewood);
+}
+
+.gy-calendar-day.ovulation {
+  border: 1.5px dashed var(--gy-pink-accent);
+  color: var(--gy-plum-dark);
+}
+
+.gy-calendar-day.today {
+  background-color: var(--gy-plum-dark);
+  color: white;
+  font-weight: 600;
+}
+
+.gy-calendar-day.future-menstruation {
+  background-color: transparent;
+  border: 1px solid var(--gy-pink-light);
+  color: var(--gy-text-muted);
+}
+
+.gy-cycle-status {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--gy-border);
+}
+
+.gy-cycle-days-left {
+  font-size: 3rem;
+  font-weight: 400;
+  color: var(--gy-rosewood);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.gy-cycle-label {
+  font-size: 0.9rem;
+  color: var(--gy-plum-light);
+}
+
+/* Pap Smear specific */
+.gy-pap-timeline {
+  display: flex;
+  justify-content: space-between;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.gy-pap-timeline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--gy-border);
+  z-index: 1;
+}
+
+.gy-pap-point {
+  position: relative;
+  z-index: 2;
+  background: var(--gy-bg-card);
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gy-pap-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--gy-text-muted);
+}
+
+.gy-pap-dot.active {
+  background-color: var(--gy-rosewood);
+  box-shadow: 0 0 0 4px var(--gy-pink-light);
+}
+
+.gy-pap-date {
+  font-size: 0.8rem;
+  color: var(--gy-plum-light);
+  font-weight: 500;
+}
+
+.gy-pap-status-text {
+  font-size: 1.1rem;
+  color: var(--gy-plum-dark);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}

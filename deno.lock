@@ -1,0 +1,33 @@
+{
+  "version": "5",
+  "redirects": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.106.2"
+  },
+  "remote": {
+    "https://esm.sh/@supabase/supabase-js@2.106.2": "239a7bd494d2521e29f1b25f00b2dfb595a6b8eb4694543db239073eaecf8d32"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@supabase/supabase-js@^2.43.4",
+        "npm:@types/react-dom@^18.3.0",
+        "npm:@types/react@^18.3.3",
+        "npm:@vitejs/plugin-react@^4.3.0",
+        "npm:autoprefixer@^10.4.19",
+        "npm:clsx@^2.1.1",
+        "npm:dotenv@^17.4.2",
+        "npm:framer-motion@^11.2.6",
+        "npm:lucide-react@0.383",
+        "npm:postcss@^8.4.38",
+        "npm:react-dom@^18.3.1",
+        "npm:react-dropzone@^14.2.3",
+        "npm:react-router-dom@^6.23.1",
+        "npm:react@^18.3.1",
+        "npm:tailwind-merge@^2.3.0",
+        "npm:tailwindcss@^3.4.3",
+        "npm:vite@^5.2.11",
+        "npm:ws@^8.21.0"
+      ]
+    }
+  }
+}

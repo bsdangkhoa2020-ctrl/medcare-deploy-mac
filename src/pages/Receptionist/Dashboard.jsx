@@ -35,6 +35,7 @@ export default function ReceptionistDashboard() {
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
         const filePath = `receptionist_uploads/${fileName}`;
 
+        // 1. Tải lên Storage
         const { error: uploadError } = await supabase.storage
           .from('records')
           .upload(filePath, file);
@@ -49,28 +50,78 @@ export default function ReceptionistDashboard() {
           .getPublicUrl(filePath);
 
         const fileUrl = publicUrlData.publicUrl;
-        const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zalo-webhook`;
+        
+        // 2. Kích hoạt AI Scan Edge Function
+        const aiScanUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`;
+        let aiResult = { extracted_name: '', summary: 'Không có tóm tắt', is_abnormal: false, abnormal_items: [] };
         
         try {
-          await fetch(webhookUrl, {
+          showToast(`AI đang đọc dữ liệu từ ${file.name}...`, 'info');
+          const aiRes = await fetch(aiScanUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              event_name: 'web_upload',
               file_url: fileUrl,
-              file_name: file.name,
-              mime_type: file.type
+              scan_type: 'Hồ sơ tải lên từ Lễ tân'
             })
           });
-          successCount++;
-        } catch (webhookErr) {
-           console.error("Webhook trigger error for", file.name, webhookErr);
-           successCount++; 
+          
+          if (aiRes.ok) {
+            aiResult = await aiRes.json();
+          } else {
+            console.error("AI Scan failed", await aiRes.text());
+          }
+        } catch (aiErr) {
+           console.error("Lỗi khi gọi AI Scan", aiErr);
         }
-      }
 
-      if (successCount > 0) {
-        showToast(`Đã đẩy thành công ${successCount}/${files.length} file vào hệ thống!`, 'success');
+        // 3. Tìm bệnh nhân khớp
+        let matchedBnCode = null;
+        let matchedName = aiResult.extracted_name || '';
+        
+        if (matchedName) {
+          const { data: patients } = await supabase
+            .from('patients')
+            .select('bn_code, name')
+            .ilike('name', `%${matchedName}%`)
+            .limit(3);
+            
+          if (patients && patients.length > 0) { 
+            matchedBnCode = patients[0].bn_code; 
+            matchedName = patients[0].name; 
+          }
+        }
+
+        // 4. Lưu hồ sơ vào database
+        await supabase.from('attachments').insert({
+          bn_code: matchedBnCode, 
+          file_name: fileName, 
+          storage_path: filePath, 
+          file_size: file.size,
+          mime_type: file.type, 
+          doctype: 'khac', 
+          scan_type: 'Hồ sơ Lễ tân',
+          status: 'ai_processed', 
+          is_saved_to_emr: true,
+          ai_extracted: { 
+            result: aiResult.summary, 
+            parsed: aiResult, 
+            type: 'khac', 
+            is_abnormal: aiResult.is_abnormal, 
+            public_url: fileUrl 
+          }
+        });
+
+        successCount++;
+
+        // 5. Thông báo kết quả AI cho Lễ tân
+        if (matchedBnCode) {
+           showToast(`✅ Đã gán hồ sơ vào Bệnh nhân: ${matchedName}`, 'success');
+        } else if (aiResult.extracted_name) {
+           showToast(`⚠️ File đã lưu. Tên trên phiếu: ${aiResult.extracted_name} (Chưa có trong hệ thống)`, 'info');
+        } else {
+           showToast(`📥 File đã lưu nhưng AI không đọc được tên bệnh nhân.`, 'info');
+        }
       }
       
     } catch (error) {
