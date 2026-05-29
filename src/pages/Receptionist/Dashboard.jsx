@@ -76,9 +76,55 @@ export default function ReceptionistDashboard() {
           if (aiRes.ok) {
             const aiResult = await aiRes.json();
             
-            if (aiResult.isNewPatient && aiResult.matchedBnCode) {
+            let isNewPatient = aiResult.isNewPatient;
+            let matchedBnCode = aiResult.matchedBnCode;
+
+            // FALLBACK LOGIC: NẾU Edge Function bản cũ không trả về matchedBnCode, tự xử lý trên Frontend
+            if (!matchedBnCode && aiResult.extracted_name) {
+              const pName = aiResult.extracted_name.trim().replace(/\s+/g, ' ');
+              const searchPattern = '%' + pName.split(' ').join('%') + '%';
+              
+              const { data: patients } = await supabase.from('patients')
+                .select('bn_code, name, id')
+                .ilike('name', searchPattern)
+                .limit(1);
+
+              if (patients && patients.length > 0) {
+                matchedBnCode = patients[0].bn_code;
+                isNewPatient = false;
+              } else {
+                matchedBnCode = 'BN_' + Math.floor(100000 + Math.random() * 900000).toString();
+                isNewPatient = true;
+                
+                // Parse DOB
+                let dbDob = null;
+                if (aiResult.dob) {
+                  const parts = aiResult.dob.split('/');
+                  if (parts.length === 3) dbDob = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+
+                await supabase.from('patients').insert({
+                  bn_code: matchedBnCode,
+                  name: pName,
+                  dob: dbDob,
+                  phone: aiResult.phone,
+                  address: aiResult.address,
+                  blood_type: aiResult.blood_type,
+                  allergy: aiResult.allergy,
+                  weight_kg: aiResult.weight_kg,
+                  height_cm: aiResult.height_cm,
+                  para_full: aiResult.para_full,
+                  para_preterm: aiResult.para_preterm,
+                  para_abortion: aiResult.para_abortion,
+                  para_alive: aiResult.para_alive,
+                  specialty: specialty || 'gy'
+                });
+              }
+            }
+
+            if (isNewPatient && matchedBnCode) {
                showToast(`✨ Đã tạo hồ sơ Bệnh nhân mới: ${aiResult.extracted_name}`, 'success');
-            } else if (aiResult.matchedBnCode) {
+            } else if (matchedBnCode) {
                showToast(`✅ Đã tìm thấy Bệnh nhân cũ: ${aiResult.extracted_name}`, 'success');
             } else if (aiResult.dbError) {
                showToast(`⚠️ Lỗi CSDL: ${aiResult.dbError}`, 'warning');
@@ -86,6 +132,39 @@ export default function ReceptionistDashboard() {
                showToast(`⚠️ Không thể lưu hồ sơ cho: ${aiResult.extracted_name}`, 'warning');
             } else {
                showToast(`📥 File tải lên thành công, nhưng AI không tìm thấy tên.`, 'info');
+            }
+
+            // [RẤT QUAN TRỌNG]: Lưu file vào bảng attachments 100% để EMR hiển thị được!
+            if (matchedBnCode) {
+               let finalScanType = 'Khác';
+               if (aiResult.doc_type === 'xet_nghiem') finalScanType = 'Xét nghiệm';
+               else if (aiResult.doc_type === 'sieu_am') finalScanType = 'Siêu âm';
+               else if (aiResult.doc_type === 'don_thuoc') finalScanType = 'Đơn thuốc';
+
+               const { error: insertErr } = await supabase.from('attachments').insert({
+                 bn_code: matchedBnCode,
+                 file_name: file.name,
+                 storage_path: filePath,
+                 file_size: file.size,
+                 mime_type: file.type,
+                 scan_type: finalScanType,
+                 doctype: aiResult.doc_type || 'khac',
+                 status: 'ai_processed',
+                 is_saved_to_emr: true,
+                 ai_extracted: {
+                   result: aiResult.summary,
+                   is_abnormal: aiResult.is_abnormal,
+                   public_url: fileUrl,
+                   type: aiResult.doc_type
+                 }
+               });
+               
+               if (insertErr) {
+                 console.error("Attachment Insert Error:", insertErr);
+                 showToast(`Lỗi đính kèm file: ${insertErr.message}`, 'error');
+               } else {
+                 showToast(`Đã lưu file kết quả vào hồ sơ thành công!`, 'success');
+               }
             }
           } else {
             console.error("AI Scan failed", await aiRes.text());
