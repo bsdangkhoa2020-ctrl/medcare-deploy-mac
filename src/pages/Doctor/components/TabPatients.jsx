@@ -43,7 +43,8 @@ export default function TabPatients() {
     setSelectedPatient(patient);
     setAttFilter('all');
     setLoadingAttachments(true);
-    const { data } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('uploaded_at', { ascending: false });
+    const { data, error } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('uploaded_at', { ascending: false });
+    if (error) console.error("Error fetching attachments:", error);
     setAttachments(data || []);
     setLoadingAttachments(false);
   };
@@ -290,7 +291,7 @@ export default function TabPatients() {
                                 <h5 className="font-bold text-ink text-base line-clamp-1" title={att.file_name}>{att.file_name}</h5>
                               </div>
                               <span className="text-xs text-ink-muted font-medium bg-white px-2 py-1 rounded border border-gold/20 whitespace-nowrap shadow-sm">
-                                {fmtDate(att.created_at)}
+                                {fmtDate(att.uploaded_at)}
                               </span>
                             </div>
                             
