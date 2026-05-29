@@ -322,7 +322,7 @@ export default function Register() {
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword) return;
+    if (!fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
       setError('Mật khẩu nhập lại không khớp.');
@@ -539,7 +539,7 @@ export default function Register() {
             {/* LMP */}
             <div style={{ flex: 1 }}>
               <label htmlFor="register-lmp" style={styles.label}>
-                Kỳ kinh cuối
+                Kỳ kinh cuối <span style={{ textTransform: 'none', fontWeight: 400, color: '#7A6A5A' }}>(Không bắt buộc)</span>
               </label>
               <div style={styles.inputWrapper}>
                 <input
@@ -551,7 +551,6 @@ export default function Register() {
                   onFocus={() => setLmpFocused(true)}
                   onBlur={() => setLmpFocused(false)}
                   disabled={loading}
-                  required
                   style={{
                     ...styles.input,
                     ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
@@ -648,14 +647,14 @@ export default function Register() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword}
+            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword}
             onMouseEnter={() => setBtnHovered(true)}
             onMouseLeave={() => setBtnHovered(false)}
             style={{
               ...styles.submitBtn,
               ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
               ...(btnHovered && !loading ? styles.submitBtnHover : {}),
-              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword ? styles.submitBtnDisabled : {}),
+              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword ? styles.submitBtnDisabled : {}),
             }}
           >
             {loading ? (
