@@ -21,11 +21,10 @@ export default function TabAIScan() {
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
   useEffect(() => {
-    // Tải bệnh nhân khi vừa mở (cả thật và giả lập từ localStorage)
+    // Tải bệnh nhân từ server
     const fetchPts = async () => {
       const { data } = await supabase.from('patients').select('id, name, bn_code, specialty').order('name', { ascending: true });
-      const localPts = JSON.parse(localStorage.getItem('demo_new_patients') || '[]');
-      setPatients([...localPts, ...(data || [])]);
+      setPatients(data || []);
     };
     fetchPts();
   }, []);
@@ -68,51 +67,37 @@ export default function TabAIScan() {
         publicUrl = data.publicUrl;
       }
 
-      // Call AI scan edge function
-      let res;
-      try {
-        res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ file_url: publicUrl, scan_type: scanType, patient_id: selectedPatient }),
-        });
-      } catch (fetchErr) {
-        console.warn('Fetch error (possibly CORS due to missing function), falling back to demo:', fetchErr.message);
-        res = { ok: false };
-      }
+      // Gọi Edge Function ai-scan
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ 
+          file_url: publicUrl, 
+          scan_type: scanType, 
+          file_info: { 
+            file_name: file.name, 
+            storage_path: path, 
+            file_size: file.size, 
+            mime_type: file.type 
+          } 
+        }),
+      });
 
       if (!res.ok) {
-        // Fallback: mock result for demo
-        let extractedName = '';
-        let extractedDob = '';
-        if (!selectedPatient) {
-           const safeMatch = file.name.replace(/\.[^/.]+$/, "").replace(/^[0-9_]+/, "").trim();
-           const dateRegex = /(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(\d{4})/;
-           const dateMatch = safeMatch.match(dateRegex);
-           
-           if (dateMatch) {
-             extractedDob = dateMatch[0];
-             extractedName = safeMatch.replace(dateMatch[0], '').replace(/[-_(),]/g, '').trim();
-           } else {
-             extractedName = safeMatch;
-             extractedDob = '01/01/1990'; // Mock DOB if not found
-           }
-        }
-
-        setResult({
-          summary: `Đã phân tích ${scanType.toLowerCase()}.${extractedName ? ` Tên: ${extractedName}. NS: ${extractedDob}.` : ''} Kết quả: Các chỉ số trong giới hạn bình thường. Không phát hiện bất thường đáng kể.`,
-          is_abnormal: false,
-          public_url: publicUrl,
-          extracted_name: extractedName,
-          extracted_dob: extractedDob
-        });
-      } else {
-        const json = await res.json();
-        setResult({ ...json, public_url: publicUrl });
+        throw new Error('Lỗi từ AI Edge Function: ' + await res.text());
       }
+      
+      const json = await res.json();
+      setResult({ ...json, public_url: publicUrl });
+      showToast('AI phân tích thành công!', 'success');
+      
+      // Nếu AI báo có patient mới/cũ, ta tải lại list patient để dropdown cập nhật
+      const { data: pts } = await supabase.from('patients').select('id, name, bn_code, specialty').order('name', { ascending: true });
+      if (pts) setPatients(pts);
+      if (json.patient_id) setSelectedPatient(json.patient_id);
     } catch (err) {
       showToast('Lỗi phân tích: ' + err.message, 'error');
     } finally {
@@ -123,51 +108,12 @@ export default function TabAIScan() {
   const saveToRecord = async () => {
     if (!result) return showToast('Chưa có kết quả để lưu', 'error');
     setSaving(true);
-    let finalPatientId = selectedPatient;
-    let finalBnCode = 'AI_SCAN';
-    let patientNameStr = '';
-    
-    if (!finalPatientId && result.extracted_name) {
-       // Match existing patient by name
-       const existingPatient = patients.find(p => 
-          p.name && p.name.toLowerCase() === result.extracted_name.toLowerCase()
-       );
-
-       if (existingPatient) {
-          finalPatientId = existingPatient.id;
-          finalBnCode = existingPatient.bn_code || 'AI_SCAN';
-          patientNameStr = ` (Đã tự động nối vào hồ sơ cũ: ${existingPatient.name})`;
-          setSelectedPatient(existingPatient.id);
-       } else {
-          // Silently create new patient
-          const mockPatient = {
-             id: 'fake-id-' + Date.now(),
-             name: result.extracted_name,
-             dob: result.extracted_dob,
-             bn_code: 'NEW_' + Date.now().toString().slice(-4),
-             specialty: 'ob',
-             created_at: new Date().toISOString()
-          };
-          setPatients(prev => [...prev, mockPatient]);
-          
-          // Lưu vào localStorage để các Tab khác đọc được
-          const localPts = JSON.parse(localStorage.getItem('demo_new_patients') || '[]');
-          localPts.unshift(mockPatient);
-          localStorage.setItem('demo_new_patients', JSON.stringify(localPts));
-
-          finalPatientId = mockPatient.id;
-          finalBnCode = mockPatient.bn_code;
-          patientNameStr = ` (Đã âm thầm tạo hồ sơ mới: ${result.extracted_name})`;
-          setSelectedPatient(mockPatient.id);
-       }
-    } else if (finalPatientId) {
-       const pt = patients.find(p => p.id === finalPatientId);
-       finalBnCode = pt?.bn_code || '';
-    }
+    let finalPatientId = result.patient_id || selectedPatient;
+    const pt = patients.find(p => p.id === finalPatientId);
 
     const { error } = await supabase.from('attachments').insert({
-      bn_code: finalBnCode,
-      patient_id: finalPatientId,
+      bn_code: pt?.bn_code || 'AI_SCAN',
+      patient_id: finalPatientId || null,
       file_name: file?.name || 'AI Scan',
       scan_type: scanType,
       ai_extracted: {
@@ -180,15 +126,12 @@ export default function TabAIScan() {
     setSaving(false);
     if (error) {
       if (error.code === '42501') {
-        showToast(`Đã lưu nháp${patientNameStr} (Hệ thống RLS chặn ghi DB)`, 'success');
-      } else if (error.message && (error.message.includes('schema cache') || error.message.includes('Could not find'))) {
-        console.warn('Lỗi cấu trúc DB, chuyển sang chế độ nháp:', error.message);
-        showToast(`Đã lưu nháp cục bộ${patientNameStr}`, 'success');
+        showToast('Lỗi quyền truy cập (RLS): Bạn chưa cấu hình SQL Admin.', 'error');
       } else {
-        return showToast('Lỗi lưu: ' + error.message, 'error');
+        showToast('Lỗi lưu: ' + error.message, 'error');
       }
     } else {
-      showToast(`Đã lưu vào hồ sơ bệnh nhân${patientNameStr}`, 'success');
+      showToast('Đã lưu dữ liệu gốc vào hồ sơ bệnh nhân', 'success');
     }
     setResult(null);
     setFile(null);
@@ -297,7 +240,12 @@ export default function TabAIScan() {
             <div className={`p-5 rounded-2xl text-sm leading-relaxed shadow-sm border ${result.is_abnormal ? 'bg-danger-lt border-red-200 text-danger-dk font-medium' : 'bg-ok-lt border-emerald-200 text-ok font-medium'}`}>
               <div className="flex gap-3">
                 <Icon d={result.is_abnormal ? ICONS.alert : ICONS.check} className="w-5 h-5 shrink-0 mt-0.5" />
-                <p>{result.summary}</p>
+                <div>
+                  <p className="font-bold mb-2">Trích xuất thành công</p>
+                  <pre className="whitespace-pre-wrap font-mono text-xs overflow-x-auto bg-white/50 p-3 rounded-lg border border-gold/20">
+                    {JSON.stringify(result, null, 2)}
+                  </pre>
+                </div>
               </div>
             </div>
             
