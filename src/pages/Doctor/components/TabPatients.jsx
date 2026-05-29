@@ -19,7 +19,10 @@ export default function TabPatients() {
   const fetchAll = async () => {
     setLoading(true);
     const { data: pts } = await supabase.from('patients').select('*').order('created_at', { ascending: false });
-    setPatients(pts || []);
+    
+    // Merge with local demo patients
+    const localPts = JSON.parse(localStorage.getItem('demo_new_patients') || '[]');
+    setPatients([...localPts, ...(pts || [])]);
     setLoading(false);
   };
 

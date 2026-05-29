@@ -21,8 +21,13 @@ export default function TabAIScan() {
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
   useEffect(() => {
-    supabase.from('patients').select('id, name, bn_code, specialty').order('name', { ascending: true })
-      .then(({ data }) => setPatients(data || []));
+    // Tải bệnh nhân khi vừa mở (cả thật và giả lập từ localStorage)
+    const fetchPts = async () => {
+      const { data } = await supabase.from('patients').select('id, name, bn_code, specialty').order('name', { ascending: true });
+      const localPts = JSON.parse(localStorage.getItem('demo_new_patients') || '[]');
+      setPatients([...localPts, ...(data || [])]);
+    };
+    fetchPts();
   }, []);
 
   const handleFile = (f) => {
@@ -139,9 +144,17 @@ export default function TabAIScan() {
              id: 'fake-id-' + Date.now(),
              name: result.extracted_name,
              dob: result.extracted_dob,
-             bn_code: 'NEW_' + Date.now().toString().slice(-4)
+             bn_code: 'NEW_' + Date.now().toString().slice(-4),
+             specialty: 'ob',
+             created_at: new Date().toISOString()
           };
           setPatients(prev => [...prev, mockPatient]);
+          
+          // Lưu vào localStorage để các Tab khác đọc được
+          const localPts = JSON.parse(localStorage.getItem('demo_new_patients') || '[]');
+          localPts.unshift(mockPatient);
+          localStorage.setItem('demo_new_patients', JSON.stringify(localPts));
+
           finalPatientId = mockPatient.id;
           finalBnCode = mockPatient.bn_code;
           patientNameStr = ` (Đã âm thầm tạo hồ sơ mới: ${result.extracted_name})`;
