@@ -55,15 +55,30 @@ Deno.serve(async (req) => {
 
     // 2. Call Gemini
     const prompt = `Bạn là trợ lý ảo hỗ trợ nạp dữ liệu y tế.
-Nhiệm vụ của bạn là đọc hình ảnh y tế được cung cấp (phiếu xét nghiệm, siêu âm, đơn thuốc...) và trích xuất Tên và Ngày sinh của bệnh nhân.
+Nhiệm vụ của bạn là đọc hình ảnh y tế được cung cấp (phiếu xét nghiệm, siêu âm, đơn thuốc...) và trích xuất thông tin hành chính, bệnh sử, sinh hiệu của bệnh nhân. BỎ QUA các kết quả xét nghiệm máu/nước tiểu chi tiết.
 Hãy trích xuất thông tin dưới dạng JSON THUẦN TÚY với cấu trúc sau:
 {
   "extracted_name": "Tên bệnh nhân trên phiếu (viết hoa, không có để trống)",
   "dob": "Ngày tháng năm sinh (định dạng DD/MM/YYYY, không có để trống)",
-  "phone": "Số điện thoại bệnh nhân (nếu có, không có để trống)",
+  "phone": "Số điện thoại bệnh nhân (không có để trống)",
+  "address": "Địa chỉ bệnh nhân (không có để trống)",
+  "blood_type": "Nhóm máu (nếu có)",
+  "allergy": "Dị ứng (nếu có)",
+  "weight_kg": "Cân nặng bằng số (nếu có, VD: 55.5)",
+  "height_cm": "Chiều cao bằng số (nếu có, VD: 160)",
+  "para_full": "Sinh (số)",
+  "para_preterm": "Sớm (số)",
+  "para_abortion": "Sẩy (số)",
+  "para_alive": "Sống (số)",
+  "diagnosis": "Chẩn đoán bệnh (nếu có)",
+  "prescriptions": [
+    { "medication": "Tên thuốc", "quantity": "Số lượng", "instructions": "Cách dùng" }
+  ],
+  "vitals": { "blood_pressure": "Huyết áp", "heart_rate": "Nhịp tim" },
+  "summary": "Tóm tắt tình trạng, kết luận (tối đa 3 câu)",
   "doc_type": "xet_nghiem/don_thuoc/sieu_am/khac"
 }
-Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất kỳ văn bản nào khác.`;
+Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất kỳ văn bản nào khác. Các trường số (weight, height, para) nếu không có thì trả về null.`;
 
     const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
       method: 'POST',
@@ -99,6 +114,22 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
 
       if (patients && patients.length > 0) {
         matchedBnCode = patients[0].bn_code;
+        // Cập nhật hồ sơ bệnh nhân cũ nếu có thông tin mới
+        const updateData: any = {};
+        if (resultJson.phone) updateData.phone = resultJson.phone;
+        if (resultJson.address) updateData.address = resultJson.address;
+        if (resultJson.blood_type) updateData.blood_type = resultJson.blood_type;
+        if (resultJson.allergy) updateData.allergy = resultJson.allergy;
+        if (resultJson.weight_kg) updateData.weight_kg = resultJson.weight_kg;
+        if (resultJson.height_cm) updateData.height_cm = resultJson.height_cm;
+        if (resultJson.para_full != null) updateData.para_full = resultJson.para_full;
+        if (resultJson.para_preterm != null) updateData.para_preterm = resultJson.para_preterm;
+        if (resultJson.para_abortion != null) updateData.para_abortion = resultJson.para_abortion;
+        if (resultJson.para_alive != null) updateData.para_alive = resultJson.para_alive;
+        
+        if (Object.keys(updateData).length > 0) {
+          await sb.from('patients').update(updateData).eq('bn_code', matchedBnCode);
+        }
       } else {
         // Tự động tạo hồ sơ mới
         matchedBnCode = 'BN_' + Math.floor(100000 + Math.random() * 900000).toString();
@@ -110,7 +141,16 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           name: pName,
           dob: dbDob,
           phone: resultJson.phone,
-          specialty: specialty || 'gy' // Phân loại chuyên khoa từ Lễ tân truyền lên
+          address: resultJson.address,
+          blood_type: resultJson.blood_type,
+          allergy: resultJson.allergy,
+          weight_kg: resultJson.weight_kg,
+          height_cm: resultJson.height_cm,
+          para_full: resultJson.para_full,
+          para_preterm: resultJson.para_preterm,
+          para_abortion: resultJson.para_abortion,
+          para_alive: resultJson.para_alive,
+          specialty: specialty || 'gy'
         });
         if (pErr) {
           console.error("Lỗi tạo bệnh nhân:", pErr);
@@ -131,7 +171,13 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           is_saved_to_emr: true,
           ai_extracted: {
             type: resultJson.doc_type,
-            public_url: file_url
+            public_url: file_url,
+            summary: resultJson.summary,
+            parsed: {
+              diagnosis: resultJson.diagnosis,
+              vitals: resultJson.vitals,
+              prescriptions: resultJson.prescriptions
+            }
           }
         });
         if (aErr) {
