@@ -389,34 +389,30 @@ export default function Login() {
             <img src="/doctor-tuan-avatar.jpg" alt="Doctor Tuan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
-            <div style={{ ...styles.brandName, ...(isMobile ? { fontSize: '26px' } : {}) }}>bstuan247</div>
-            <div style={{ ...styles.brandSub, ...(isMobile ? { fontSize: '12.5px' } : {}) }}>HỆ THỐNG CHĂM SÓC KHÁCH HÀNG</div>
+            <div style={{ 
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: isMobile ? '20px' : '18px',
+              fontWeight: 600,
+              color: '#1A1A1A',
+              letterSpacing: '0.02em',
+              marginBottom: '4px'
+            }}>
+              BS. CK1 Hoàng Thanh Tuấn
+            </div>
+            <div style={{
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              fontSize: isMobile ? '11px' : '10px',
+              fontWeight: 500,
+              color: '#B8814A',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase'
+            }}>
+              Sản - Phụ Khoa - Hiếm Muộn
+            </div>
           </div>
         </div>
 
         <div style={styles.divider} />
-        <div style={{ marginBottom: isMobile ? '44px' : '36px' }}>
-          <div style={{ 
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: isMobile ? '18px' : '16px',
-            fontWeight: 600,
-            color: '#1A1A1A',
-            letterSpacing: '0.02em',
-            marginBottom: '6px'
-          }}>
-            BS. CK1 Hoàng Thanh Tuấn
-          </div>
-          <div style={{
-            fontFamily: "'Be Vietnam Pro', sans-serif",
-            fontSize: isMobile ? '11.5px' : '10.5px',
-            fontWeight: 500,
-            color: '#B8814A',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase'
-          }}>
-            Sản - Phụ Khoa - Hiếm Muộn
-          </div>
-        </div>
 
         <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng nhập</h1>
 
