@@ -353,7 +353,7 @@ export default function Login() {
     <div 
       style={{ 
         ...styles.page, 
-        ...(isMobile ? { padding: 0, backgroundColor: '#FEFAF5' } : {}) 
+        ...(isMobile ? { padding: 0, backgroundColor: '#FFFFFF', backgroundImage: 'none' } : {}) 
       }} 
     >
       <div 
@@ -366,7 +366,7 @@ export default function Login() {
             border: 'none', 
             boxShadow: 'none', 
             padding: '32px 24px', 
-            backgroundColor: '#FEFAF5',
+            backgroundColor: '#FFFFFF',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center'
