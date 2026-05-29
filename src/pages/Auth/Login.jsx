@@ -511,6 +511,13 @@ export default function Login() {
           </button>
         </form>
 
+        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: isMobile ? '14.5px' : '14px', color: '#4A4A4A' }}>
+          Chưa có tài khoản?{' '}
+          <a href="/register" style={{ color: '#B8814A', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
+            Đăng ký ngay
+          </a>
+        </div>
+
         <p style={styles.footer}>
           © {new Date().getFullYear()} bstuan247.com
         </p>
