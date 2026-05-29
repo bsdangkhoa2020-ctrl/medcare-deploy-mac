@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { file_url, scan_type, file_info } = await req.json();
+    const { file_url, scan_type, file_info, specialty } = await req.json();
 
     if (!file_url) {
       return new Response(JSON.stringify({ error: 'Missing file_url' }), { 
@@ -111,7 +111,7 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           bn_code: matchedBnCode,
           name: pName,
           dob: dbDob,
-          specialty: 'gy' // Mặc định là Phụ khoa để hiển thị được trên UI của Bác sĩ
+          specialty: specialty || 'gy' // Phân loại chuyên khoa từ Lễ tân truyền lên
         });
         if (pErr) {
           console.error("Lỗi tạo bệnh nhân:", pErr);

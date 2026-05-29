@@ -10,6 +10,7 @@ export default function ReceptionistDashboard() {
   const { appRole } = useAuth();
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [specialty, setSpecialty] = useState('gy'); // 'ob' (Sản) hoặc 'gy' (Phụ)
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
 
   // Block doctors from accessing Receptionist Dashboard
@@ -62,6 +63,7 @@ export default function ReceptionistDashboard() {
             body: JSON.stringify({
               file_url: fileUrl,
               scan_type: 'Hồ sơ tải lên từ Lễ tân',
+              specialty: specialty, // Truyền phân loại do Lễ tân chọn
               file_info: {
                 file_name: fileName,
                 storage_path: filePath,
@@ -142,6 +144,23 @@ export default function ReceptionistDashboard() {
           </div>
 
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-3xl shadow-sm border border-[#C7A47B]/20">
+            
+            {/* Bộ chọn Phân hệ (Sản khoa / Phụ khoa) */}
+            <div className="mb-6 flex bg-[#F5EBE3] p-1 rounded-2xl border border-[#C7A47B]/20 shadow-inner max-w-sm mx-auto">
+              <button 
+                onClick={() => setSpecialty('gy')}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all ${specialty === 'gy' ? 'bg-white text-[#3E2A3D] shadow-sm scale-100' : 'text-[#3E2A3D]/60 hover:text-[#3E2A3D] scale-[0.98]'}`}
+              >
+                Hồ sơ Phụ khoa
+              </button>
+              <button 
+                onClick={() => setSpecialty('ob')}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all ${specialty === 'ob' ? 'bg-white text-[#3E2A3D] shadow-sm scale-100' : 'text-[#3E2A3D]/60 hover:text-[#3E2A3D] scale-[0.98]'}`}
+              >
+                Hồ sơ Sản khoa
+              </button>
+            </div>
+
             <FileUploader 
               files={files} 
               setFiles={setFiles} 
