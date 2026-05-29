@@ -36,6 +36,41 @@ export default function GYRecords() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('visit');
 
+  const [attachments, setAttachments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (profile?.bn_code) {
+      fetchAttachments();
+    } else {
+      setIsLoading(false);
+    }
+  }, [profile?.bn_code]);
+
+  const fetchAttachments = async () => {
+    try {
+      // Dùng require inline thay vì top-level import nếu cần, hoặc import supabase ở top
+      const { supabase } = await import('../../../lib/supabase');
+      const { data, error } = await supabase
+        .from('attachments')
+        .select('*')
+        .eq('bn_code', profile.bn_code)
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        setAttachments(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Phân loại attachments
+  const xnRecords = attachments.filter(a => a.doctype === 'xet_nghiem' || a.doctype === 'khac' || !a.doctype);
+  const saRecords = attachments.filter(a => a.doctype === 'sieu_am');
+
   return (
     <div style={{ background: '#FDEEF0', minHeight: '100vh' }}>
       {/* Header */}
@@ -58,7 +93,7 @@ export default function GYRecords() {
         <div className="w-[0.5px] h-11 bg-[#E8B8C4]" />
         <div className="flex-[2]">
           <div className="text-[15px] font-bold text-[#2A1015]">{profile?.full_name || 'Bệnh nhân'}</div>
-          <div className="text-[11px] text-[#9A6070] mt-0.5">GY · Nang noãn</div>
+          <div className="text-[11px] text-[#9A6070] mt-0.5">GY · {profile?.bn_code || 'Chưa liên kết mã'}</div>
         </div>
         <div className="w-[0.5px] h-11 bg-[#E8B8C4]" />
         <div className="flex-1 text-right">
@@ -100,29 +135,55 @@ export default function GYRecords() {
           </div>
         ))}
 
-        {/* Xét nghiệm */}
-        {activeTab === 'xn' && MOCK.xn.map((v, i) => (
-          <div key={i} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4">
+        {/* Xét nghiệm (REAL DATA) */}
+        {activeTab === 'xn' && (
+          isLoading ? <div className="text-center text-sm text-[#9A6070] p-4">Đang tải...</div> :
+          xnRecords.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả xét nghiệm</div> :
+          xnRecords.map((record) => (
+          <div key={record.id} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
-              <div className="font-semibold text-[13px] text-[#2A1015]">{v.type}</div>
-              <div className="text-[11px] text-[#9A6070]">{v.date}</div>
+              <div className="font-semibold text-[13px] text-[#2A1015]">{record.file_name}</div>
+              <div className="text-[11px] text-[#9A6070]">{new Date(record.created_at).toLocaleDateString('vi-VN')}</div>
             </div>
-            <div className="inline-block bg-[#E8F4EC] text-[#2E6E50] text-[10px] font-bold px-2 py-0.5 rounded mb-2">{v.result}</div>
-            <div className="text-[12px] text-[#9A6070]">{v.note}</div>
+            {record.ai_extracted?.public_url ? (
+              <div className="w-full bg-[#FFF0F2] rounded-xl overflow-hidden mt-3 relative" style={{ height: '300px' }}>
+                {record.mime_type?.includes('pdf') || record.file_name?.toLowerCase().endsWith('.pdf') ? (
+                  <iframe src={`${record.ai_extracted.public_url}#toolbar=0`} className="w-full h-full border-0" title={record.file_name} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2">
+                    <img src={record.ai_extracted.public_url} alt={record.file_name} className="max-w-full max-h-full object-contain" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-[12px] text-red-500 italic mt-2">File không khả dụng</div>
+            )}
           </div>
-        ))}
+        )))}
 
-        {/* Siêu âm */}
-        {activeTab === 'sa' && MOCK.sa.map((v, i) => (
-          <div key={i} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4">
+        {/* Siêu âm (REAL DATA) */}
+        {activeTab === 'sa' && (
+          isLoading ? <div className="text-center text-sm text-[#9A6070] p-4">Đang tải...</div> :
+          saRecords.length === 0 ? <div className="text-center text-sm text-[#9A6070] p-4">Chưa có kết quả siêu âm</div> :
+          saRecords.map((record) => (
+          <div key={record.id} className="bg-white border-[0.5px] border-[#E8B8C4] rounded-[14px] p-4 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
-              <div className="font-semibold text-[13px] text-[#2A1015]">{v.type}</div>
-              <div className="text-[11px] text-[#9A6070]">{v.date}</div>
+              <div className="font-semibold text-[13px] text-[#2A1015]">{record.file_name}</div>
+              <div className="text-[11px] text-[#9A6070]">{new Date(record.created_at).toLocaleDateString('vi-VN')}</div>
             </div>
-            <div className="inline-block bg-[#E8F4EC] text-[#2E6E50] text-[10px] font-bold px-2 py-0.5 rounded mb-2">{v.result}</div>
-            <div className="text-[12px] text-[#9A6070]">{v.note}</div>
+            {record.ai_extracted?.public_url && (
+              <div className="w-full bg-[#FFF0F2] rounded-xl overflow-hidden mt-3 relative" style={{ height: '300px' }}>
+                {record.mime_type?.includes('pdf') || record.file_name?.toLowerCase().endsWith('.pdf') ? (
+                  <iframe src={`${record.ai_extracted.public_url}#toolbar=0`} className="w-full h-full border-0" title={record.file_name} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2">
+                    <img src={record.ai_extracted.public_url} alt={record.file_name} className="max-w-full max-h-full object-contain" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        ))}
+        )))}
 
         {/* Đơn thuốc */}
         {activeTab === 'rx' && MOCK.rx.map((v, i) => (

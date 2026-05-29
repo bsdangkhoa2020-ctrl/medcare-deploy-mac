@@ -238,37 +238,50 @@ export default function Patients() {
                               <span className="text-xs font-bold text-ink-muted bg-gold-lt/50 px-2 py-1 rounded-md">
                                 {new Date(record.created_at).toLocaleDateString('vi-VN')}
                               </span>
-                              {record.ai_extracted?.is_abnormal ? (
-                                <span className="flex items-center gap-1 text-[10px] font-bold text-danger-dk bg-red-100 px-2 py-1 rounded-full uppercase tracking-wider">
-                                  <AlertTriangle className="w-3 h-3" /> Bất thường
-                                </span>
-                              ) : (
-                                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full uppercase tracking-wider">
-                                  <CheckCircle2 className="w-3 h-3" /> Bình thường
-                                </span>
-                              )}
+                              <span className="text-xs font-bold text-ink-muted bg-white/50 px-2 py-1 rounded-md uppercase border border-gold/10">
+                                {record.doctype || 'Phiếu xét nghiệm'}
+                              </span>
                               <span className="text-xs text-ink-muted italic border border-gold/20 px-2 py-1 rounded-full">
-                                {record.status === 'doctor_reviewed' ? 'Đã duyệt' : 'Chưa duyệt'}
+                                {record.status === 'doctor_reviewed' ? 'Đã xem' : 'Chưa xem'}
                               </span>
                             </div>
-                            <p className="text-sm font-semibold text-ink mb-2">{record.file_name}</p>
-                            <p className="text-sm text-ink-muted leading-relaxed bg-white/50 p-3 rounded-xl border border-gold/10">
-                              {record.ai_extracted?.summary || 'Không có tóm tắt'}
-                            </p>
-                          </div>
-                          
-                          <div className="shrink-0 md:w-32 flex flex-col justify-center">
+                            
+                            <div className="flex justify-between items-start mb-3">
+                              <p className="text-sm font-semibold text-ink">{record.file_name}</p>
+                            </div>
+                            
+                            {/* Khung hiển thị trực tiếp file */}
                             {record.ai_extracted?.public_url ? (
-                              <a 
-                                href={record.ai_extracted.public_url} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-center py-2 px-4 bg-ink text-gold rounded-xl text-xs font-bold hover:bg-ink/90 transition-colors"
-                              >
-                                Xem file gốc
-                              </a>
+                              <div className="w-full bg-white/80 rounded-xl border border-gold/20 overflow-hidden mt-2 relative" style={{ height: '500px' }}>
+                                {record.mime_type?.includes('pdf') || record.file_name?.toLowerCase().endsWith('.pdf') ? (
+                                  <iframe 
+                                    src={`${record.ai_extracted.public_url}#toolbar=0`} 
+                                    className="w-full h-full border-0" 
+                                    title={record.file_name}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full overflow-auto bg-gray-50 flex items-center justify-center p-2">
+                                    <img 
+                                      src={record.ai_extracted.public_url} 
+                                      alt={record.file_name}
+                                      className="max-w-full max-h-full object-contain"
+                                    />
+                                  </div>
+                                )}
+                                <a 
+                                  href={record.ai_extracted.public_url} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  className="absolute top-2 right-4 bg-ink/80 text-white p-2 rounded-full hover:bg-ink transition-colors shadow-md backdrop-blur-sm"
+                                  title="Mở toàn màn hình"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                                </a>
+                              </div>
                             ) : (
-                              <span className="text-xs text-ink-muted text-center">Không có file</span>
+                              <div className="w-full h-32 bg-gray-50 border border-dashed border-gray-300 rounded-xl flex items-center justify-center text-xs text-gray-400 mt-2">
+                                Lỗi hiển thị file
+                              </div>
                             )}
                           </div>
                         </div>
