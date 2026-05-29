@@ -17,6 +17,12 @@ export default function TabPatients() {
 
   useEffect(() => {
     fetchAll();
+    const channel = supabase.channel('public:patients')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, payload => {
+        fetchAll();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
   }, []);
 
   const fetchAll = async () => {
@@ -39,6 +45,17 @@ export default function TabPatients() {
     setAttachments(data || []);
     setLoadingAttachments(false);
   };
+
+  useEffect(() => {
+    if (!selectedPatient) return;
+    const channel = supabase.channel(`public:attachments:${selectedPatient.bn_code}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attachments', filter: `bn_code=eq.${selectedPatient.bn_code}` }, async () => {
+        const { data } = await supabase.from('attachments').select('*').eq('bn_code', selectedPatient.bn_code).order('created_at', { ascending: false });
+        setAttachments(data || []);
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [selectedPatient]);
 
 
 
