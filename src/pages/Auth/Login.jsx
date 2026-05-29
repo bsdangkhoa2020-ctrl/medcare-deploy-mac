@@ -45,8 +45,8 @@ const styles = {
     marginBottom: '10px',
   },
   logoCircle: {
-    width: '52px',
-    height: '52px',
+    width: '72px',
+    height: '72px',
     borderRadius: '50%',
     backgroundColor: '#111111',
     display: 'flex',
@@ -385,7 +385,7 @@ export default function Login() {
 
         {/* Brand */}
         <div style={styles.brandRow}>
-          <div style={{ ...styles.logoCircle, overflow: 'hidden', ...(isMobile ? { width: '64px', height: '64px' } : {}) }}>
+          <div style={{ ...styles.logoCircle, overflow: 'hidden', ...(isMobile ? { width: '86px', height: '86px' } : {}) }}>
             <img src="/doctor-tuan-avatar.jpg" alt="Doctor Tuan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
