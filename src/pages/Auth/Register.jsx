@@ -422,8 +422,8 @@ export default function Register() {
 
         {/* Brand */}
         <div style={styles.brandRow}>
-          <div style={{ ...styles.logoCircle, overflow: 'hidden', ...(isMobile ? { width: '86px', height: '86px' } : {}) }}>
-            <img src="/doctor-tuan-avatar.jpg" alt="Doctor Tuan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={styles.logoCircle}>
+            <div style={styles.logoLetter}>B</div>
           </div>
           <div>
             <div style={{ 
