@@ -538,8 +538,8 @@ export default function Register() {
 
             {/* LMP */}
             <div style={{ flex: 1 }}>
-              <label htmlFor="register-lmp" style={styles.label}>
-                Kỳ kinh cuối <span style={{ textTransform: 'none', fontWeight: 400, color: '#7A6A5A' }}>(Không bắt buộc)</span>
+              <label htmlFor="register-lmp" style={{...styles.label, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                Kỳ kinh cuối <span style={{ textTransform: 'none', fontWeight: 400, color: '#8A7A6A', fontSize: '9.5px' }}>(Không bắt buộc)</span>
               </label>
               <div style={styles.inputWrapper}>
                 <input
