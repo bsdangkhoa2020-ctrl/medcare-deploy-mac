@@ -12,6 +12,7 @@ export default function TabPatients() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [attachments, setAttachments] = useState([]);
   const [loadingAttachments, setLoadingAttachments] = useState(false);
+  const [attFilter, setAttFilter] = useState('all');
 
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
@@ -40,6 +41,7 @@ export default function TabPatients() {
 
   const handleSelectPatient = async (patient) => {
     setSelectedPatient(patient);
+    setAttFilter('all');
     setLoadingAttachments(true);
     const { data } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('created_at', { ascending: false });
     setAttachments(data || []);
@@ -220,14 +222,19 @@ export default function TabPatients() {
 
             {/* RIGHT COLUMN: TIMELINE & AI SCAN RESULTS */}
             <div className="w-full sm:w-2/3 flex flex-col h-full overflow-hidden">
-              <div className="flex items-center justify-between mb-4 px-1 shrink-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 px-1 shrink-0 gap-3">
                 <h4 className="font-serif font-bold text-xl text-ink flex items-center gap-2">
                   <Icon d={ICONS.journal} className="w-5 h-5 text-gold-dk" />
-                  Dòng thời gian & Cận lâm sàng
+                  Dòng thời gian
                 </h4>
-                <button className="flex items-center gap-1.5 px-4 py-2 bg-ink text-gold-lt rounded-xl text-sm font-bold hover:bg-ink-2 transition-all shadow-sm">
-                  <Icon d={ICONS.plus} className="w-4 h-4" /> Thêm bệnh án mới
-                </button>
+                <div className="flex bg-surface shadow-sm rounded-xl p-1 gap-1 border border-gold/30 text-xs font-bold">
+                  {[['all', 'Tất cả'], ['Hồ sơ giấy', 'Lịch sử khám'], ['Xét nghiệm', 'Xét nghiệm'], ['Đơn thuốc', 'Toa thuốc']].map(([v, l]) => (
+                    <button key={v} onClick={() => setAttFilter(v)}
+                      className={`px-3 py-1.5 rounded-lg transition-all ${attFilter === v ? 'bg-ink text-gold-lt shadow' : 'text-ink-muted hover:text-ink'}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
               </div>
               
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-6">
@@ -246,7 +253,7 @@ export default function TabPatients() {
                   </div>
                 ) : (
                   <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gold/40 before:via-gold/20 before:to-transparent">
-                    {attachments.map((att, idx) => {
+                    {attachments.filter(a => attFilter === 'all' || a.scan_type === attFilter).map((att, idx) => {
                       const ai = att.ai_extracted;
                       const isAbnormal = ai?.is_abnormal;
                       
