@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // ─── Auth ──────────────────────────────────────────────────────
 import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
 
 // ─── Staff Pages ───────────────────────────────────────────────
 import ReceptionistDashboard from './pages/Receptionist/Dashboard';
@@ -37,8 +38,9 @@ function App() {
       <Router>
         <Routes>
 
-          {/* ── LOGIN — Public, không cần đăng nhập ─────────────── */}
+          {/* ── LOGIN/REGISTER — Public, không cần đăng nhập ───────── */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* ── Default: redirect dựa vào role ─────────────────── */}
           <Route path="/" element={
