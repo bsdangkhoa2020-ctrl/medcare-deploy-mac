@@ -73,7 +73,15 @@ export const AuthProvider = ({ children }) => {
         role = 'patient';
         pType = 'gy';
       } else if (!role) {
-        role = 'patient';
+        role = currentUser?.user_metadata?.role || 'patient';
+      }
+
+      // Fallback từ metadata lúc đăng ký nếu chưa có
+      if (!pType && currentUser?.user_metadata?.department) {
+        pType = currentUser.user_metadata.department;
+      }
+      if (!patientLmp && currentUser?.user_metadata?.lmp) {
+        setPatientLmp(currentUser.user_metadata.lmp);
       }
 
       // 2. Nếu là Bệnh nhân, thử fetch thêm thông tin chuyên sâu
@@ -85,7 +93,7 @@ export const AuthProvider = ({ children }) => {
           .single();
 
         if (!ptError && ptData) {
-          if (!pType && ptData.patient_type) pType = ptData.patient_type;
+          if (ptData.patient_type) pType = ptData.patient_type;
           if (ptData.lmp) setPatientLmp(ptData.lmp);
         }
       }

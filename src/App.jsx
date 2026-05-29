@@ -32,6 +32,23 @@ import GYAppointments from './pages/Patient/Gynecology/Appointments';
 import GYRecords      from './pages/Patient/Gynecology/Records';
 import GYKnowledge    from './pages/Patient/Gynecology/Knowledge';
 
+function RootRedirect() {
+  const { user, appRole, patientType, loading } = useAuth();
+  
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  
+  if (appRole === 'doctor') return <Navigate to="/bacsi" replace />;
+  if (appRole === 'receptionist') return <Navigate to="/letan" replace />;
+  if (appRole === 'patient') {
+    if (patientType === 'ob') return <Navigate to="/sankhoa" replace />;
+    if (patientType === 'gy') return <Navigate to="/phukhoa" replace />;
+    return <Navigate to="/sankhoa" replace />; // fallback if somehow undefined
+  }
+  
+  return <Navigate to="/login" replace />;
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -43,11 +60,7 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* ── Default: redirect dựa vào role ─────────────────── */}
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Navigate to="/letan" replace />
-            </ProtectedRoute>
-          } />
+          <Route path="/" element={<RootRedirect />} />
 
           {/* ── DOCTOR ─────────────────────────────────────────── */}
           <Route element={
