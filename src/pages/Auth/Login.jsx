@@ -4,17 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 /* ─────────────────────────────────────────────
-   Quick-login accounts (chỉ dùng để test)
-   Thay email/password phù hợp với Supabase Auth
-───────────────────────────────────────────── */
-const DEV_ACCOUNTS = [
-  { label: '🩺 Bác sĩ',   emoji: '🩺', email: 'doctor@bstuan247.com',       password: 'Password123!', role: 'doctor' },
-  { label: '👩‍💼 Lễ tân',  emoji: '👩‍💼', email: 'letan@bstuan247.com',        password: 'Password123!', role: 'receptionist' },
-  { label: '🤰 Sản khoa',  emoji: '🤰', email: 'patientob1@bstuan247.com',   password: 'Password123!', role: 'patient_ob' },
-  { label: '🌸 Phụ khoa',  emoji: '🌸', email: 'patientgy2@bstuan247.com',   password: 'Password123!', role: 'patient_gy' },
-];
-
-/* ─────────────────────────────────────────────
    Inline styles — no Tailwind dependency
 ───────────────────────────────────────────── */
 const styles = {
@@ -225,52 +214,6 @@ const styles = {
     color: '#A09080',
     letterSpacing: '0.04em',
   },
-  quickSection: {
-    marginBottom: '24px',
-    padding: '16px',
-    backgroundColor: '#FEFAF5',
-    border: '1px dashed rgba(184,129,74,0.35)',
-    borderRadius: '12px',
-  },
-  quickLabel: {
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '10px',
-    fontWeight: 700,
-    color: '#B8814A',
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase',
-    marginBottom: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  },
-  quickGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-  },
-  quickBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '8px 12px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid rgba(184,129,74,0.3)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#5A4A3A',
-    transition: 'all 0.15s ease',
-    textAlign: 'left',
-    width: '100%',
-  },
-  quickBtnActive: {
-    backgroundColor: '#111111',
-    borderColor: '#111111',
-    color: '#B8814A',
-  },
 };
 
 /* ─────────────────────────────────────────────
@@ -329,14 +272,6 @@ export default function Login() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
-  const [activeQuick, setActiveQuick] = useState(null);
-
-  const fillQuick = (acc) => {
-    setEmail(acc.email);
-    setPassword(acc.password);
-    setActiveQuick(acc.role);
-    setError('');
-  };
 
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
@@ -434,30 +369,6 @@ export default function Login() {
         </p>
 
         <h1 style={styles.heading}>Đăng nhập</h1>
-
-        {/* ── Quick login ── */}
-        <div style={styles.quickSection}>
-          <div style={styles.quickLabel}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="#B8814A"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            Đăng nhập nhanh để test
-          </div>
-          <div style={styles.quickGrid}>
-            {DEV_ACCOUNTS.map(acc => (
-              <button
-                key={acc.role}
-                type="button"
-                onClick={() => fillQuick(acc)}
-                style={{
-                  ...styles.quickBtn,
-                  ...(activeQuick === acc.role ? styles.quickBtnActive : {}),
-                }}
-              >
-                <span style={{ fontSize: '14px' }}>{acc.emoji}</span>
-                {acc.label.replace(/^.+? /, '')}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit} noValidate>
           {/* Email */}
