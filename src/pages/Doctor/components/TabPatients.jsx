@@ -111,7 +111,7 @@ export default function TabPatients() {
 
       {/* Patient Detail Modal */}
       {selectedPatient && (
-        <Modal title={`Hồ sơ: ${selectedPatient.name}`} onClose={() => setSelectedPatient(null)}>
+        <Modal open={true} title={`Hồ sơ: ${selectedPatient.name}`} onClose={() => setSelectedPatient(null)}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm mb-6 bg-surface p-4 rounded-xl border border-gold/20">
               <div>
