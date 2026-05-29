@@ -82,16 +82,27 @@ export default function TabAIScan() {
       if (!res.ok) {
         // Fallback: mock result for demo
         let extractedName = '';
+        let extractedDob = '';
         if (!selectedPatient) {
            const safeMatch = file.name.replace(/\.[^/.]+$/, "").replace(/^[0-9_]+/, "").trim();
-           if (safeMatch && safeMatch.length > 2) extractedName = safeMatch;
+           const dateRegex = /(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(\d{4})/;
+           const dateMatch = safeMatch.match(dateRegex);
+           
+           if (dateMatch) {
+             extractedDob = dateMatch[0];
+             extractedName = safeMatch.replace(dateMatch[0], '').replace(/[-_(),]/g, '').trim();
+           } else {
+             extractedName = safeMatch;
+             extractedDob = '01/01/1990'; // Mock DOB if not found
+           }
         }
 
         setResult({
-          summary: `Đã phân tích ${scanType.toLowerCase()}.${extractedName ? ` Nhận diện được hồ sơ: ${extractedName}.` : ''} Kết quả: Các chỉ số trong giới hạn bình thường. Không phát hiện bất thường đáng kể.`,
+          summary: `Đã phân tích ${scanType.toLowerCase()}.${extractedName ? ` Tên: ${extractedName}. NS: ${extractedDob}.` : ''} Kết quả: Các chỉ số trong giới hạn bình thường. Không phát hiện bất thường đáng kể.`,
           is_abnormal: false,
           public_url: publicUrl,
-          extracted_name: extractedName
+          extracted_name: extractedName,
+          extracted_dob: extractedDob
         });
       } else {
         const json = await res.json();
@@ -107,23 +118,43 @@ export default function TabAIScan() {
   const saveToRecord = async () => {
     if (!result) return showToast('Chưa có kết quả để lưu', 'error');
     setSaving(true);
-    const pt = patients.find(p => p.id === selectedPatient);
+    let finalPatientId = selectedPatient;
+    let finalBnCode = 'AI_SCAN';
     let patientNameStr = '';
     
-    // Simulate AI creating new patient locally if none selected
-    if (!selectedPatient && result.extracted_name) {
-       const mockPatient = {
-          id: 'fake-id-' + Date.now(),
-          name: result.extracted_name,
-          bn_code: 'AI_SCAN'
-       };
-       setPatients(prev => [...prev, mockPatient]);
-       patientNameStr = ` (Đã tự động thêm BN: ${result.extracted_name})`;
+    if (!finalPatientId && result.extracted_name) {
+       // Match existing patient by name
+       const existingPatient = patients.find(p => 
+          p.name && p.name.toLowerCase() === result.extracted_name.toLowerCase()
+       );
+
+       if (existingPatient) {
+          finalPatientId = existingPatient.id;
+          finalBnCode = existingPatient.bn_code || 'AI_SCAN';
+          patientNameStr = ` (Đã tự động nối vào hồ sơ cũ: ${existingPatient.name})`;
+          setSelectedPatient(existingPatient.id);
+       } else {
+          // Silently create new patient
+          const mockPatient = {
+             id: 'fake-id-' + Date.now(),
+             name: result.extracted_name,
+             dob: result.extracted_dob,
+             bn_code: 'NEW_' + Date.now().toString().slice(-4)
+          };
+          setPatients(prev => [...prev, mockPatient]);
+          finalPatientId = mockPatient.id;
+          finalBnCode = mockPatient.bn_code;
+          patientNameStr = ` (Đã âm thầm tạo hồ sơ mới: ${result.extracted_name})`;
+          setSelectedPatient(mockPatient.id);
+       }
+    } else if (finalPatientId) {
+       const pt = patients.find(p => p.id === finalPatientId);
+       finalBnCode = pt?.bn_code || '';
     }
 
     const { error } = await supabase.from('attachments').insert({
-      bn_code: pt?.bn_code || 'AI_SCAN',
-      patient_id: selectedPatient || null,
+      bn_code: finalBnCode,
+      patient_id: finalPatientId,
       file_name: file?.name || 'AI Scan',
       scan_type: scanType,
       ai_extracted: {
