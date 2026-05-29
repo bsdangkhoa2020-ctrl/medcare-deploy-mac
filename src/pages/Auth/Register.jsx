@@ -265,7 +265,10 @@ export default function Register() {
   const { user, appRole, patientType, loading: authLoading } = useAuth();
 
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [department, setDepartment] = useState('');
+  const [lmp, setLmp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -274,7 +277,9 @@ export default function Register() {
   const [success, setSuccess] = useState('');
 
   const [nameFocused, setNameFocused] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
+  const [phoneFocused, setPhoneFocused] = useState(false);
+  const [dobFocused, setDobFocused] = useState(false);
+  const [lmpFocused, setLmpFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
   const [confirmPassFocused, setConfirmPassFocused] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
@@ -298,7 +303,7 @@ export default function Register() {
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !email.trim() || !password || !confirmPassword) return;
+    if (!fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
       setError('Mật khẩu nhập lại không khớp.');
@@ -314,13 +319,20 @@ export default function Register() {
     setError('');
     setSuccess('');
 
+    // Use phone number as the identifier by appending a dummy email domain
+    const authEmail = `${phone.trim()}@bstuan247.com`;
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: authEmail,
         password,
         options: {
           data: {
             full_name: fullName.trim(),
+            phone: phone.trim(),
+            dob: dob,
+            department: department,
+            lmp: department === 'ob' ? lmp : null
           }
         }
       });
@@ -448,31 +460,111 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Email */}
+          {/* DOB */}
           <div style={styles.fieldGroup}>
-            <label htmlFor="register-email" style={styles.label}>
-              Email
+            <label htmlFor="register-dob" style={styles.label}>
+              Ngày tháng năm sinh
             </label>
             <div style={styles.inputWrapper}>
               <input
-                id="register-email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-                placeholder="your@email.com"
+                id="register-dob"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                onFocus={() => setDobFocused(true)}
+                onBlur={() => setDobFocused(false)}
                 disabled={loading}
                 required
                 style={{
                   ...styles.input,
                   ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(emailFocused ? styles.inputFocus : {}),
+                  ...(dobFocused ? styles.inputFocus : {}),
                 }}
               />
             </div>
           </div>
+
+          {/* Phone */}
+          <div style={styles.fieldGroup}>
+            <label htmlFor="register-phone" style={styles.label}>
+              Số điện thoại (Dùng để đăng nhập)
+            </label>
+            <div style={styles.inputWrapper}>
+              <input
+                id="register-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onFocus={() => setPhoneFocused(true)}
+                onBlur={() => setPhoneFocused(false)}
+                placeholder="09xxxxxxxx"
+                disabled={loading}
+                required
+                style={{
+                  ...styles.input,
+                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
+                  ...(phoneFocused ? styles.inputFocus : {}),
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Department Selection */}
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Chuyên khoa khám</label>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: '15px' }}>
+                <input
+                  type="radio"
+                  name="department"
+                  value="ob"
+                  checked={department === 'ob'}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  disabled={loading}
+                  style={{ accentColor: '#B8814A', width: '18px', height: '18px' }}
+                />
+                Sản khoa
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: '15px' }}>
+                <input
+                  type="radio"
+                  name="department"
+                  value="gy"
+                  checked={department === 'gy'}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  disabled={loading}
+                  style={{ accentColor: '#B8814A', width: '18px', height: '18px' }}
+                />
+                Phụ khoa
+              </label>
+            </div>
+          </div>
+
+          {/* LMP (Only if Obstetrics) */}
+          {department === 'ob' && (
+            <div style={styles.fieldGroup}>
+              <label htmlFor="register-lmp" style={styles.label}>
+                Ngày đầu của kỳ kinh cuối
+              </label>
+              <div style={styles.inputWrapper}>
+                <input
+                  id="register-lmp"
+                  type="date"
+                  value={lmp}
+                  onChange={(e) => setLmp(e.target.value)}
+                  onFocus={() => setLmpFocused(true)}
+                  onBlur={() => setLmpFocused(false)}
+                  disabled={loading}
+                  required
+                  style={{
+                    ...styles.input,
+                    ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
+                    ...(lmpFocused ? styles.inputFocus : {}),
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Password */}
           <div style={styles.fieldGroup}>
@@ -555,14 +647,14 @@ export default function Register() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !fullName.trim() || !email.trim() || !password || !confirmPassword}
+            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword || (department === 'ob' && !lmp)}
             onMouseEnter={() => setBtnHovered(true)}
             onMouseLeave={() => setBtnHovered(false)}
             style={{
               ...styles.submitBtn,
               ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
               ...(btnHovered && !loading ? styles.submitBtnHover : {}),
-              ...(loading || !fullName.trim() || !email.trim() || !password || !confirmPassword ? styles.submitBtnDisabled : {}),
+              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword || (department === 'ob' && !lmp) ? styles.submitBtnDisabled : {}),
             }}
           >
             {loading ? (

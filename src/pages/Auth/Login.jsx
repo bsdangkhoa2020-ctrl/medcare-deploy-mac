@@ -264,13 +264,13 @@ export default function Login() {
   const navigate = useNavigate();
   const { user, appRole, patientType, loading: authLoading } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [emailFocused, setEmailFocused] = useState(false);
+  const [phoneFocused, setPhoneFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
 
@@ -293,14 +293,17 @@ export default function Login() {
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!phone.trim() || !password) return;
 
     setLoading(true);
     setError('');
 
+    // Use phone number as the identifier by appending a dummy email domain
+    const authEmail = `${phone.trim()}@bstuan247.com`;
+
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
+        email: authEmail,
         password,
       });
 
@@ -309,9 +312,9 @@ export default function Login() {
           signInError.message.toLowerCase().includes('invalid login') ||
           signInError.message.toLowerCase().includes('invalid credentials')
         ) {
-          setError('Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
+          setError('Số điện thoại hoặc mật khẩu không đúng. Vui lòng thử lại.');
         } else if (signInError.message.toLowerCase().includes('email not confirmed')) {
-          setError('Tài khoản chưa được xác nhận. Vui lòng kiểm tra email.');
+          setError('Tài khoản chưa được xác nhận.');
         } else {
           setError(signInError.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
         }
@@ -417,27 +420,26 @@ export default function Login() {
         <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng nhập</h1>
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* Email */}
+          {/* Phone */}
           <div style={styles.fieldGroup}>
-            <label htmlFor="login-email" style={styles.label}>
-              Email
+            <label htmlFor="login-phone" style={styles.label}>
+              Số điện thoại
             </label>
             <div style={styles.inputWrapper}>
               <input
-                id="login-email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-                placeholder="your@email.com"
+                id="login-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onFocus={() => setPhoneFocused(true)}
+                onBlur={() => setPhoneFocused(false)}
+                placeholder="09xxxxxxxx"
                 disabled={loading}
                 required
                 style={{
                   ...styles.input,
                   ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(emailFocused ? styles.inputFocus : {}),
+                  ...(phoneFocused ? styles.inputFocus : {}),
                 }}
               />
             </div>
@@ -490,14 +492,14 @@ export default function Login() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !email.trim() || !password}
+            disabled={loading || !phone.trim() || !password}
             onMouseEnter={() => setBtnHovered(true)}
             onMouseLeave={() => setBtnHovered(false)}
             style={{
               ...styles.submitBtn,
               ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
               ...(btnHovered && !loading ? styles.submitBtnHover : {}),
-              ...(loading || !email.trim() || !password ? styles.submitBtnDisabled : {}),
+              ...(loading || !phone.trim() || !password ? styles.submitBtnDisabled : {}),
             }}
           >
             {loading ? (
