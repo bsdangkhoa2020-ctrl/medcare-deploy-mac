@@ -396,7 +396,8 @@ export default function Login() {
 
         <div style={styles.divider} />
         <p style={{ ...styles.tagline, ...(isMobile ? { fontSize: '15px', marginBottom: '44px' } : {}) }}>
-          BS. CK1 Hoàng Thanh Tuấn — Sản Phụ khoa
+          BS. Ck1 Hoàng Thanh Tuấn<br />
+          Sản - Phụ khoa - Hiếm muộn
         </p>
 
         <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng nhập</h1>
