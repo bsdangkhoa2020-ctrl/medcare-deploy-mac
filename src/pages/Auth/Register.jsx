@@ -420,36 +420,7 @@ export default function Register() {
         {/* Gold accent bar */}
         <div style={styles.cardAccent} />
 
-        {/* Brand */}
-        <div style={styles.brandRow}>
-          <div style={styles.logoCircle}>
-            <div style={styles.logoLetter}>B</div>
-          </div>
-          <div>
-            <div style={{ 
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: isMobile ? '20px' : '18px',
-              fontWeight: 600,
-              color: '#1A1A1A',
-              letterSpacing: '0.02em',
-              marginBottom: '4px'
-            }}>
-              BS. CK1 Hoàng Thanh Tuấn
-            </div>
-            <div style={{
-              fontFamily: "'Be Vietnam Pro', sans-serif",
-              fontSize: isMobile ? '11px' : '10px',
-              fontWeight: 500,
-              color: '#B8814A',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase'
-            }}>
-              Sản - Phụ Khoa - Hiếm Muộn
-            </div>
-          </div>
-        </div>
 
-        <div style={styles.divider} />
 
         <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng ký</h1>
 
