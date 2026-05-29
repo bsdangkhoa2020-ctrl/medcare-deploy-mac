@@ -353,7 +353,7 @@ export default function TabPatients() {
                                 {/* Action Buttons */}
                                 <div className="flex gap-2 pt-2 mt-2 border-t border-gold/10">
                                   {ai.public_url && (
-                                    <a href={ai.public_url} target="_blank" rel="noreferrer" 
+                                    <a href={att.file_name?.toLowerCase().endsWith('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(ai.public_url)}` : ai.public_url} target="_blank" rel="noreferrer" 
                                       className="flex-1 text-center py-2 bg-white border border-gold/30 hover:border-gold hover:bg-gold-lt/30 text-ink text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                                       <Icon d={ICONS.eye} className="w-3.5 h-3.5" /> Xem bản gốc
                                     </a>
