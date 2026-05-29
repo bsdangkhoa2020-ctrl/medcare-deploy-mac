@@ -7,7 +7,7 @@ export default function TabPatients() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('ob');
+  const [filter, setFilter] = useState('all');
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [attachments, setAttachments] = useState([]);
@@ -34,7 +34,7 @@ export default function TabPatients() {
 
   const filteredPatients = patients.filter(p => {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.bn_code?.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = p.specialty === filter;
+    const matchFilter = filter === 'all' || p.specialty === filter;
     return matchSearch && matchFilter;
   });
 
@@ -73,7 +73,7 @@ export default function TabPatients() {
             className="w-full pl-11 pr-4 py-3 bg-surface border border-gold/40 shadow-sm rounded-xl text-sm focus:outline-none focus:border-gold-dk focus:ring-2 focus:ring-gold/20 transition-all text-ink placeholder:text-ink-muted/60" />
         </div>
         <div className="flex bg-surface shadow-sm rounded-xl p-1.5 gap-1 border border-gold/30 w-full sm:w-auto">
-          {[['ob', 'Sản khoa'], ['gy', 'Phụ khoa']].map(([v, l]) => (
+          {[['all', 'Tất cả'], ['ob', 'Sản khoa'], ['gy', 'Phụ khoa']].map(([v, l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className={`flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all ${filter === v ? 'bg-gold-lt text-gold-dk shadow border border-gold/30' : 'text-ink-muted hover:text-ink hover:bg-gold-lt/30'}`}>
               {l}
