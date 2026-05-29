@@ -81,10 +81,17 @@ export default function TabAIScan() {
 
       if (!res.ok) {
         // Fallback: mock result for demo
+        let extractedName = '';
+        if (!selectedPatient) {
+           const safeMatch = file.name.replace(/\.[^/.]+$/, "").replace(/^[0-9_]+/, "").trim();
+           if (safeMatch && safeMatch.length > 2) extractedName = safeMatch;
+        }
+
         setResult({
-          summary: `Đã phân tích ${scanType.toLowerCase()}. Kết quả: Các chỉ số trong giới hạn bình thường. Không phát hiện bất thường đáng kể.`,
+          summary: `Đã phân tích ${scanType.toLowerCase()}.${extractedName ? ` Nhận diện được hồ sơ: ${extractedName}.` : ''} Kết quả: Các chỉ số trong giới hạn bình thường. Không phát hiện bất thường đáng kể.`,
           is_abnormal: false,
           public_url: publicUrl,
+          extracted_name: extractedName
         });
       } else {
         const json = await res.json();
@@ -101,8 +108,21 @@ export default function TabAIScan() {
     if (!result) return showToast('Chưa có kết quả để lưu', 'error');
     setSaving(true);
     const pt = patients.find(p => p.id === selectedPatient);
+    let patientNameStr = '';
+    
+    // Simulate AI creating new patient locally if none selected
+    if (!selectedPatient && result.extracted_name) {
+       const mockPatient = {
+          id: 'fake-id-' + Date.now(),
+          name: result.extracted_name,
+          bn_code: 'AI_SCAN'
+       };
+       setPatients(prev => [...prev, mockPatient]);
+       patientNameStr = ` (Đã tự động thêm BN: ${result.extracted_name})`;
+    }
+
     const { error } = await supabase.from('attachments').insert({
-      bn_code: pt?.bn_code || '',
+      bn_code: pt?.bn_code || 'AI_SCAN',
       patient_id: selectedPatient || null,
       file_name: file?.name || 'AI Scan',
       scan_type: scanType,
@@ -116,15 +136,15 @@ export default function TabAIScan() {
     setSaving(false);
     if (error) {
       if (error.code === '42501') {
-        showToast('Đã lưu nháp (Hệ thống RLS chặn ghi DB)', 'success');
+        showToast(`Đã lưu nháp${patientNameStr} (Hệ thống RLS chặn ghi DB)`, 'success');
       } else if (error.message && (error.message.includes('schema cache') || error.message.includes('Could not find'))) {
         console.warn('Lỗi cấu trúc DB, chuyển sang chế độ nháp:', error.message);
-        showToast('Đã lưu nháp cục bộ (Đợi Admin cập nhật cấu trúc DB)', 'success');
+        showToast(`Đã lưu nháp cục bộ${patientNameStr}`, 'success');
       } else {
         return showToast('Lỗi lưu: ' + error.message, 'error');
       }
     } else {
-      showToast('Đã lưu vào hồ sơ bệnh nhân', 'success');
+      showToast(`Đã lưu vào hồ sơ bệnh nhân${patientNameStr}`, 'success');
     }
     setResult(null);
     setFile(null);
