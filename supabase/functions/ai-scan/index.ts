@@ -58,8 +58,8 @@ Deno.serve(async (req) => {
 Nhiệm vụ của bạn là đọc hình ảnh y tế được cung cấp (phiếu xét nghiệm, siêu âm, đơn thuốc...) và trích xuất thông tin hành chính, bệnh sử, sinh hiệu của bệnh nhân. BỎ QUA các kết quả xét nghiệm máu/nước tiểu chi tiết.
 Hãy trích xuất thông tin dưới dạng JSON THUẦN TÚY với cấu trúc sau:
 {
-  "extracted_name": "Tên bệnh nhân trên phiếu (viết hoa, không có để trống)",
-  "dob": "Ngày tháng năm sinh (định dạng DD/MM/YYYY, không có để trống)",
+  "extracted_name": "Họ và Tên đầy đủ của bệnh nhân (viết IN HOA toàn bộ, loại bỏ khoảng trắng thừa)",
+  "dob": "Ngày tháng năm sinh (BẮT BUỘC chuẩn hóa về định dạng DD/MM/YYYY, ví dụ: 05/09/1995)",
   "phone": "Số điện thoại bệnh nhân (không có để trống)",
   "address": "Địa chỉ bệnh nhân (không có để trống)",
   "blood_type": "Nhóm máu (nếu có)",
@@ -106,10 +106,15 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
     let dbError = null;
 
     if (file_info && resultJson.extracted_name) {
-      const pName = resultJson.extracted_name;
+      // Chuẩn hóa tên: loại bỏ khoảng trắng thừa ở 2 đầu và giữa các từ
+      const pName = resultJson.extracted_name.trim().replace(/\s+/g, ' ');
+      
+      // Tìm kiếm bỏ qua viết hoa/thường (ilike) và bỏ qua khoảng trắng thừa bằng wildcard
+      const searchPattern = '%' + pName.split(' ').join('%') + '%';
+      
       const { data: patients } = await sb.from('patients')
         .select('bn_code, name')
-        .ilike('name', `%${pName}%`)
+        .ilike('name', searchPattern)
         .limit(1);
 
       if (patients && patients.length > 0) {
