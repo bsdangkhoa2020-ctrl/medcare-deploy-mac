@@ -8,13 +8,14 @@ import { useAuth } from '../../contexts/AuthContext';
 ───────────────────────────────────────────── */
 const styles = {
   page: {
-    minHeight: '100vh',
+    minHeight: '100dvh',
     backgroundColor: '#FEFAF5',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: "'Be Vietnam Pro', sans-serif",
-    padding: '24px',
+    padding: '16px',
+    boxSizing: 'border-box',
     background: 'linear-gradient(135deg, #FEFAF5 0%, #F7EFE3 100%)',
   },
   card: {
@@ -22,7 +23,7 @@ const styles = {
     maxWidth: '440px',
     backgroundColor: '#FFFFFF',
     borderRadius: '20px',
-    padding: '52px 44px 48px',
+    padding: '40px 24px',
     boxShadow:
       '0 4px 6px rgba(184,129,74,0.06), 0 20px 60px rgba(184,129,74,0.12)',
     border: '1px solid rgba(184,129,74,0.15)',
