@@ -2,8 +2,19 @@ import React from 'react';
 import './gy-theme.css';
 import CycleTracker from './components/CycleTracker';
 import PapSmearAlert from './components/PapSmearAlert';
+import { useState } from 'react';
+import { useRealtimePatientRecords } from '../../../hooks/useRealtimePatientRecords';
+import Toast from '../../../components/Toast';
 
 const GYDashboard = () => {
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'info' });
+  const showToast = (message, type = 'info') => setToast({ isVisible: true, message, type });
+
+  // Theo dõi hồ sơ real-time (tạm thời nghe global cho bản Demo, sau này truyền bnCode thật từ Auth)
+  useRealtimePatientRecords(null, (newRecord) => {
+    showToast(`Bác sĩ Tuấn vừa cập nhật kết quả: ${newRecord.file_name}`, 'success');
+  });
+
   return (
     <div className="gy-workspace">
       <div className="gy-container">
@@ -43,6 +54,12 @@ const GYDashboard = () => {
           </div>
         </main>
         
+        <Toast 
+          isVisible={toast.isVisible} 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(t => ({ ...t, isVisible: false }))} 
+        />
       </div>
     </div>
   );

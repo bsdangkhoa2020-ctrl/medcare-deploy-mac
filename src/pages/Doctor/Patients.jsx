@@ -3,6 +3,7 @@ import { Search, UserCircle, Calendar, Phone, Activity, FileText, CheckCircle2, 
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '../../components/Toast';
+import { useRealtimePatientRecords } from '../../hooks/useRealtimePatientRecords';
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -29,6 +30,15 @@ export default function Patients() {
   const showToast = (message, type = 'success') => {
     setToast({ isVisible: true, message, type });
   };
+
+  useRealtimePatientRecords(selectedPatient?.bn_code, (newRecord) => {
+    setPatientRecords(prev => [newRecord, ...prev]);
+    if (newRecord.ai_extracted?.is_abnormal) {
+      showToast(`🚨 Báo động: Có kết quả BẤT THƯỜNG mới tải lên cho bệnh nhân này!`, 'error');
+    } else {
+      showToast(`Có hồ sơ mới được tự động cập nhật từ Lễ Tân!`, 'success');
+    }
+  });
 
   const fetchPatients = async () => {
     setIsLoading(true);

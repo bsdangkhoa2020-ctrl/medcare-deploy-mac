@@ -9,18 +9,21 @@ import { supabase } from '../lib/supabase';
  */
 export function useRealtimePatientRecords(bnCode, onNewRecord) {
   useEffect(() => {
-    if (!bnCode) return;
+    let filterConfig = {
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'attachments'
+    };
+
+    if (bnCode) {
+      filterConfig.filter = `bn_code=eq.${bnCode}`;
+    }
 
     const channel = supabase
-      .channel(`public:attachments:bn_code=eq.${bnCode}`)
+      .channel(`public:attachments${bnCode ? `:${bnCode}` : ':global'}`)
       .on(
         'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'attachments',
-          filter: `bn_code=eq.${bnCode}` // Filter Realtime để chỉ nhận sự kiện của chính BN này
-        },
+        filterConfig,
         (payload) => {
           console.log('Có kết quả xét nghiệm/siêu âm mới!', payload);
           if (onNewRecord) {
