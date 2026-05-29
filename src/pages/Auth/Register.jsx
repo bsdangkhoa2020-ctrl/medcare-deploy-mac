@@ -303,7 +303,7 @@ export default function Register() {
   /* ── Submit handler ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword) return;
+    if (!fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
       setError('Mật khẩu nhập lại không khớp.');
@@ -332,7 +332,7 @@ export default function Register() {
             phone: phone.trim(),
             dob: dob,
             department: department,
-            lmp: department === 'ob' ? lmp : null
+            lmp: lmp
           }
         }
       });
@@ -545,32 +545,30 @@ export default function Register() {
               </div>
             </div>
 
-            {/* LMP (Only if Obstetrics) */}
-            {department === 'ob' && (
-              <div style={{ flex: 1 }}>
-                <label htmlFor="register-lmp" style={styles.label}>
-                  Kỳ kinh cuối
-                </label>
-                <div style={styles.inputWrapper}>
-                  <input
-                    id="register-lmp"
-                    type="text"
-                    placeholder="20/10/2026"
-                    value={lmp}
-                    onChange={(e) => setLmp(e.target.value)}
-                    onFocus={() => setLmpFocused(true)}
-                    onBlur={() => setLmpFocused(false)}
-                    disabled={loading}
-                    required
-                    style={{
-                      ...styles.input,
-                      ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                      ...(lmpFocused ? styles.inputFocus : {}),
-                    }}
-                  />
-                </div>
+            {/* LMP */}
+            <div style={{ flex: 1 }}>
+              <label htmlFor="register-lmp" style={styles.label}>
+                Kỳ kinh cuối
+              </label>
+              <div style={styles.inputWrapper}>
+                <input
+                  id="register-lmp"
+                  type="text"
+                  placeholder="20/10/2026"
+                  value={lmp}
+                  onChange={(e) => setLmp(e.target.value)}
+                  onFocus={() => setLmpFocused(true)}
+                  onBlur={() => setLmpFocused(false)}
+                  disabled={loading}
+                  required
+                  style={{
+                    ...styles.input,
+                    ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
+                    ...(lmpFocused ? styles.inputFocus : {}),
+                  }}
+                />
               </div>
-            )}
+            </div>
           </div>
 
           {/* Password */}
@@ -654,14 +652,14 @@ export default function Register() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword || (department === 'ob' && !lmp)}
+            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword}
             onMouseEnter={() => setBtnHovered(true)}
             onMouseLeave={() => setBtnHovered(false)}
             style={{
               ...styles.submitBtn,
               ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
               ...(btnHovered && !loading ? styles.submitBtnHover : {}),
-              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword || (department === 'ob' && !lmp) ? styles.submitBtnDisabled : {}),
+              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !lmp || !password || !confirmPassword ? styles.submitBtnDisabled : {}),
             }}
           >
             {loading ? (
