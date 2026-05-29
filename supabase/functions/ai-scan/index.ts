@@ -54,30 +54,14 @@ Deno.serve(async (req) => {
     const base64Data = arrayBufferToBase64(arrayBuffer);
 
     // 2. Call Gemini
-    const prompt = `Bạn là một Chuyên gia Y khoa, Bác sĩ Chẩn đoán hình ảnh và xét nghiệm lâm sàng hạng ưu.
-Nhiệm vụ của bạn là đọc hình ảnh y tế được cung cấp (phiếu xét nghiệm, đơn thuốc, hồ sơ bệnh án) loại: "${scan_type || 'Khác'}" và thực hiện Báo cáo Y khoa chuyên sâu.
+    const prompt = `Bạn là trợ lý ảo hỗ trợ nạp dữ liệu y tế.
+Nhiệm vụ của bạn là đọc hình ảnh y tế được cung cấp (phiếu xét nghiệm, siêu âm, đơn thuốc...) và trích xuất Tên và Ngày sinh của bệnh nhân.
 Hãy trích xuất thông tin dưới dạng JSON THUẦN TÚY với cấu trúc sau:
 {
   "extracted_name": "Tên bệnh nhân trên phiếu (viết hoa, không có để trống)",
   "dob": "Ngày tháng năm sinh (định dạng DD/MM/YYYY, không có để trống)",
-  "gender": "Giới tính (Nam/Nữ)",
-  "address": "Địa chỉ hoặc nơi thường trú",
-  "doc_type": "xet_nghiem/don_thuoc/khac",
-  "vitals": {
-    "weight_kg": "Cân nặng (số, kg)",
-    "height_cm": "Chiều cao (số, cm)",
-    "blood_pressure": "Huyết áp (VD: 120/80 mmHg)",
-    "heart_rate": "Mạch (số, lần/phút)"
-  },
-  "allergies": "Tiền sử dị ứng (nếu có)",
-  "diagnosis": "Chẩn đoán lâm sàng của bác sĩ trên phiếu",
-  "prescriptions": [
-    { "medication": "Tên thuốc", "quantity": "Số lượng", "instructions": "Cách dùng/Liều dùng" }
-  ],
-  "next_appointment": "Ngày tái khám (nếu có)",
-  "summary": "Tóm tắt chuyên môn: Đọc các chỉ số xét nghiệm hoặc tổng hợp đơn thuốc, đánh giá kết quả, kết luận chẩn đoán. Phân tích chi tiết nhưng súc tích.",
-  "abnormal_items": ["Danh sách các chỉ số bất thường, triệu chứng nguy hiểm hoặc cảnh báo (nếu có)"],
-  "is_abnormal": true/false (true nếu có bất kỳ chỉ số vượt ngưỡng hoặc phát hiện bệnh lý cần bác sĩ lưu ý gấp)
+  "phone": "Số điện thoại bệnh nhân (nếu có, không có để trống)",
+  "doc_type": "xet_nghiem/don_thuoc/sieu_am/khac"
 }
 Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất kỳ văn bản nào khác.`;
 
@@ -125,9 +109,7 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           bn_code: matchedBnCode,
           name: pName,
           dob: dbDob,
-          gender: resultJson.gender,
-          address: resultJson.address,
-          allergies: resultJson.allergies,
+          phone: resultJson.phone,
           specialty: specialty || 'gy' // Phân loại chuyên khoa từ Lễ tân truyền lên
         });
         if (pErr) {
@@ -148,10 +130,7 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
           status: 'ai_processed',
           is_saved_to_emr: true,
           ai_extracted: {
-            result: resultJson.summary,
-            parsed: resultJson,
             type: resultJson.doc_type,
-            is_abnormal: resultJson.is_abnormal,
             public_url: file_url
           }
         });
