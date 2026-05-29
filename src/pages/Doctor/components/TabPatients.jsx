@@ -263,6 +263,43 @@ export default function TabPatients() {
                                     {ai.result || ai.summary || 'Không có tóm tắt.'}
                                   </p>
                                 </div>
+
+                                {/* Render Additional Extracted Data */}
+                                {ai.parsed?.diagnosis && (
+                                  <div className="bg-white p-3 rounded-xl border border-gold/15 shadow-sm">
+                                    <p className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-1">Chẩn đoán</p>
+                                    <p className="font-medium text-ink">{ai.parsed.diagnosis}</p>
+                                  </div>
+                                )}
+
+                                {ai.parsed?.vitals && (
+                                  <div className="bg-[#FDFBF7] p-3 rounded-xl border border-gold/15">
+                                    <p className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Sinh hiệu</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                      {ai.parsed.vitals.weight_kg && <div><span className="text-ink-muted block">Cân nặng</span><span className="font-bold">{ai.parsed.vitals.weight_kg}</span></div>}
+                                      {ai.parsed.vitals.height_cm && <div><span className="text-ink-muted block">Chiều cao</span><span className="font-bold">{ai.parsed.vitals.height_cm}</span></div>}
+                                      {ai.parsed.vitals.blood_pressure && <div><span className="text-ink-muted block">Huyết áp</span><span className="font-bold text-danger">{ai.parsed.vitals.blood_pressure}</span></div>}
+                                      {ai.parsed.vitals.heart_rate && <div><span className="text-ink-muted block">Mạch</span><span className="font-bold">{ai.parsed.vitals.heart_rate}</span></div>}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {ai.parsed?.prescriptions && ai.parsed.prescriptions.length > 0 && (
+                                  <div className="bg-white p-3 rounded-xl border border-gold/15 shadow-sm">
+                                    <p className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Đơn thuốc ({ai.parsed.prescriptions.length})</p>
+                                    <ul className="space-y-2">
+                                      {ai.parsed.prescriptions.map((med, i) => (
+                                        <li key={i} className="text-xs pb-2 border-b border-gold/10 last:border-0 last:pb-0">
+                                          <div className="flex justify-between font-bold text-ink">
+                                            <span>{i+1}. {med.medication}</span>
+                                            <span>{med.quantity}</span>
+                                          </div>
+                                          <p className="text-ink-muted mt-0.5">{med.instructions}</p>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                                 
                                 {/* Doctor Note */}
                                 {ai.doctor_note && (
