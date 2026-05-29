@@ -12,7 +12,7 @@ export default function TabPatients() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [attachments, setAttachments] = useState([]);
   const [loadingAttachments, setLoadingAttachments] = useState(false);
-  const [attFilter, setAttFilter] = useState('all');
+  const [attFilter, setAttFilter] = useState('Xét nghiệm');
 
   const showToast = (msg, type = 'info') => setToast({ isVisible: true, message: msg, type });
 
@@ -177,43 +177,45 @@ export default function TabPatients() {
               </div>
 
               {/* Medical History */}
-              <div className="space-y-4 px-1">
-                <h4 className="font-semibold text-ink-muted text-sm uppercase tracking-wider">Tiền sử y khoa</h4>
-                <div className="space-y-3">
-                  <div className="bg-surface p-4 rounded-xl border border-gold/20 flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-ink">Chỉ số PARA (Sản khoa)</span>
-                      <button className="text-gold-dk hover:bg-gold-lt p-1.5 rounded-md transition-colors"><Icon d={ICONS.edit} className="w-3.5 h-3.5" /></button>
+              <div className="space-y-3 px-1">
+                <h4 className="font-semibold text-ink-muted text-xs uppercase tracking-wider">Tiền sử y khoa</h4>
+                <div className="bg-surface p-3 rounded-xl border border-gold/20 flex flex-col gap-3">
+                  {/* PARA */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-bold text-ink">Chỉ số PARA (Sản khoa)</span>
+                      <button className="text-gold-dk hover:bg-gold-lt p-1 rounded transition-colors"><Icon d={ICONS.edit} className="w-3 h-3" /></button>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      <div className="bg-white p-2 rounded-lg border border-gold/15">
-                        <span className="block text-xs text-ink-muted">Sinh</span>
-                        <span className="font-bold text-lg text-ink">{selectedPatient.para_s || 0}</span>
+                    <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gold/15 shadow-sm">
+                      <div className="flex flex-col items-center flex-1 border-r border-gold/10">
+                        <span className="text-[10px] text-ink-muted uppercase">Sinh</span>
+                        <span className="font-bold text-sm text-ink">{selectedPatient.para_full || 0}</span>
                       </div>
-                      <div className="bg-white p-2 rounded-lg border border-gold/15">
-                        <span className="block text-xs text-ink-muted">Sớm</span>
-                        <span className="font-bold text-lg text-ink">{selectedPatient.para_so || 0}</span>
+                      <div className="flex flex-col items-center flex-1 border-r border-gold/10">
+                        <span className="text-[10px] text-ink-muted uppercase">Sớm</span>
+                        <span className="font-bold text-sm text-ink">{selectedPatient.para_preterm || 0}</span>
                       </div>
-                      <div className="bg-white p-2 rounded-lg border border-gold/15">
-                        <span className="block text-xs text-ink-muted">Sẩy</span>
-                        <span className="font-bold text-lg text-ink">{selectedPatient.para_sa || 0}</span>
+                      <div className="flex flex-col items-center flex-1 border-r border-gold/10">
+                        <span className="text-[10px] text-ink-muted uppercase">Sảy</span>
+                        <span className="font-bold text-sm text-ink">{selectedPatient.para_abortion || 0}</span>
                       </div>
-                      <div className="bg-white p-2 rounded-lg border border-gold/15">
-                        <span className="block text-xs text-ink-muted">Sống</span>
-                        <span className="font-bold text-lg text-ink">{selectedPatient.para_so_ng || 0}</span>
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-[10px] text-ink-muted uppercase">Sống</span>
+                        <span className="font-bold text-sm text-ink">{selectedPatient.para_alive || 0}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-surface p-4 rounded-xl border border-gold/20 text-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-ink">Dị ứng & Bệnh nền</span>
-                      <button className="text-gold-dk hover:bg-gold-lt p-1.5 rounded-md transition-colors"><Icon d={ICONS.edit} className="w-3.5 h-3.5" /></button>
+                  {/* Allergy */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-bold text-ink">Dị ứng & Bệnh nền</span>
+                      <button className="text-gold-dk hover:bg-gold-lt p-1 rounded transition-colors"><Icon d={ICONS.edit} className="w-3 h-3" /></button>
                     </div>
                     {selectedPatient.allergies ? (
-                      <p className="text-danger-dk bg-danger-lt px-3 py-2 rounded-lg border border-red-200">{selectedPatient.allergies}</p>
+                      <p className="text-danger-dk text-xs font-medium bg-danger-lt px-2.5 py-1.5 rounded-lg border border-red-200">{selectedPatient.allergies}</p>
                     ) : (
-                      <p className="text-ink-muted italic">Không ghi nhận dị ứng.</p>
+                      <p className="text-ink-muted text-xs italic bg-white px-2.5 py-1.5 rounded-lg border border-gold/15">Không ghi nhận dị ứng.</p>
                     )}
                   </div>
                 </div>
@@ -229,7 +231,7 @@ export default function TabPatients() {
                   Dòng thời gian
                 </h4>
                 <div className="flex bg-surface shadow-sm rounded-xl p-1 gap-1 border border-gold/30 text-xs font-bold overflow-x-auto max-w-full hide-scrollbar">
-                  {[['all', 'Tất cả'], ['Hồ sơ giấy', 'Lịch sử khám'], ['Xét nghiệm', 'Xét nghiệm'], ['Đơn thuốc', 'Toa thuốc']].map(([v, l]) => (
+                  {[['Hồ sơ giấy', 'Lịch sử khám'], ['Xét nghiệm', 'Xét nghiệm'], ['Siêu âm', 'Siêu âm'], ['Đơn thuốc', 'Toa thuốc']].map(([v, l]) => (
                     <button key={v} onClick={() => setAttFilter(v)}
                       className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${attFilter === v ? 'bg-ink text-gold-lt shadow' : 'text-ink-muted hover:text-ink'}`}>
                       {l}
@@ -255,7 +257,6 @@ export default function TabPatients() {
                 ) : (
                   <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gold/40 before:via-gold/20 before:to-transparent">
                     {attachments.filter(a => {
-                      if (attFilter === 'all') return true;
                       
                       // Map raw doc_type from AI to UI filter
                       let uiType = a.scan_type;
