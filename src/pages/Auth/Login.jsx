@@ -353,23 +353,30 @@ export default function Login() {
     <div 
       style={{ 
         ...styles.page, 
-        ...(isMobile ? { padding: 0, backgroundColor: '#FFFFFF', backgroundImage: 'none' } : {}) 
+        ...(isMobile ? { 
+          padding: 0, 
+          background: '#FFFFFF', // Override shorthand background
+          height: '100dvh',      // Strict height
+          overflow: 'hidden'     // Prevent scroll
+        } : {}) 
       }} 
     >
       <div 
         style={{ 
           ...styles.card, 
           ...(isMobile ? { 
+            width: '100%',
             maxWidth: '100%', 
-            minHeight: '100dvh', 
+            height: '100dvh', 
             borderRadius: 0, 
             border: 'none', 
             boxShadow: 'none', 
-            padding: '32px 20px', 
-            backgroundColor: '#FFFFFF',
+            padding: '24px 20px', 
+            background: '#FFFFFF',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            overflow: 'hidden'
           } : {}) 
         }} 
       >
