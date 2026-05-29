@@ -345,10 +345,10 @@ export default function Login() {
     <div style={styles.page} className="mobile-fullscreen-page">
       {/* Global keyframe for spinner */}
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
           .mobile-fullscreen-card {
             max-width: 100% !important;
             min-height: 100dvh !important;
@@ -359,9 +359,12 @@ export default function Login() {
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
+            background-color: #FEFAF5 !important;
           }
           .mobile-fullscreen-page {
             padding: 0 !important;
+            background: none !important;
+            background-color: #FEFAF5 !important;
           }
         }
       `}</style>
