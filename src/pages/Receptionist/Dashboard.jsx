@@ -85,7 +85,7 @@ export default function ReceptionistDashboard() {
               const searchPattern = '%' + pName.split(' ').join('%') + '%';
               
               const { data: patients } = await supabase.from('patients')
-                .select('bn_code, name, id')
+                .select('bn_code, name')
                 .ilike('name', searchPattern)
                 .limit(1);
 
