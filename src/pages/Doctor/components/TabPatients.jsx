@@ -35,7 +35,7 @@ export default function TabPatients() {
   const handleSelectPatient = async (patient) => {
     setSelectedPatient(patient);
     setLoadingAttachments(true);
-    const { data } = await supabase.from('attachments').select('*').eq('patient_id', patient.id).order('created_at', { ascending: false });
+    const { data } = await supabase.from('attachments').select('*').eq('bn_code', patient.bn_code).order('created_at', { ascending: false });
     setAttachments(data || []);
     setLoadingAttachments(false);
   };
