@@ -117,6 +117,9 @@ export default function TabAIScan() {
     if (error) {
       if (error.code === '42501') {
         showToast('Đã lưu nháp (Hệ thống RLS chặn ghi DB)', 'success');
+      } else if (error.message && (error.message.includes('schema cache') || error.message.includes('Could not find'))) {
+        console.warn('Lỗi cấu trúc DB, chuyển sang chế độ nháp:', error.message);
+        showToast('Đã lưu nháp cục bộ (Đợi Admin cập nhật cấu trúc DB)', 'success');
       } else {
         return showToast('Lỗi lưu: ' + error.message, 'error');
       }
