@@ -1,17 +1,54 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../../lib/supabase';
+import { useRealtimeSchedule } from '../../../hooks/useRealtimeSchedule';
 
 export default function GYAppointments() {
   const navigate = useNavigate();
+  const [dbSchedule, setDbSchedule] = useState({});
 
-  const schedule = [
-    { day: 'T2', date: '11/5', session: '17h–20h', today: true },
-    { day: 'T3', date: '12/5', session: '17h–20h' },
-    { day: 'T4', date: '13/5', session: '17h–20h' },
-    { day: 'T5', date: '14/5', session: 'Nghỉ' },
-    { day: 'T6', date: '15/5', session: '17h–20h' },
-    { day: 'T7', date: '16/5', session: 'SA+Khám' },
-    { day: 'CN', date: '17/5', session: 'Nghỉ' },
-  ];
+  const loadSchedule = async () => {
+    const { data } = await supabase
+      .from('doctor_schedule')
+      .select('date, shift_name, location')
+      .in('location', ['hung_vuong', 'hv']);
+    if (data) {
+      const map = {};
+      data.forEach(d => map[d.date] = d.shift_name);
+      setDbSchedule(map);
+    }
+  };
+
+  useEffect(() => {
+    loadSchedule();
+  }, []);
+
+  useRealtimeSchedule(() => {
+    loadSchedule();
+  });
+
+  const DOW_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const schedule = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    const shift = dbSchedule[dateStr] || '—';
+    
+    let session = shift;
+    if (shift === 'HC') session = 'Hành chính (07:15 - 16:30)';
+    else if (shift === 'A') session = 'Sáng (06:00 - 14:00)';
+    else if (shift === 'C') session = 'Chiều (14:00 - 22:00)';
+    else if (shift === 'OFF') session = 'Nghỉ';
+    else if (shift === '—') session = 'Chưa có lịch';
+
+    return {
+      day: DOW_VI[d.getDay()],
+      date: `${d.getDate()}/${d.getMonth() + 1}`,
+      session: session,
+      isOff: shift === 'OFF' || shift === '—',
+      today: i === 0
+    };
+  });
 
   const pastVisits = [
     { date: '10/04/2026', type: 'Siêu âm nang noãn', note: 'Nang noãn đa dạng, không polycystic. Theo dõi tiếp.' },
@@ -57,7 +94,7 @@ export default function GYAppointments() {
                   <span className={`text-[12px] ${s.today ? 'text-[#2A1015] font-semibold' : 'text-[#2A1015]'}`}>{s.date}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] ${s.session === 'Nghỉ' ? 'text-[#9A6070] italic' : s.today ? 'text-[#C96080] font-semibold' : 'text-[#9A6070]'}`}>{s.session}</span>
+                  <span className={`text-[11px] ${s.isOff ? 'text-[#9A6070] italic' : s.today ? 'text-[#C96080] font-semibold' : 'text-[#9A6070]'}`}>{s.session}</span>
                   {s.today && <span className="text-[9px] font-bold bg-[#C96080] text-white px-2 py-0.5 rounded-full">Hôm nay</span>}
                 </div>
               </div>
