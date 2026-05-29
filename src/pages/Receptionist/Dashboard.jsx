@@ -84,13 +84,20 @@ export default function ReceptionistDashboard() {
         // Hàm chuyển đổi dob từ AI (text) sang định dạng YYYY-MM-DD an toàn cho PostgreSQL
         const formatDbDate = (dStr) => {
            if (!dStr) return null;
-           const s = dStr.trim();
+           let s = dStr.trim();
+           
+           // Nếu AI lỡ trả về chuỗi có chữ (vd: "Ngày sinh: 25/04/1994"), ta sẽ cố tách lấy ngày
+           const extractDate = s.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,4})/);
+           if (extractDate) {
+              s = extractDate[0];
+           }
+           
            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-           const dmYMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+           const dmYMatch = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
            if (dmYMatch) return `${dmYMatch[3]}-${dmYMatch[2].padStart(2,'0')}-${dmYMatch[1].padStart(2,'0')}`;
            const yearMatch = s.match(/^(\d{4})$/);
            if (yearMatch) return `${yearMatch[1]}-01-01`;
-           return null; // Bỏ qua nếu là chuỗi không hợp lệ (như "36 tuổi")
+           return null;
         };
         
         if (matchedName) {
