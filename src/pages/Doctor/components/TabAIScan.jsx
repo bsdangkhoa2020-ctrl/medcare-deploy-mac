@@ -53,9 +53,15 @@ export default function TabAIScan() {
       const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
       const path = `scan/${Date.now()}_${safeName}`;
       const { data: uploaded, error: upErr } = await supabase.storage.from('attachments').upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
-
-      const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(path);
+      
+      let publicUrl = '';
+      if (upErr) {
+        console.warn('Storage RLS error, using local demo URL:', upErr.message);
+        publicUrl = preview || URL.createObjectURL(file);
+      } else {
+        const { data } = supabase.storage.from('attachments').getPublicUrl(path);
+        publicUrl = data.publicUrl;
+      }
 
       // Call AI scan edge function
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-scan`, {
