@@ -468,7 +468,8 @@ export default function Register() {
             <div style={styles.inputWrapper}>
               <input
                 id="register-dob"
-                type="date"
+                type="text"
+                placeholder="Ví dụ: 20/10/1990"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
                 onFocus={() => setDobFocused(true)}
@@ -549,7 +550,8 @@ export default function Register() {
               <div style={styles.inputWrapper}>
                 <input
                   id="register-lmp"
-                  type="date"
+                  type="text"
+                  placeholder="Ví dụ: 20/10/1990"
                   value={lmp}
                   onChange={(e) => setLmp(e.target.value)}
                   onFocus={() => setLmpFocused(true)}
