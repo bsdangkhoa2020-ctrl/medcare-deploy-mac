@@ -134,7 +134,8 @@ Tuyệt đối chỉ trả về JSON, không kèm dấu \`\`\`json hay bất k�
             result: resultJson.summary,
             parsed: resultJson,
             type: resultJson.doc_type,
-            is_abnormal: resultJson.is_abnormal
+            is_abnormal: resultJson.is_abnormal,
+            public_url: file_url
           }
         });
         if (aErr) {
