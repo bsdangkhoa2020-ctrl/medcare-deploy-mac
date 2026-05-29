@@ -222,23 +222,23 @@ export default function TabPatients() {
             </div>
 
             {/* RIGHT COLUMN: TIMELINE & AI SCAN RESULTS */}
-            <div className="w-full sm:w-2/3 flex flex-col h-full overflow-hidden">
+            <div className="w-full sm:w-2/3 flex flex-col sm:h-full overflow-visible sm:overflow-hidden mt-6 sm:mt-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 px-1 shrink-0 gap-3">
                 <h4 className="font-serif font-bold text-xl text-ink flex items-center gap-2">
                   <Icon d={ICONS.journal} className="w-5 h-5 text-gold-dk" />
                   Dòng thời gian
                 </h4>
-                <div className="flex bg-surface shadow-sm rounded-xl p-1 gap-1 border border-gold/30 text-xs font-bold">
+                <div className="flex bg-surface shadow-sm rounded-xl p-1 gap-1 border border-gold/30 text-xs font-bold overflow-x-auto max-w-full hide-scrollbar">
                   {[['all', 'Tất cả'], ['Hồ sơ giấy', 'Lịch sử khám'], ['Xét nghiệm', 'Xét nghiệm'], ['Đơn thuốc', 'Toa thuốc']].map(([v, l]) => (
                     <button key={v} onClick={() => setAttFilter(v)}
-                      className={`px-3 py-1.5 rounded-lg transition-all ${attFilter === v ? 'bg-ink text-gold-lt shadow' : 'text-ink-muted hover:text-ink'}`}>
+                      className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap ${attFilter === v ? 'bg-ink text-gold-lt shadow' : 'text-ink-muted hover:text-ink'}`}>
                       {l}
                     </button>
                   ))}
                 </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-6">
+              <div className="flex-1 sm:overflow-y-auto overflow-visible pr-2 custom-scrollbar pb-6">
                 {loadingAttachments ? (
                   <div className="flex flex-col justify-center items-center py-20 gap-3 text-ink-muted">
                     <svg className="w-8 h-8 animate-spin text-gold-dk" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
