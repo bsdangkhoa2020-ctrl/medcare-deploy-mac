@@ -90,8 +90,8 @@ export default function TabSchedule() {
     setAppointments(appts || []);
     const hv = {}, pk = {};
     (sched || []).forEach(r => {
-      if (r.location === 'hv') hv[r.date] = r.shift_name;
-      if (r.location === 'pk') pk[r.date] = r.shift_name;
+      if (r.location === 'hung_vuong' || r.location === 'hv') hv[r.date] = r.shift_name;
+      if (r.location === 'pk315' || r.location === 'pk') pk[r.date] = r.shift_name;
     });
     setHvSchedule(hv);
     setPkSchedule(pk);
@@ -107,11 +107,12 @@ export default function TabSchedule() {
     else if (shift === 'Sáng+Tối') { s = '08:00'; e = '20:00'; }
     
     const spec = location === 'hv' ? 'gy' : 'ob';
+    const dbLoc = location === 'hv' ? 'hung_vuong' : 'pk315';
     
     const { error } = await supabase.from('doctor_schedule').upsert({ 
       date: day, 
       shift_name: shift, 
-      location,
+      location: dbLoc,
       start_time: s,
       end_time: e,
       specialty: spec
@@ -135,11 +136,12 @@ export default function TabSchedule() {
       else if (shift === 'Sáng+Tối') { s = '08:00'; e = '20:00'; }
       
       const spec = weekModal.type === 'hv' ? 'gy' : 'ob';
+      const dbLoc = weekModal.type === 'hv' ? 'hung_vuong' : 'pk315';
       
       return { 
         date: day, 
         shift_name: shift, 
-        location: weekModal.type,
+        location: dbLoc,
         start_time: s,
         end_time: e,
         specialty: spec
