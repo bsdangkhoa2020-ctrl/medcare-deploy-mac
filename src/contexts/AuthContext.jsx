@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
       if (role === 'patient_ob') { role = 'patient'; pType = 'ob'; }
       if (role === 'patient_gy') { role = 'patient'; pType = 'gy'; }
 
-      if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@bstuan247.com') {
+      if (currentUser.email === 'bstuanhoang@gmail.com' || currentUser.email === 'doctor@bstuan247.com' || currentUser.email === '0938559098@bstuan247.com') {
         role = 'doctor';
       } else if (currentUser.email === 'letan@gmail.com' || currentUser.email === 'letan@bstuan247.com') {
         role = 'receptionist';
