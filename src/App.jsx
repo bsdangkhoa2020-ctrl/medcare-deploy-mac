@@ -31,12 +31,13 @@ import GYDashboard    from './pages/Patient/Gynecology/Dashboard';
 import GYAppointments from './pages/Patient/Gynecology/Appointments';
 import GYRecords      from './pages/Patient/Gynecology/Records';
 import GYKnowledge    from './pages/Patient/Gynecology/Knowledge';
+import Welcome        from './pages/Welcome';
 
 function RootRedirect() {
   const { user, appRole, patientType, loading } = useAuth();
   
   if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/welcome" replace />;
   
   if (appRole === 'doctor') return <Navigate to="/bacsi" replace />;
   if (appRole === 'receptionist') return <Navigate to="/letan" replace />;
@@ -46,7 +47,7 @@ function RootRedirect() {
     return <Navigate to="/sankhoa" replace />; // fallback if somehow undefined
   }
   
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/welcome" replace />;
 }
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
         <Routes>
 
           {/* ── LOGIN/REGISTER — Public, không cần đăng nhập ───────── */}
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

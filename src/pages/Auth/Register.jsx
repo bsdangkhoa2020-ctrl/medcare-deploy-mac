@@ -2,344 +2,144 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { Icon, ICONS } from '../Patient/Gynecology/components/shared'; // for icons if needed, or inline SVG
 
-/* ─────────────────────────────────────────────
-   Inline styles — no Tailwind dependency
-───────────────────────────────────────────── */
 const styles = {
-  page: {
-    minHeight: '100dvh',
-    backgroundColor: '#FEFAF5',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    padding: '16px',
-    boxSizing: 'border-box',
-    background: 'linear-gradient(135deg, #FEFAF5 0%, #F7EFE3 100%)',
-  },
-  card: {
-    width: '100%',
-    maxWidth: '440px',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '20px',
-    padding: '40px 24px',
-    boxShadow:
-      '0 4px 6px rgba(184,129,74,0.06), 0 20px 60px rgba(184,129,74,0.12)',
-    border: '1px solid rgba(184,129,74,0.15)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  cardAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '3px',
-    background: 'linear-gradient(90deg, #B8814A 0%, #D4A96A 50%, #B8814A 100%)',
-  },
-  brandRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    marginBottom: '10px',
-  },
-  logoCircle: {
-    width: '72px',
-    height: '72px',
-    borderRadius: '50%',
-    backgroundColor: '#111111',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-  },
-  logoLetter: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontStyle: 'italic',
-    fontWeight: 700,
-    fontSize: '26px',
-    color: '#B8814A',
-    lineHeight: 1,
-    userSelect: 'none',
-  },
-  brandName: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: '22px',
-    fontWeight: 700,
-    color: '#1A1A1A',
-    letterSpacing: '0.01em',
-    lineHeight: 1.2,
-  },
-  brandSub: {
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '11px',
-    fontWeight: 400,
-    color: '#B8814A',
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    marginTop: '2px',
-  },
-  divider: {
-    width: '40px',
-    height: '1px',
-    backgroundColor: 'rgba(184,129,74,0.35)',
-    margin: '18px 0 6px',
-  },
-  tagline: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: '13.5px',
-    fontStyle: 'italic',
-    color: '#7A6A5A',
-    letterSpacing: '0.02em',
-    marginBottom: '36px',
-  },
-  heading: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontSize: '28px',
-    fontWeight: 600,
-    color: '#1A1A1A',
-    marginBottom: '28px',
-    letterSpacing: '-0.01em',
-  },
-  fieldGroup: {
-    marginBottom: '20px',
-  },
-  label: {
-    display: 'block',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#5A4A3A',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    marginBottom: '8px',
-  },
-  inputWrapper: {
-    position: 'relative',
-  },
-  input: {
-    width: '100%',
-    height: '50px',
-    padding: '0 16px',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '15px',
-    color: '#1A1A1A',
-    backgroundColor: '#FEFAF5',
-    border: '1.5px solid rgba(184,129,74,0.4)',
-    borderRadius: '10px',
-    outline: 'none',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-    boxSizing: 'border-box',
-  },
-  inputFocus: {
-    borderColor: '#B8814A',
-    boxShadow: '0 0 0 3px rgba(184,129,74,0.12)',
-    backgroundColor: '#FFFFFF',
-  },
-  passwordToggle: {
-    position: 'absolute',
-    right: '14px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    color: '#B8814A',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  errorBox: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '10px',
-    backgroundColor: 'rgba(220,53,69,0.06)',
-    border: '1px solid rgba(220,53,69,0.25)',
-    borderRadius: '10px',
-    padding: '12px 14px',
-    marginBottom: '20px',
-  },
-  errorText: {
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '13px',
-    color: '#C0392B',
-    lineHeight: 1.5,
-  },
-  submitBtn: {
-    width: '100%',
-    height: '52px',
-    backgroundColor: '#111111',
-    color: '#B8814A',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '14px',
-    fontWeight: 700,
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    border: 'none',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    marginTop: '8px',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-  },
-  submitBtnHover: {
-    backgroundColor: '#1E1E1E',
-    boxShadow: '0 6px 22px rgba(0,0,0,0.28)',
-    transform: 'translateY(-1px)',
-  },
-  submitBtnDisabled: {
-    opacity: 0.65,
-    cursor: 'not-allowed',
-    transform: 'none',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-  },
-  spinner: {
-    width: '18px',
-    height: '18px',
-    border: '2.5px solid rgba(184,129,74,0.3)',
-    borderTopColor: '#B8814A',
-    borderRadius: '50%',
-    animation: 'spin 0.75s linear infinite',
-  },
-  footer: {
-    marginTop: '32px',
-    textAlign: 'center',
-    fontFamily: "'Be Vietnam Pro', sans-serif",
-    fontSize: '12px',
-    color: '#A09080',
-    letterSpacing: '0.04em',
-  },
+  // Keeping a few essential styles if we need them, but mostly using Tailwind
+  page: 'min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 relative overflow-hidden',
+  card: 'w-full max-w-md bg-white rounded-[20px] p-6 sm:p-8 shadow-xl shadow-gold/5 border border-gold/15 relative z-10',
+  input: 'w-full h-[52px] px-4 bg-[#FEFAF5] border border-gold/30 rounded-xl focus:border-gold-dk focus:ring-4 focus:ring-gold/10 transition-all text-ink placeholder:text-ink-muted/50 font-medium',
+  label: 'block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2',
+  btnPrimary: 'w-full h-[52px] bg-ink text-gold-lt font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-black hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2',
+  btnSecondary: 'w-full h-[52px] bg-transparent text-ink border border-gold/30 font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-gold-lt/30 transition-all flex items-center justify-center gap-2',
 };
 
-/* ─────────────────────────────────────────────
-   Role → route mapping
-───────────────────────────────────────────── */
-function getRouteForRole(role, patientType) {
-  if (role === 'doctor') return '/bacsi';
-  if (role === 'receptionist') return '/letan';
-  if (role === 'patient') {
-    if (patientType === 'ob') return '/sankhoa';
-    if (patientType === 'gy') return '/phukhoa';
-    return '/sankhoa'; // fallback
-  }
-  return '/';
-}
-
-/* ─────────────────────────────────────────────
-   SVG icons (inline, no dependency)
-───────────────────────────────────────────── */
 const EyeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-    <circle cx="12" cy="12" r="3"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
 
 const EyeOffIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
   </svg>
 );
 
-const AlertIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0392B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="12" y1="8" x2="12" y2="12"/>
-    <line x1="12" y1="16" x2="12.01" y2="16"/>
-  </svg>
-);
-
-/* ─────────────────────────────────────────────
-   Component
-───────────────────────────────────────────── */
 export default function Register() {
   const navigate = useNavigate();
   const { user, appRole, patientType, loading: authLoading } = useAuth();
 
-  const [fullName, setFullName] = useState('');
+  // Step state
+  const [step, setStep] = useState(1);
+
+  // Form state
   const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState('');
-  const [department, setDepartment] = useState('');
-  const [lmp, setLmp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const [fullName, setFullName] = useState('');
+  const [dob, setDob] = useState('');
+  
+  const [department, setDepartment] = useState('');
+  const [lmp, setLmp] = useState('');
+
+  // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [nameFocused, setNameFocused] = useState(false);
-  const [phoneFocused, setPhoneFocused] = useState(false);
-  const [dobFocused, setDobFocused] = useState(false);
-  const [lmpFocused, setLmpFocused] = useState(false);
-  const [passFocused, setPassFocused] = useState(false);
-  const [confirmPassFocused, setConfirmPassFocused] = useState(false);
-  const [btnHovered, setBtnHovered] = useState(false);
-
-  /* ── Responsive Mobile State ── */
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   /* ── Redirect if already authenticated ── */
   useEffect(() => {
     if (!authLoading && user && appRole) {
-      if (appRole === 'patient' && !patientType) return; // Wait for patientType
-      navigate(getRouteForRole(appRole, patientType), { replace: true });
-    }
-  }, [user, appRole, patientType, authLoading, navigate]);
-
-  /* ── EDD Calculation ── */
-  const calculateEDD = (lmpStr) => {
-    if (!lmpStr) return '';
-    const match = lmpStr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-    if (match) {
-      const day = parseInt(match[1], 10);
-      const month = parseInt(match[2], 10) - 1;
-      const year = parseInt(match[3], 10);
-      const lmpDate = new Date(year, month, day);
-      if (!isNaN(lmpDate.getTime())) {
-        const eddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
-        return `${eddDate.getDate().toString().padStart(2, '0')}/${(eddDate.getMonth() + 1).toString().padStart(2, '0')}/${eddDate.getFullYear()}`;
+      if (appRole === 'patient') {
+        // Optimistic redirect based on local state if patientType is lagging
+        const targetType = patientType || department;
+        if (targetType === 'ob') navigate('/sankhoa', { replace: true });
+        else if (targetType === 'gy') navigate('/phukhoa', { replace: true });
+        else navigate('/sankhoa', { replace: true });
+      } else if (appRole === 'doctor') {
+        navigate('/bacsi', { replace: true });
+      } else if (appRole === 'receptionist') {
+        navigate('/letan', { replace: true });
       }
     }
-    return '';
+  }, [user, appRole, patientType, authLoading, navigate, department]);
+
+  /* ── Validation Helpers ── */
+  const validateStep1 = () => {
+    if (!phone || phone.length < 10) return 'Số điện thoại không hợp lệ.';
+    if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự.';
+    if (password !== confirmPassword) return 'Mật khẩu nhập lại không khớp.';
+    return null;
   };
 
-  const eddValue = department === 'ob' ? calculateEDD(lmp) : '';
+  const validateStep2 = () => {
+    if (!fullName.trim()) return 'Vui lòng nhập họ và tên.';
+    if (!dob) return 'Vui lòng nhập ngày sinh.';
+    return null;
+  };
 
-  /* ── Submit handler ── */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword) return;
+  const validateStep3 = () => {
+    if (!department) return 'Vui lòng chọn chuyên khoa.';
+    return null;
+  };
 
-    if (password !== confirmPassword) {
-      setError('Mật khẩu nhập lại không khớp.');
-      return;
+  const nextStep = () => {
+    setError('');
+    if (step === 1) {
+      const err = validateStep1();
+      if (err) return setError(err);
+      setStep(2);
+    } else if (step === 2) {
+      const err = validateStep2();
+      if (err) return setError(err);
+      setStep(3);
+    } else if (step === 3) {
+      const err = validateStep3();
+      if (err) return setError(err);
+      if (department === 'gy') {
+        handleSubmit(); // Phụ khoa doesn't need LMP, submit immediately
+      } else {
+        setStep(4);
+      }
     }
+  };
 
-    if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự.');
-      return;
+  const prevStep = () => {
+    setError('');
+    setStep(s => Math.max(1, s - 1));
+  };
+
+  /* ── Submit ── */
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    
+    // Final validation
+    if (department === 'ob' && step === 4) {
+      // LMP is optional, so no strict validation needed
     }
 
     setLoading(true);
     setError('');
     setSuccess('');
 
-    // Use phone number as the identifier by appending a dummy email domain
     const authEmail = `${phone.trim()}@bstuan247.com`;
+
+    // Calculate EDD
+    let eddValue = '';
+    if (department === 'ob' && lmp) {
+      const match = lmp.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+      if (match) {
+        const d = parseInt(match[1], 10), m = parseInt(match[2], 10) - 1, y = parseInt(match[3], 10);
+        const lmpDate = new Date(y, m, d);
+        if (!isNaN(lmpDate.getTime())) {
+          const eddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+          eddValue = `${eddDate.getDate().toString().padStart(2, '0')}/${(eddDate.getMonth() + 1).toString().padStart(2, '0')}/${eddDate.getFullYear()}`;
+        }
+      }
+    }
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -363,321 +163,169 @@ export default function Register() {
         return;
       }
 
-      setSuccess('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.');
-      setLoading(false);
+      setSuccess('Đăng ký thành công! Hệ thống đang chuyển hướng...');
+      // Loading state remains true until useEffect redirects
     } catch (err) {
-      setError('Đã xảy ra lỗi. Vui lòng kiểm tra kết nối và thử lại.');
+      setError('Đã xảy ra lỗi kết nối.');
       setLoading(false);
     }
   };
 
-  /* ── Don't render form while auth is loading (prevents flash) ── */
-  if (authLoading) {
-    return (
-      <div style={{ ...styles.page }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <div style={{ ...styles.spinner, width: '32px', height: '32px' }} />
-          <p style={{ fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: '13px', color: '#B8814A', letterSpacing: '0.06em' }}>
-            Đang tải…
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return (
+    <div className={styles.page}>
+       <div className="w-10 h-10 border-4 border-gold/30 border-t-gold rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
-    <div 
-      style={{ 
-        ...styles.page, 
-        ...(isMobile ? { 
-          padding: 0, 
-          background: '#FFFFFF', // Override shorthand background
-          height: '100dvh',      // Strict height
-          overflow: 'hidden'     // Prevent scroll
-        } : {}) 
-      }} 
-    >
-      <div 
-        style={{ 
-          ...styles.card, 
-          ...(isMobile ? { 
-            width: '100%',
-            maxWidth: '100%', 
-            height: '100dvh', 
-            borderRadius: 0, 
-            border: 'none', 
-            boxShadow: 'none', 
-            padding: '24px 20px', 
-            background: '#FFFFFF',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          } : {}) 
-        }} 
-      >
-        {/* Gold accent bar */}
-        <div style={styles.cardAccent} />
-
-
-
-        <h1 style={{ ...styles.heading, ...(isMobile ? { fontSize: '32px', marginBottom: '32px' } : {}) }}>Đăng ký</h1>
-
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Full Name */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="register-name" style={styles.label}>
-              Họ và tên
-            </label>
-            <div style={styles.inputWrapper}>
-              <input
-                id="register-name"
-                type="text"
-                autoComplete="name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                onFocus={() => setNameFocused(true)}
-                onBlur={() => setNameFocused(false)}
-                placeholder="Nguyễn Văn A"
-                disabled={loading}
-                required
-                style={{
-                  ...styles.input,
-                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(nameFocused ? styles.inputFocus : {}),
-                }}
-              />
-            </div>
+    <div className={styles.page}>
+      {/* Decorative BG */}
+      <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-gold/10 rounded-full blur-[100px]" />
+      
+      <div className={styles.card}>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold to-gold-lt" />
+        
+        {/* Header */}
+        <div className="mb-8 text-center mt-2">
+          <h2 className="font-serif text-3xl font-bold text-ink mb-2">Đăng Ký Hồ Sơ</h2>
+          <div className="flex items-center justify-center gap-2">
+            {[1, 2, 3, 4].map(i => (
+               <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-gold-dk' : i < step ? 'w-4 bg-gold-lt' : 'w-4 bg-gold/20'}`} />
+            ))}
           </div>
-
-
-
-          {/* Phone */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="register-phone" style={styles.label}>
-              Số điện thoại (Dùng để đăng nhập)
-            </label>
-            <div style={styles.inputWrapper}>
-              <input
-                id="register-phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onFocus={() => setPhoneFocused(true)}
-                onBlur={() => setPhoneFocused(false)}
-                placeholder="09xxxxxxxx"
-                disabled={loading}
-                required
-                style={{
-                  ...styles.input,
-                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(phoneFocused ? styles.inputFocus : {}),
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Department Selection */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Chuyên khoa khám</label>
-            <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: '15px' }}>
-                <input
-                  type="radio"
-                  name="department"
-                  value="ob"
-                  checked={department === 'ob'}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  disabled={loading}
-                  style={{ accentColor: '#B8814A', width: '18px', height: '18px' }}
-                />
-                Sản khoa
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: '15px' }}>
-                <input
-                  type="radio"
-                  name="department"
-                  value="gy"
-                  checked={department === 'gy'}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  disabled={loading}
-                  style={{ accentColor: '#B8814A', width: '18px', height: '18px' }}
-                />
-                Phụ khoa
-              </label>
-            </div>
-          </div>
-
-          {/* Combined DOB and LMP Row */}
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-            {/* DOB */}
-            <div style={{ flex: 1 }}>
-              <label htmlFor="register-dob" style={styles.label}>
-                Ngày sinh
-              </label>
-              <div style={styles.inputWrapper}>
-                <input
-                  id="register-dob"
-                  type="text"
-                  placeholder="20/10/1990"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  onFocus={() => setDobFocused(true)}
-                  onBlur={() => setDobFocused(false)}
-                  disabled={loading}
-                  required
-                  style={{
-                    ...styles.input,
-                    ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                    ...(dobFocused ? styles.inputFocus : {}),
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* LMP */}
-            <div style={{ flex: 1 }}>
-              <label htmlFor="register-lmp" style={{...styles.label, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                Kỳ kinh cuối <span style={{ textTransform: 'none', fontWeight: 400, color: '#8A7A6A', fontSize: '9.5px' }}>(Không bắt buộc)</span>
-              </label>
-              <div style={styles.inputWrapper}>
-                <input
-                  id="register-lmp"
-                  type="text"
-                  placeholder="20/10/2026"
-                  value={lmp}
-                  onChange={(e) => setLmp(e.target.value)}
-                  onFocus={() => setLmpFocused(true)}
-                  onBlur={() => setLmpFocused(false)}
-                  disabled={loading}
-                  style={{
-                    ...styles.input,
-                    ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                    ...(lmpFocused ? styles.inputFocus : {}),
-                  }}
-                />
-              </div>
-              {eddValue && (
-                <div style={{ marginTop: '6px', fontSize: '13px', color: '#27ae60', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-                  Dự sinh: <strong>{eddValue}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Password */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="register-password" style={styles.label}>
-              Mật khẩu
-            </label>
-            <div style={styles.inputWrapper}>
-              <input
-                id="register-password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setPassFocused(true)}
-                onBlur={() => setPassFocused(false)}
-                placeholder="••••••••"
-                disabled={loading}
-                required
-                style={{
-                  ...styles.input,
-                  paddingRight: '46px',
-                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(passFocused ? styles.inputFocus : {}),
-                }}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                onClick={() => setShowPassword((v) => !v)}
-                style={styles.passwordToggle}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="register-confirm-password" style={styles.label}>
-              Nhập lại Mật khẩu
-            </label>
-            <div style={styles.inputWrapper}>
-              <input
-                id="register-confirm-password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onFocus={() => setConfirmPassFocused(true)}
-                onBlur={() => setConfirmPassFocused(false)}
-                placeholder="••••••••"
-                disabled={loading}
-                required
-                style={{
-                  ...styles.input,
-                  paddingRight: '46px',
-                  ...(isMobile ? { height: '56px', fontSize: '16px' } : {}),
-                  ...(confirmPassFocused ? styles.inputFocus : {}),
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div style={styles.errorBox} role="alert">
-              <AlertIcon />
-              <p style={styles.errorText}>{error}</p>
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div style={{...styles.errorBox, backgroundColor: 'rgba(46, 204, 113, 0.06)', borderColor: 'rgba(46, 204, 113, 0.25)'}} role="alert">
-              <p style={{...styles.errorText, color: '#27ae60'}}>{success}</p>
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword}
-            onMouseEnter={() => setBtnHovered(true)}
-            onMouseLeave={() => setBtnHovered(false)}
-            style={{
-              ...styles.submitBtn,
-              ...(isMobile ? { height: '56px', fontSize: '15px' } : {}),
-              ...(btnHovered && !loading ? styles.submitBtnHover : {}),
-              ...(loading || !fullName.trim() || !phone.trim() || !dob || !department || !password || !confirmPassword ? styles.submitBtnDisabled : {}),
-            }}
-          >
-            {loading ? (
-              <>
-                <div style={styles.spinner} />
-                Đang xử lý…
-              </>
-            ) : (
-              'Đăng ký'
-            )}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: isMobile ? '14.5px' : '14px', color: '#4A4A4A' }}>
-          Đã có tài khoản?{' '}
-          <a href="/login" style={{ color: '#B8814A', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
-            Đăng nhập
-          </a>
         </div>
 
-        <p style={styles.footer}>
-          © {new Date().getFullYear()} bstuan247.com
-        </p>
+        {error && (
+          <div className="bg-danger-lt/50 border border-danger/30 text-danger-dk px-4 py-3 rounded-xl text-sm mb-6 flex items-start gap-2">
+            <svg className="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-ok-lt/30 border border-ok/30 text-ok-dk px-4 py-3 rounded-xl text-sm mb-6">
+            {success}
+          </div>
+        )}
+
+        {/* STEP 1: Tài Khoản */}
+        {step === 1 && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div>
+              <label className={styles.label}>Số điện thoại (Dùng để đăng nhập)</label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Nhập số điện thoại" className={styles.input} />
+            </div>
+            <div>
+              <label className={styles.label}>Mật khẩu</label>
+              <div className="relative">
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" className={styles.input} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-dk hover:text-ink">
+                  {showPassword ? <EyeOffIcon/> : <EyeIcon/>}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className={styles.label}>Nhập lại mật khẩu</label>
+              <input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu" className={styles.input} />
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Định danh */}
+        {step === 2 && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div>
+              <label className={styles.label}>Họ và tên</label>
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="VD: Nguyễn Văn A" className={styles.input} />
+            </div>
+            <div>
+              <label className={styles.label}>Ngày sinh</label>
+              <input type="text" value={dob} onChange={e => setDob(e.target.value)} placeholder="DD/MM/YYYY" className={styles.input} />
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Nhu cầu */}
+        {step === 3 && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h3 className="font-bold text-ink text-center mb-6">Bạn quan tâm đến dịch vụ nào?</h3>
+            <button 
+              onClick={() => { setDepartment('ob'); setTimeout(() => document.getElementById('btn-next').click(), 100); }}
+              className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center justify-between ${department === 'ob' ? 'border-gold-dk bg-gold-lt/10' : 'border-gold/20 hover:border-gold/50'}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${department === 'ob' ? 'bg-gold text-white' : 'bg-surface text-gold-dk'}`}>
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4z"/><path d="M4 14c0 4.4 3.6 8 8 8s8-3.6 8-8"/></svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-ink text-lg">Sản khoa</h4>
+                  <p className="text-xs text-ink-muted mt-1">Theo dõi thai kỳ & chăm sóc mẹ bầu</p>
+                </div>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${department === 'ob' ? 'border-gold-dk bg-gold-dk' : 'border-gold/30'}`}>
+                {department === 'ob' && <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+              </div>
+            </button>
+
+            <button 
+              onClick={() => { setDepartment('gy'); setTimeout(() => document.getElementById('btn-next').click(), 100); }}
+              className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center justify-between ${department === 'gy' ? 'border-gold-dk bg-gold-lt/10' : 'border-gold/20 hover:border-gold/50'}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${department === 'gy' ? 'bg-gold text-white' : 'bg-surface text-gold-dk'}`}>
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-ink text-lg">Phụ khoa</h4>
+                  <p className="text-xs text-ink-muted mt-1">Khám phụ khoa, tầm soát định kỳ</p>
+                </div>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${department === 'gy' ? 'border-gold-dk bg-gold-dk' : 'border-gold/30'}`}>
+                {department === 'gy' && <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* STEP 4: Sản khoa - Chi tiết */}
+        {step === 4 && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+             <div className="text-center mb-4">
+               <div className="inline-block px-3 py-1 bg-gold-lt/30 text-gold-dk text-xs font-bold uppercase tracking-wider rounded-full mb-2">Thông tin Thai kỳ</div>
+               <p className="text-sm text-ink-muted">Cung cấp ngày kinh cuối để hệ thống tự động tính ngày dự sinh cho bạn.</p>
+             </div>
+             <div>
+              <label className={styles.label}>Ngày đầu kỳ kinh cuối (LMP) <span className="lowercase normal-case font-normal text-ink-muted ml-1">- Không bắt buộc</span></label>
+              <input type="text" value={lmp} onChange={e => setLmp(e.target.value)} placeholder="DD/MM/YYYY" className={styles.input} />
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-8 flex gap-3">
+          {step > 1 && (
+            <button onClick={prevStep} disabled={loading} className="w-16 h-[52px] shrink-0 border border-gold/30 rounded-xl flex items-center justify-center text-ink hover:bg-gold-lt/30 transition-colors">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+          )}
+          
+          {(step < 3 || (step === 3 && !department)) ? (
+            <button id="btn-next" onClick={nextStep} className={styles.btnPrimary}>
+              Tiếp tục
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          ) : (
+             <button onClick={department === 'gy' && step === 3 ? nextStep : handleSubmit} disabled={loading} className={styles.btnPrimary}>
+              {loading ? (
+                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : 'Hoàn tất Đăng ký'}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-6 text-center text-sm font-medium text-ink-muted">
+          Đã có tài khoản? <a href="/login" className="text-gold-dk hover:text-gold transition-colors underline underline-offset-4">Đăng nhập</a>
+        </div>
       </div>
     </div>
   );
